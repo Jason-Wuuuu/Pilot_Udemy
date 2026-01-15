@@ -24,3 +24,21 @@ export const CreateQuizSchema = z
       .min(1),
   })
   .strict();
+
+export const UpdateQuizSchema = z
+  .object({
+    title: z.string().min(1).optional(),
+    difficulty: z.enum(["Easy", "Medium", "Hard"]).optional(),
+    questions: z
+      .array(
+        z.object({
+          questionId: z.string().min(1),
+          prompt: z.string().min(1),
+          options: z.array(z.string().min(1)).min(2),
+          Explains: z.string().optional(),
+          answer: z.string().min(1),
+        })
+      )
+      .optional(),
+  })
+  .strict();

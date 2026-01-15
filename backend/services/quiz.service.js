@@ -1,5 +1,10 @@
 import crypto from "crypto";
-import { getQuizByIdRepo, createQuizRepo } from "../repositories/quiz.repo.js";
+import {
+  getQuizByIdRepo,
+  createQuizRepo,
+  updateQuizByIdRepo,
+  getQuizzesByUserIdRepo,
+} from "../repositories/quiz.repo.js";
 
 export const getQuizByIdService = async (quizId) => {
   const quiz = await getQuizByIdRepo(quizId);
@@ -22,4 +27,19 @@ export const createQuizService = async (payload) => {
   };
 
   return createQuizRepo(quiz);
+};
+
+export const updateQuizByIdService = async (quizId, payload) => {
+  const existing = await getQuizByIdRepo(quizId);
+  if (!existing) {
+    const err = new Error("Quiz not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  return updateQuizByIdRepo(quizId, payload);
+};
+
+export const getQuizzesByUserIdService = async (userId) => {
+  return getQuizzesByUserIdRepo(userId);
 };
