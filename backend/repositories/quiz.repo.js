@@ -58,7 +58,17 @@ export const updateQuizByIdRepo = async (quizId, updates) => {
   return res.Attributes;
 };
 
-//4. get all quizzes
+//4. delete quiz
+export const deleteQuizByIdRepo = async (quizId) => {
+  await ddb.send(
+    new DeleteCommand({
+      TableName: TABLE_NAME,
+      Key: { quizId },
+    })
+  );
+};
+
+//5. get all quizzes
 export const getQuizzesByUserIdRepo = async (userId) => {
   const res = await ddb.send(
     new QueryCommand({

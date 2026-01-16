@@ -4,6 +4,7 @@ import {
   createQuizController,
   updateQuizByIdController,
   getQuizzesByUserIdController,
+  deleteQuizByIdController,
 } from "../controllers/quiz.controller.js";
 
 const router = Router();
@@ -13,7 +14,7 @@ router.get("/", getQuizzesByUserIdController);
 router.post("/", createQuizController);
 router.get("/:quizId", getQuizByIdController);
 router.put("/:quizId", updateQuizByIdController);
-//router.delete("/:quizId", deleteQuiz);
+router.delete("/:quizId", deleteQuizByIdController);
 
 //router.get("/:quizId/results", getQuizResults);
 //router.post("/:quizId/submissions", submitQuiz);
