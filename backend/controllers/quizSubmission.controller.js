@@ -2,14 +2,26 @@ import { CreateSubmissionSchema } from "../models/quizSubmission.model.js";
 import {
   getQuizSubmissionsByUserService,
   submitQuizService,
+  getSubmissionsByQuizService,
 } from "../services/quizSubmission.service.js";
 
-//Get Submission History
+//Student Get Submission History
 export const getQuizSubmissionsByUserController = async (req, res) => {
   try {
     const userId = req.query.userId;
 
     const result = await getQuizSubmissionsByUserService(userId);
+    res.json(result);
+  } catch (e) {
+    res.status(e.statusCode || 500).json({ error: e.message });
+  }
+};
+
+//Admin Get quiz submission scores
+export const getSubmissionsByQuizController = async (req, res) => {
+  try {
+    const { quizId } = req.params;
+    const result = await getSubmissionsByQuizService(quizId);
     res.json(result);
   } catch (e) {
     res.status(e.statusCode || 500).json({ error: e.message });

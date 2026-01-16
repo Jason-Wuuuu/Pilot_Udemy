@@ -33,6 +33,7 @@ export const createQuizService = async (payload) => {
     userId: payload.userId,
     title: payload.title,
     difficulty: payload.difficulty,
+    timeLimit: payload.timeLimit,
     questions: payload.questions,
     createdAt: new Date().toISOString(),
   };

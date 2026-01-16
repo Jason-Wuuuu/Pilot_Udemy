@@ -3,9 +3,10 @@ import { getQuizByIdRepo } from "../repositories/quiz.repo.js";
 import {
   createSubmissionRepo,
   getQuizSubmissionsByUserRepo,
+  getSubmissionsByQuizRepo,
 } from "../repositories/quizSubmission.repo.js";
 
-//Get submissions
+//Get submissions history for the student
 export const getQuizSubmissionsByUserService = async (userId) => {
   if (!userId) {
     const err = new Error("userId is required");
@@ -22,6 +23,30 @@ export const getQuizSubmissionsByUserService = async (userId) => {
     score: s.score,
     correctCount: s.correctCount,
     totalCount: s.totalCount,
+    createdAt: s.createdAt,
+  }));
+};
+
+//Admin Get submission history for one quiz
+export const getSubmissionsByQuizService = async (quizId) => {
+  // 确认 quiz 存在
+  const quiz = await getQuizByIdRepo(quizId);
+  if (!quiz) {
+    const err = new Error("Quiz not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const submissions = await getSubmissionsByQuizRepo(quizId);
+
+  // Admin View：可以看到 answers
+  return submissions.map((s) => ({
+    submissionId: s.submissionId,
+    userId: s.userId,
+    score: s.score,
+    correctCount: s.correctCount,
+    totalCount: s.totalCount,
+    answers: s.answers,
     createdAt: s.createdAt,
   }));
 };

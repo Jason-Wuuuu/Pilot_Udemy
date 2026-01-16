@@ -10,6 +10,7 @@ export const CreateQuizSchema = z
 
     title: z.string().min(1),
     difficulty: z.enum(["Easy", "Medium", "Hard"]),
+    timeLimit: z.number().int().positive().optional(),
 
     questions: z
       .array(

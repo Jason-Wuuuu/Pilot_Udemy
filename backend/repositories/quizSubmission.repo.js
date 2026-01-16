@@ -3,8 +3,9 @@ import { ddb } from "../db/dynamodb.js";
 
 const TABLE_NAME = "QuizSubmission";
 const USER_INDEX = "userId-createdAt-index";
+const QUIZ_INDEX = "quizId-createdAt-index";
 
-//1. Get ALL quiz submission history
+//1. Student Get ALL quiz submission history
 export const getQuizSubmissionsByUserRepo = async (userId, limit = 20) => {
   const res = await ddb.send(
     new QueryCommand({
@@ -22,7 +23,25 @@ export const getQuizSubmissionsByUserRepo = async (userId, limit = 20) => {
   return res.Items || [];
 };
 
-//2. Submit Quiz
+//2. Admin Get All quiz submission History for one quiz
+
+export const getSubmissionsByQuizRepo = async (quizId) => {
+  const res = await ddb.send(
+    new QueryCommand({
+      TableName: TABLE_NAME,
+      IndexName: QUIZ_INDEX,
+      KeyConditionExpression: "quizId = :qid",
+      ExpressionAttributeValues: {
+        ":qid": quizId,
+      },
+      ScanIndexForward: false,
+    })
+  );
+
+  return res.Items || [];
+};
+
+//3. Submit Quiz
 export const createSubmissionRepo = async (item) => {
   const res = await ddb.send(
     new PutCommand({
