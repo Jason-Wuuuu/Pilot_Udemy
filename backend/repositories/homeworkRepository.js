@@ -1,43 +1,87 @@
-import { homeworks, generateId } from "../data/homeworkData.js";
+import { ddb } from "../db/dynamodb.js";
+import {
+  PutCommand,
+  ScanCommand,
+  GetCommand,
+  UpdateCommand,
+  DeleteCommand,
+} from "@aws-sdk/lib-dynamodb";
+import { v4 as uuidv4 } from "uuid";
 
-export const findAll = () => {
-  return homeworks;
+const HOMEWORK_TABLE = process.env.HOMEWORK_TABLE || "Homeworks";
+
+export const findAll = async () => {
+  const result = await ddb.send(
+    new ScanCommand({
+      TableName: HOMEWORK_TABLE,
+    })
+  );
+  return result.Items || [];
 };
 
-export const findById = (id) => {
-  return homeworks.find((hw) => hw.id === id);
+export const findById = async (id) => {
+  const result = await ddb.send(
+    new GetCommand({
+      TableName: HOMEWORK_TABLE,
+      Key: { id },
+    })
+  );
+  return result.Item || null;
 };
 
-export const findIndex = (id) => {
-  return homeworks.findIndex((hw) => hw.id === id);
-};
-
-export const create = (homeworkData) => {
-  const now = new Date();
+export const create = async (homeworkData) => {
+  const now = new Date().toISOString();
   const newHomework = {
-    id: generateId("hw"),
+    id: `hw_${uuidv4()}`,
     ...homeworkData,
     submissions: [],
     createdAt: now,
     updatedAt: now,
   };
-  homeworks.push(newHomework);
+
+  await ddb.send(
+    new PutCommand({
+      TableName: HOMEWORK_TABLE,
+      Item: newHomework,
+    })
+  );
+
   return newHomework;
 };
 
-export const update = (index, updatedData) => {
-  homeworks[index] = {
-    ...homeworks[index],
-    ...updatedData,
-    updatedAt: new Date(),
-  };
-  return homeworks[index];
+export const update = async (id, updatedData) => {
+  const updateExpressions = [];
+  const expressionAttributeNames = {};
+  const expressionAttributeValues = {};
+
+  // Always update updatedAt
+  updatedData.updatedAt = new Date().toISOString();
+
+  Object.keys(updatedData).forEach((key) => {
+    updateExpressions.push(`#${key} = :${key}`);
+    expressionAttributeNames[`#${key}`] = key;
+    expressionAttributeValues[`:${key}`] = updatedData[key];
+  });
+
+  const result = await ddb.send(
+    new UpdateCommand({
+      TableName: HOMEWORK_TABLE,
+      Key: { id },
+      UpdateExpression: `SET ${updateExpressions.join(", ")}`,
+      ExpressionAttributeNames: expressionAttributeNames,
+      ExpressionAttributeValues: expressionAttributeValues,
+      ReturnValues: "ALL_NEW",
+    })
+  );
+
+  return result.Attributes;
 };
 
-export const remove = (index) => {
-  homeworks.splice(index, 1);
-};
-
-export const getByIndex = (index) => {
-  return homeworks[index];
+export const remove = async (id) => {
+  await ddb.send(
+    new DeleteCommand({
+      TableName: HOMEWORK_TABLE,
+      Key: { id },
+    })
+  );
 };

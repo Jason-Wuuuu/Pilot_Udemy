@@ -1,7 +1,7 @@
 import * as homeworkRepository from "../repositories/homeworkRepository.js";
 
-export const getAllHomeworks = (filters) => {
-  let result = homeworkRepository.findAll();
+export const getAllHomeworks = async (filters) => {
+  let result = await homeworkRepository.findAll();
 
   if (filters.tutorId) {
     result = result.filter((hw) => hw.tutorId === filters.tutorId);
@@ -14,15 +14,15 @@ export const getAllHomeworks = (filters) => {
   return { data: result, count: result.length };
 };
 
-export const getHomeworkById = (id) => {
-  const homework = homeworkRepository.findById(id);
+export const getHomeworkById = async (id) => {
+  const homework = await homeworkRepository.findById(id);
   if (!homework) {
     return { error: "Homework not found", status: 404 };
   }
   return { data: homework };
 };
 
-export const createHomework = (homeworkData) => {
+export const createHomework = async (homeworkData) => {
   const { tutorId, courseId, title, description, dueDate } = homeworkData;
 
   if (!tutorId || !courseId || !title) {
@@ -33,7 +33,7 @@ export const createHomework = (homeworkData) => {
     };
   }
 
-  const newHomework = homeworkRepository.create({
+  const newHomework = await homeworkRepository.create({
     tutorId,
     courseId,
     title,
@@ -44,24 +44,23 @@ export const createHomework = (homeworkData) => {
   return { data: newHomework, status: 201 };
 };
 
-export const updateHomework = (id, updateData) => {
+export const updateHomework = async (id, updateData) => {
   const { tutorId, title, description, dueDate } = updateData;
 
   if (!tutorId) {
     return { error: "tutorId is required", status: 400 };
   }
 
-  const index = homeworkRepository.findIndex(id);
-  if (index === -1) {
+  const existingHomework = await homeworkRepository.findById(id);
+  if (!existingHomework) {
     return { error: "Homework not found", status: 404 };
   }
 
-  const existingHomework = homeworkRepository.getByIndex(index);
   if (tutorId !== existingHomework.tutorId) {
     return { error: "tutorId does not match", status: 400 };
   }
 
-  const updatedHomework = homeworkRepository.update(index, {
+  const updatedHomework = await homeworkRepository.update(id, {
     ...(title !== undefined && { title }),
     ...(description !== undefined && { description }),
     ...(dueDate !== undefined && { dueDate }),
@@ -70,12 +69,12 @@ export const updateHomework = (id, updateData) => {
   return { data: updatedHomework };
 };
 
-export const deleteHomework = (id, tutorId) => {
+export const deleteHomework = async (id, tutorId) => {
   if (!tutorId) {
     return { error: "tutorId is required", status: 400 };
   }
 
-  const homework = homeworkRepository.findById(id);
+  const homework = await homeworkRepository.findById(id);
   if (!homework) {
     return { error: "Homework not found", status: 404 };
   }
@@ -84,27 +83,30 @@ export const deleteHomework = (id, tutorId) => {
     return { error: "tutorId does not match", status: 400 };
   }
 
-  const index = homeworkRepository.findIndex(id);
-  homeworkRepository.remove(index);
+  await homeworkRepository.remove(id);
 
   return { status: 204 };
 };
 
 // Helper for submission service
-export const addSubmissionToHomework = (homeworkId, submissionId) => {
-  const homework = homeworkRepository.findById(homeworkId);
+export const addSubmissionToHomework = async (homeworkId, submissionId) => {
+  const homework = await homeworkRepository.findById(homeworkId);
   if (homework) {
-    homework.submissions.push(submissionId);
-    homework.updatedAt = new Date();
+    const submissions = homework.submissions || [];
+    submissions.push(submissionId);
+    await homeworkRepository.update(homeworkId, { submissions });
   }
 };
 
-export const removeSubmissionFromHomework = (homeworkId, submissionId) => {
-  const homework = homeworkRepository.findById(homeworkId);
+export const removeSubmissionFromHomework = async (
+  homeworkId,
+  submissionId
+) => {
+  const homework = await homeworkRepository.findById(homeworkId);
   if (homework) {
-    homework.submissions = homework.submissions.filter(
+    const submissions = (homework.submissions || []).filter(
       (subId) => subId !== submissionId
     );
-    homework.updatedAt = new Date();
+    await homeworkRepository.update(homeworkId, { submissions });
   }
 };
