@@ -1,115 +1,56 @@
-import { homeworks, generateId } from "../data/homeworkData.js";
+import * as homeworkService from "../services/homeworkService.js";
 
 // GET /api/homeworks
 export const getAllHomeworks = (req, res) => {
   const { tutorId, courseId } = req.query;
-
-  let result = homeworks;
-
-  if (tutorId) {
-    result = result.filter((hw) => hw.tutorId === tutorId);
-  }
-
-  if (courseId) {
-    result = result.filter((hw) => hw.courseId === courseId);
-  }
-
-  res.json({ data: result, count: result.length });
+  const result = homeworkService.getAllHomeworks({ tutorId, courseId });
+  res.json(result);
 };
 
 // GET /api/homeworks/:id
 export const getHomeworkById = (req, res) => {
   const { id } = req.params;
-  const homework = homeworks.find((hw) => hw.id === id);
+  const result = homeworkService.getHomeworkById(id);
 
-  if (!homework) {
-    return res.status(404).json({ error: "Homework not found" });
+  if (result.error) {
+    return res.status(result.status).json({ error: result.error });
   }
 
-  res.json({ data: homework });
+  res.json({ data: result.data });
 };
 
 // POST /api/homeworks
 export const createHomework = (req, res) => {
-  const { tutorId, courseId, title, description, dueDate } = req.body;
+  const result = homeworkService.createHomework(req.body);
 
-  if (!tutorId || !courseId || !title) {
-    return res.status(400).json({
-      error:
-        "Missing required fields: tutorId, courseId, and title are required",
-    });
+  if (result.error) {
+    return res.status(result.status).json({ error: result.error });
   }
 
-  const now = new Date();
-  const newHomework = {
-    id: generateId("hw"),
-    tutorId,
-    courseId,
-    title,
-    description: description || "",
-    dueDate: dueDate || null,
-    submissions: [],
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  homeworks.push(newHomework);
-
-  res.status(201).json({ data: newHomework });
+  res.status(201).json({ data: result.data });
 };
 
 // PUT /api/homeworks/:id
 export const updateHomework = (req, res) => {
   const { id } = req.params;
-  const { tutorId, title, description, dueDate } = req.body;
+  const result = homeworkService.updateHomework(id, req.body);
 
-  if (!tutorId) {
-    return res.status(400).json({ error: "tutorId is required" });
+  if (result.error) {
+    return res.status(result.status).json({ error: result.error });
   }
 
-  const index = homeworks.findIndex((hw) => hw.id === id);
-
-  if (index === -1) {
-    return res.status(404).json({ error: "Homework not found" });
-  }
-
-  if (tutorId !== homeworks[index].tutorId) {
-    return res.status(400).json({ error: "tutorId does not match" });
-  }
-
-  const updatedHomework = {
-    ...homeworks[index],
-    ...(title !== undefined && { title }),
-    ...(description !== undefined && { description }),
-    ...(dueDate !== undefined && { dueDate }),
-    updatedAt: new Date(),
-  };
-
-  homeworks[index] = updatedHomework;
-
-  res.json({ data: updatedHomework });
+  res.json({ data: result.data });
 };
 
 // DELETE /api/homeworks/:id
 export const deleteHomework = (req, res) => {
   const { id } = req.params;
   const { tutorId } = req.body;
+  const result = homeworkService.deleteHomework(id, tutorId);
 
-  if (!tutorId) {
-    return res.status(400).json({ error: "tutorId is required" });
+  if (result.error) {
+    return res.status(result.status).json({ error: result.error });
   }
-
-  const homework = homeworks.find((hw) => hw.id === id);
-  if (!homework) {
-    return res.status(404).json({ error: "Homework not found" });
-  }
-
-  if (tutorId !== homework.tutorId) {
-    return res.status(400).json({ error: "tutorId does not match" });
-  }
-
-  const index = homeworks.findIndex((hw) => hw.id === id);
-  homeworks.splice(index, 1);
 
   res.status(204).send();
 };
