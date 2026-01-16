@@ -1,28 +1,28 @@
 import * as submissionRepository from "../repositories/submissionRepository.js";
 import * as homeworkService from "./homeworkService.js";
 
-export const getSubmissionsByHomework = (homeworkId) => {
-  const homeworkResult = homeworkService.getHomeworkById(homeworkId);
+export const getSubmissionsByHomework = async (homeworkId) => {
+  const homeworkResult = await homeworkService.getHomeworkById(homeworkId);
   if (homeworkResult.error) {
     return homeworkResult;
   }
 
-  const result = submissionRepository.findByHomeworkId(homeworkId);
+  const result = await submissionRepository.findByHomeworkId(homeworkId);
   return { data: result, count: result.length };
 };
 
-export const getSubmissionById = (id) => {
-  const submission = submissionRepository.findById(id);
+export const getSubmissionById = async (id) => {
+  const submission = await submissionRepository.findById(id);
   if (!submission) {
     return { error: "Submission not found", status: 404 };
   }
   return { data: submission };
 };
 
-export const createSubmission = (homeworkId, submissionData) => {
+export const createSubmission = async (homeworkId, submissionData) => {
   const { studentId, text, fileUrl } = submissionData;
 
-  const homeworkResult = homeworkService.getHomeworkById(homeworkId);
+  const homeworkResult = await homeworkService.getHomeworkById(homeworkId);
   if (homeworkResult.error) {
     return homeworkResult;
   }
@@ -35,27 +35,27 @@ export const createSubmission = (homeworkId, submissionData) => {
     return { error: "text or fileUrl is required", status: 400 };
   }
 
-  const newSubmission = submissionRepository.create({
+  const newSubmission = await submissionRepository.create({
     studentId,
     homeworkId,
     text: text || "",
     fileUrl: fileUrl || null,
   });
 
-  homeworkService.addSubmissionToHomework(homeworkId, newSubmission.id);
+  await homeworkService.addSubmissionToHomework(homeworkId, newSubmission.id);
 
   return { data: newSubmission, status: 201 };
 };
 
-export const updateSubmission = (id, updateData) => {
+export const updateSubmission = async (id, updateData) => {
   const { score, feedback } = updateData;
 
-  const index = submissionRepository.findIndex(id);
-  if (index === -1) {
+  const submission = await submissionRepository.findById(id);
+  if (!submission) {
     return { error: "Submission not found", status: 404 };
   }
 
-  const updatedSubmission = submissionRepository.update(index, {
+  const updatedSubmission = await submissionRepository.update(id, {
     ...(score !== undefined && { score }),
     ...(feedback !== undefined && { feedback }),
   });
@@ -63,23 +63,22 @@ export const updateSubmission = (id, updateData) => {
   return { data: updatedSubmission };
 };
 
-export const deleteSubmission = (id, studentId) => {
-  const index = submissionRepository.findIndex(id);
-  if (index === -1) {
-    return { error: "Submission not found", status: 404 };
-  }
-
+export const deleteSubmission = async (id, studentId) => {
   if (!studentId) {
     return { error: "studentId is required", status: 400 };
   }
 
-  const submission = submissionRepository.getByIndex(index);
+  const submission = await submissionRepository.findById(id);
+  if (!submission) {
+    return { error: "Submission not found", status: 404 };
+  }
+
   if (studentId !== submission.studentId) {
     return { error: "studentId does not match", status: 400 };
   }
 
-  homeworkService.removeSubmissionFromHomework(submission.homeworkId, id);
-  submissionRepository.remove(index);
+  await homeworkService.removeSubmissionFromHomework(submission.homeworkId, id);
+  await submissionRepository.remove(id);
 
   return { status: 204 };
 };
