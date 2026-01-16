@@ -17,6 +17,8 @@ import {
 
 import { protect } from "../middleware/auth.js";
 import { adminOnly } from "../middleware/adminOnly.js";
+import uploadMaterial from "../middleware/materialUpload.js";
+import { attachMaterialMeta } from "../middleware/attachMaterialMeta.js";
 
 const router = express.Router();
 
@@ -37,6 +39,8 @@ router.post(
   "/courses/:courseId/lectures/:lectureId/materials",
   protect,
   adminOnly,
+  attachMaterialMeta,
+  uploadMaterial.single("file"),
   createMaterial
 );
 
@@ -52,6 +56,8 @@ router.put(
   "/courses/:courseId/lectures/:lectureId/materials/:materialId",
   protect,
   adminOnly,
+  attachMaterialMeta,
+  uploadMaterial.single("file"),
   updateMaterial
 );
 

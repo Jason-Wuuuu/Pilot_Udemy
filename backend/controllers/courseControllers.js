@@ -8,11 +8,13 @@ import {
   createLectureItem,
   updateLectureItem,
   deleteLectureItem,
-  getMaterialsByLectureId,
+  getMaterialsByLectureOrder,
+  getMaterialTypeFromMime,
   createMaterialItem,
   updateMaterialItem,
-  deleteMaterialItem
+  deleteMaterialItem,
 } from "../services/course.service.js";
+import fs from "fs/promises";
 
 /* =========================
    COURSE
@@ -26,7 +28,7 @@ export const getCourse = async (req, res, next) => {
     if (!course) {
       return res.status(404).json({
         success: false,
-        error: "Course not found"
+        error: "Course not found",
       });
     }
 
@@ -44,7 +46,7 @@ export const getCoursesByCategory = async (req, res, next) => {
     res.json({
       success: true,
       count: courses.length,
-      data: courses
+      data: courses,
     });
   } catch (err) {
     next(err);
@@ -57,12 +59,12 @@ export const createCourse = async (req, res, next) => {
     const course = await createCourseItem({
       ...req.body,
       createdBy: req.user._id,
-      status: "DRAFT"
+      status: "DRAFT",
     });
 
     res.status(201).json({
       success: true,
-      data: course
+      data: course,
     });
   } catch (err) {
     next(err);
@@ -72,14 +74,11 @@ export const createCourse = async (req, res, next) => {
 // PUT /courses/:courseId
 export const updateCourse = async (req, res, next) => {
   try {
-    const updated = await updateCourseItem(
-      req.params.courseId,
-      req.body
-    );
+    const updated = await updateCourseItem(req.params.courseId, req.body);
 
     res.json({
       success: true,
-      data: updated
+      data: updated,
     });
   } catch (err) {
     next(err);
@@ -93,14 +92,12 @@ export const deleteCourse = async (req, res, next) => {
 
     res.json({
       success: true,
-      message: "Course and all related content deleted"
+      message: "Course and all related content deleted",
     });
   } catch (err) {
     next(err);
   }
 };
-
-
 
 // GET /courses/:courseId/lectures
 export const getLectures = async (req, res, next) => {
@@ -109,7 +106,7 @@ export const getLectures = async (req, res, next) => {
 
     res.json({
       success: true,
-      data: lectures
+      data: lectures,
     });
   } catch (err) {
     next(err);
@@ -121,12 +118,12 @@ export const createLecture = async (req, res, next) => {
   try {
     const lecture = await createLectureItem({
       courseId: req.params.courseId,
-      ...req.body
+      ...req.body,
     });
 
     res.status(201).json({
       success: true,
-      data: lecture
+      data: lecture,
     });
   } catch (err) {
     next(err);
@@ -144,7 +141,7 @@ export const updateLecture = async (req, res, next) => {
 
     res.json({
       success: true,
-      data: updated
+      data: updated,
     });
   } catch (err) {
     next(err);
@@ -154,14 +151,11 @@ export const updateLecture = async (req, res, next) => {
 // DELETE /courses/:courseId/lectures/:lectureId
 export const deleteLecture = async (req, res, next) => {
   try {
-    await deleteLectureItem(
-      req.params.courseId,
-      req.params.lectureId
-    );
+    await deleteLectureItem(req.params.courseId, req.params.lectureId);
 
     res.json({
       success: true,
-      message: "Lecture deleted"
+      message: "Lecture deleted",
     });
   } catch (err) {
     next(err);
@@ -172,17 +166,28 @@ export const deleteLecture = async (req, res, next) => {
    MATERIALS
 ========================= */
 
-// GET /courses/:courseId/lectures/:lectureId/materials
 export const getMaterials = async (req, res, next) => {
   try {
-    const materials = await getMaterialsByLectureId(
-      req.params.courseId,
-      req.params.lectureId
+    const { courseId, lectureId } = req.params;
+
+    const lectures = await getLecturesByCourseId(courseId);
+    const lecture = lectures.find((l) => l.lectureId === lectureId);
+
+    if (!lecture) {
+      return res.status(404).json({
+        success: false,
+        message: "Lecture not found",
+      });
+    }
+
+    const materials = await getMaterialsByLectureOrder(
+      courseId,
+      lecture.lectureOrder
     );
 
     res.json({
       success: true,
-      data: materials
+      data: materials,
     });
   } catch (err) {
     next(err);
@@ -192,15 +197,35 @@ export const getMaterials = async (req, res, next) => {
 // POST /courses/:courseId/lectures/:lectureId/materials
 export const createMaterial = async (req, res, next) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "File is required",
+      });
+    }
+
+    const { courseId, lectureId } = req.params;
+    const { title, lectureOrder } = req.body;
+    const materialType = getMaterialTypeFromMime(req.file.mimetype);
+
     const material = await createMaterialItem({
-      courseId: req.params.courseId,
-      lectureId: req.params.lectureId,
-      ...req.body
+      courseId,
+      lectureId,
+      lectureOrder: Number(lectureOrder),
+
+      materialId: req.materialId,
+      materialOrder: req.materialOrder,
+
+      title,
+      materialType,
+
+      filePath: req.file.path,
+      mimeType: req.file.mimetype,
     });
 
     res.status(201).json({
       success: true,
-      data: material
+      data: material,
     });
   } catch (err) {
     next(err);
@@ -210,16 +235,70 @@ export const createMaterial = async (req, res, next) => {
 // PUT /courses/:courseId/lectures/:lectureId/materials/:materialId
 export const updateMaterial = async (req, res, next) => {
   try {
-    const updated = await updateMaterialItem(
-      req.params.courseId,
-      req.params.lectureId,
-      req.params.materialId,
-      req.body
+    // const { courseId, lectureId, materialId } = req.params;
+    const materialId = req.params.materialId.trim();
+    const lectureId = req.params.lectureId.trim();
+    const courseId = req.params.courseId.trim();
+
+    const { title, isPreview, duration } = req.body;
+
+    const lectures = await getLecturesByCourseId(courseId);
+    const lecture = lectures.find((l) => l.lectureId === lectureId);
+
+
+    if (!lecture) {
+      return res.status(404).json({
+        success: false,
+        message: "Lecture not found",
+      });
+    }
+
+    const materials = await getMaterialsByLectureOrder(
+      courseId,
+      lecture.lectureOrder
     );
+
+
+
+    const materialOrder = Number(req.params.materialId.trim());
+
+    const material = materials.find((m) => m.materialOrder === materialOrder);
+
+    if (!material) {
+      return res.status(404).json({
+        success: false,
+        message: "Material not found",
+      });
+    }
+
+    let fileUpdates = {};
+    if (req.file) {
+      if (material.filePath) {
+        await fs.unlink(material.filePath).catch(() => {});
+      }
+
+      fileUpdates = {
+        filePath: req.file.path,
+        mimeType: req.file.mimetype,
+        materialType: req.file.mimetype.startsWith("video/") ? "VIDEO" : "PDF",
+      };
+    }
+
+    const updated = await updateMaterialItem({
+      courseId,
+      lectureOrder: lecture.lectureOrder,
+      materialOrder,
+      updates: {
+        ...(title && { title }),
+        ...(isPreview !== undefined && { isPreview: isPreview === "true" }),
+        ...(duration && { duration: Number(duration) }),
+        ...fileUpdates,
+      },
+    });
 
     res.json({
       success: true,
-      data: updated
+      data: updated,
     });
   } catch (err) {
     next(err);
@@ -229,15 +308,47 @@ export const updateMaterial = async (req, res, next) => {
 // DELETE /courses/:courseId/lectures/:lectureId/materials/:materialId
 export const deleteMaterial = async (req, res, next) => {
   try {
+    const { courseId, lectureId, materialId } = req.params;
+
+    const lectures = await getLecturesByCourseId(courseId);
+    const lecture = lectures.find((l) => l.lectureId === lectureId);
+
+    if (!lecture) {
+      return res.status(404).json({
+        success: false,
+        message: "Lecture not found",
+      });
+    }
+
+    const materials = await getMaterialsByLectureOrder(
+      courseId,
+      lecture.lectureOrder
+    );
+
+    const material = materials.find((m) => m.materialId === materialId);
+
+    if (!material) {
+      return res.status(404).json({
+        success: false,
+        message: "Material not found",
+      });
+    }
+
+    if (material.filePath) {
+      await fs.unlink(material.filePath).catch(() => {
+        // File may already be gone — do not block DB cleanup
+      });
+    }
+
     await deleteMaterialItem(
-      req.params.courseId,
-      req.params.lectureId,
-      req.params.materialId
+      courseId,
+      lecture.lectureOrder,
+      material.materialOrder
     );
 
     res.json({
       success: true,
-      message: "Material deleted"
+      message: "Material deleted",
     });
   } catch (err) {
     next(err);

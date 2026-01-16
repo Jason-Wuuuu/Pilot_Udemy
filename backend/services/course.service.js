@@ -28,8 +28,6 @@ import {
 } from "../models/lecture.model.js";
 
 const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME;
-console.log("TABLE_NAME =", TABLE_NAME);
-
 
 export const getCourseById = async (courseId) => {
   const { Item } = await client.send(
@@ -80,32 +78,32 @@ export const updateCourseItem = async (courseId, updates) => {
     throw new Error("No update fields provided");
   }
   const expressions = [];
-const values = {};
-const names = {};
+  const values = {};
+  const names = {};
 
-Object.entries(updates).forEach(([key, value]) => {
-  const attrName = `#${key}`;
-  const attrValue = `:${key}`;
+  Object.entries(updates).forEach(([key, value]) => {
+    const attrName = `#${key}`;
+    const attrValue = `:${key}`;
 
-  expressions.push(`${attrName} = ${attrValue}`);
-  names[attrName] = key;
-  values[attrValue] = value;
-});
+    expressions.push(`${attrName} = ${attrValue}`);
+    names[attrName] = key;
+    values[attrValue] = value;
+  });
 
-const { Attributes } = await client.send(
-  new UpdateItemCommand({
-    TableName: TABLE_NAME,
-    Key: marshall({
-      PK: buildCoursePK(courseId),
-      SK: COURSE_METADATA_SK,
-    }),
-    UpdateExpression: `SET ${expressions.join(", ")}`,
-    ExpressionAttributeNames: names,
-    ExpressionAttributeValues: marshall(values),
-    ConditionExpression: "attribute_exists(PK) AND attribute_exists(SK)",
-    ReturnValues: "ALL_NEW",
-  })
-);
+  const { Attributes } = await client.send(
+    new UpdateItemCommand({
+      TableName: TABLE_NAME,
+      Key: marshall({
+        PK: buildCoursePK(courseId),
+        SK: COURSE_METADATA_SK,
+      }),
+      UpdateExpression: `SET ${expressions.join(", ")}`,
+      ExpressionAttributeNames: names,
+      ExpressionAttributeValues: marshall(values),
+      ConditionExpression: "attribute_exists(PK) AND attribute_exists(SK)",
+      ReturnValues: "ALL_NEW",
+    })
+  );
 
   return unmarshall(Attributes);
 };
@@ -203,19 +201,26 @@ export const deleteLectureItem = async (courseId, lectureId) => {
    MATERIALS
 ========================= */
 
-export const getMaterialsByLectureId = async (courseId, lectureId) => {
+export const getMaterialsByLectureOrder = async (courseId, lectureOrder) => {
+
   const { Items = [] } = await client.send(
     new QueryCommand({
       TableName: TABLE_NAME,
       KeyConditionExpression: "PK = :pk AND begins_with(SK, :sk)",
       ExpressionAttributeValues: marshall({
         ":pk": buildCoursePK(courseId),
-        ":sk": `${buildLectureSK(lectureId)}#MATERIAL#`,
+        ":sk": `${buildLectureSK(lectureOrder)}#MATERIAL#`,
       }),
     })
   );
 
   return Items.map(unmarshall);
+};
+
+export const getMaterialTypeFromMime = (mimeType) => {
+  if (mimeType === "application/pdf") return "PDF";
+  if (mimeType.startsWith("video/")) return "VIDEO";
+  throw new Error("Unsupported file type");
 };
 
 export const createMaterialItem = async (payload) => {
@@ -224,7 +229,7 @@ export const createMaterialItem = async (payload) => {
   await client.send(
     new PutItemCommand({
       TableName: TABLE_NAME,
-      Item: marshall(item),
+      Item: marshall(item, { removeUndefinedValues: true }),
       ConditionExpression:
         "attribute_not_exists(PK) AND attribute_not_exists(SK)",
     })
@@ -233,21 +238,31 @@ export const createMaterialItem = async (payload) => {
   return item;
 };
 
-export const updateMaterialItem = async (
+export const updateMaterialItem = async ({
   courseId,
-  lectureId,
-  materialId,
-  updates
-) => {
+  lectureOrder,
+  materialOrder,
+  updates,
+}) => {
+  if (!courseId || lectureOrder === undefined || materialOrder === undefined) {
+    throw new Error("Missing required key fields");
+  }
+
   if (!updates || Object.keys(updates).length === 0) {
     throw new Error("No update fields provided");
   }
-  const expressions = [];
-  const values = {};
+
+  const updateExpressions = [];
+  const expressionAttributeValues = {};
+  const expressionAttributeNames = {};
 
   Object.entries(updates).forEach(([key, value]) => {
-    expressions.push(`${key} = :${key}`);
-    values[`:${key}`] = value;
+    const attrName = `#${key}`;
+    const attrValue = `:${key}`;
+
+    updateExpressions.push(`${attrName} = ${attrValue}`);
+    expressionAttributeNames[attrName] = key;
+    expressionAttributeValues[attrValue] = value;
   });
 
   const { Attributes } = await client.send(
@@ -255,12 +270,12 @@ export const updateMaterialItem = async (
       TableName: TABLE_NAME,
       Key: marshall({
         PK: buildCoursePK(courseId),
-        SK: buildMaterialSK(lectureId, materialId),
+        SK: buildMaterialSK(lectureOrder, materialOrder),
       }),
-      UpdateExpression: `SET ${expressions.join(", ")}`,
-      ExpressionAttributeValues: marshall(values),
+      UpdateExpression: `SET ${updateExpressions.join(", ")}`,
+      ExpressionAttributeNames: expressionAttributeNames,
+      ExpressionAttributeValues: marshall(expressionAttributeValues),
       ConditionExpression: "attribute_exists(PK) AND attribute_exists(SK)",
-
       ReturnValues: "ALL_NEW",
     })
   );
@@ -268,13 +283,18 @@ export const updateMaterialItem = async (
   return unmarshall(Attributes);
 };
 
-export const deleteMaterialItem = async (courseId, lectureId, materialId) => {
+
+export const deleteMaterialItem = async (
+  courseId,
+  lectureOrder,
+  materialOrder
+) => {
   await client.send(
     new DeleteItemCommand({
       TableName: TABLE_NAME,
       Key: marshall({
         PK: buildCoursePK(courseId),
-        SK: buildMaterialSK(lectureId, materialId),
+        SK: buildMaterialSK(lectureOrder, materialOrder),
       }),
       ConditionExpression: "attribute_exists(PK) AND attribute_exists(SK)",
     })
@@ -289,14 +309,14 @@ export const deleteCourseCascade = async (courseId) => {
       TableName: TABLE_NAME,
       KeyConditionExpression: "PK = :pk",
       ExpressionAttributeValues: marshall({
-        ":pk": buildCoursePK(courseId)
-      })
+        ":pk": buildCoursePK(courseId),
+      }),
     })
   );
 
   if (Items.length === 0) {
     throw Object.assign(new Error("Course not found"), {
-      statusCode: 404
+      statusCode: 404,
     });
   }
 
@@ -305,11 +325,10 @@ export const deleteCourseCascade = async (courseId) => {
       TableName: TABLE_NAME,
       Key: {
         PK: item.PK,
-        SK: item.SK
+        SK: item.SK,
       },
-      ConditionExpression:
-        "attribute_exists(PK) AND attribute_exists(SK)"
-    }
+      ConditionExpression: "attribute_exists(PK) AND attribute_exists(SK)",
+    },
   }));
 
   const CHUNK_SIZE = 25;
@@ -319,7 +338,7 @@ export const deleteCourseCascade = async (courseId) => {
 
     await client.send(
       new TransactWriteItemsCommand({
-        TransactItems: chunk
+        TransactItems: chunk,
       })
     );
   }

@@ -1,5 +1,8 @@
+export const formatLectureOrder = (lectureOrder) =>
+  String(lectureOrder).padStart(4, "0");
+
 export const buildLectureSK = (lectureOrder) =>
-  `LECTURE#${String(lectureOrder).padStart(4, "0")}`;
+  `LECTURE#${formatLectureOrder(lectureOrder)}`;
 
 export const buildLectureItem = ({
   courseId,
@@ -23,10 +26,11 @@ export const buildLectureItem = ({
     entityType: "LECTURE"
   };
 };
+
+
+
 export const buildMaterialSK = (lectureOrder, materialOrder) =>
-  `LECTURE#${String(lectureOrder).padStart(4, "0")}#MATERIAL#${String(
-    materialOrder
-  ).padStart(4, "0")}`;
+  `LECTURE#${formatLectureOrder(lectureOrder)}#MATERIAL#${materialOrder}`;
 
 export const buildMaterialItem = ({
   courseId,
@@ -38,7 +42,9 @@ export const buildMaterialItem = ({
   materialType,
   duration = 0,
   isPreview = false,
-  s3Key = null
+  s3Key = null,
+  filePath = null, 
+  mimeType = null 
 }) => {
   const now = new Date().toISOString();
 
@@ -55,6 +61,10 @@ export const buildMaterialItem = ({
     materialType,
     duration,
     isPreview,
+
+    storageType: "LOCAL",
+    filePath,            
+    mimeType,          
     s3Key,
 
     createdAt: now,
