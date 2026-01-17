@@ -3,6 +3,7 @@ import {
   getQuizSubmissionsByUserService,
   submitQuizService,
   getSubmissionsByQuizService,
+  getSubmissionByIdService,
 } from "../services/quizSubmission.service.js";
 
 //Student Get Submission History
@@ -22,6 +23,17 @@ export const getSubmissionsByQuizController = async (req, res) => {
   try {
     const { quizId } = req.params;
     const result = await getSubmissionsByQuizService(quizId);
+    res.json(result);
+  } catch (e) {
+    res.status(e.statusCode || 500).json({ error: e.message });
+  }
+};
+
+//Get Single Submission By Id
+export const getSubmissionByIdController = async (req, res) => {
+  try {
+    const { submissionId } = req.params;
+    const result = await getSubmissionByIdService(submissionId);
     res.json(result);
   } catch (e) {
     res.status(e.statusCode || 500).json({ error: e.message });

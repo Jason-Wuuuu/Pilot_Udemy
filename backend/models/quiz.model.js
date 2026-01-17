@@ -30,6 +30,7 @@ export const UpdateQuizSchema = z
   .object({
     title: z.string().min(1).optional(),
     difficulty: z.enum(["Easy", "Medium", "Hard"]).optional(),
+    timeLimit: z.number().int().positive().optional(),
     questions: z
       .array(
         z.object({

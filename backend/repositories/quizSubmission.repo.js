@@ -1,4 +1,4 @@
-import { PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, QueryCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb } from "../db/dynamodb.js";
 
 const TABLE_NAME = "QuizSubmission";
@@ -39,6 +39,18 @@ export const getSubmissionsByQuizRepo = async (quizId) => {
   );
 
   return res.Items || [];
+};
+
+//3. Get Single Submission Detail
+export const getSubmissionByIdRepo = async (submissionId) => {
+  const res = await ddb.send(
+    new GetCommand({
+      TableName: TABLE_NAME,
+      Key: { submissionId },
+    })
+  );
+
+  return res.Item || null;
 };
 
 //3. Submit Quiz
