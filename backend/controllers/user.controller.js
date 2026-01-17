@@ -1,5 +1,8 @@
 // controllers/user.controller.js
-import { findUserById, updateUser, deleteUser  } from "../db/users.js";
+import {
+  updateCurrentUser as updateCurrentUserService,
+  deleteCurrentUser as deleteCurrentUserService
+} from "../services/user.service.js";
 
 // GET /api/users/me
 export function getCurrentUser(req, res) {
@@ -8,22 +11,50 @@ export function getCurrentUser(req, res) {
 
 // PATCH /api/users/:id
 export async function updateCurrentUser(req, res) {
-  const { id } = req.params;
-  if (id !== req.user.userId) return res.status(403).json({ message: "Forbidden" });
+  try {
+    const user = await updateCurrentUserService(
+      req.user.userId,   // authenticated user
+      req.params.id,     // target user
+      req.body
+    );
 
-  const updatedUser = await updateUser(id, req.body);
-  if (!updatedUser) return res.status(404).json({ message: "User not found" });
+    res.json({
+      message: "User updated",
+      user
+    });
+  } catch (err) {
+    if (err.message === "FORBIDDEN") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
 
-  res.json({ message: "User updated", user: updatedUser });
+    if (err.message === "NOT_FOUND") {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.error("Update user error:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
 }
 
 // DELETE /api/users/:id
 export async function deleteCurrentUser(req, res) {
-  const { id } = req.params;
-  if (id !== req.user.userId) return res.status(403).json({ message: "Forbidden" });
+  try {
+    await deleteCurrentUserService(
+      req.user.userId,   // authenticated user
+      req.params.id      // target user
+    );
 
-  const deleted = await deleteUser(id);
-  if (!deleted) return res.status(404).json({ message: "User not found" });
+    res.json({ message: "User deleted" });
+  } catch (err) {
+    if (err.message === "FORBIDDEN") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
 
-  res.json({ message: "User deleted" });
+    if (err.message === "NOT_FOUND") {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.error("Delete user error:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
 }

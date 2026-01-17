@@ -1,7 +1,7 @@
 // middleware/auth.middleware.js
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { findUserById } from "../db/users.js";
+import { findUserById } from "../repositories/users.js";
 
 dotenv.config();
 

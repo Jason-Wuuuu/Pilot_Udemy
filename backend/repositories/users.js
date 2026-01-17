@@ -1,7 +1,7 @@
 // db/users.js
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { ddbDocClient } from "./dynamodb.js";
+import { ddbDocClient } from "../config/dynamodb.js";
 import {
   PutCommand,
   GetCommand,

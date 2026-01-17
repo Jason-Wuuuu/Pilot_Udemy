@@ -1,4 +1,4 @@
-// db/dynamodb.js
+// config/dynamodb.js
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import dotenv from "dotenv";
