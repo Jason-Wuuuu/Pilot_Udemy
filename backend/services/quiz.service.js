@@ -7,6 +7,7 @@ import {
   getQuizzesByUserIdRepo,
   deleteQuizByIdRepo,
 } from "../repositories/quiz.repo.js";
+import { aiGenerateQuiz } from "../ai/genminiUtils.js";
 
 //---------------------------------------------------------------------------------//
 export const getQuizByIdService = async (quizId, role = "student") => {
@@ -81,3 +82,34 @@ function toStudentQuizView(quiz) {
     })),
   };
 }
+
+//--------------------------------------------AI--------------------------------------//
+export const aiGenerateQuizService = async (payload) => {
+  const {
+    materialText,
+    numQuestions = 5,
+    difficulty = "Easy",
+    timeLimit,
+  } = payload;
+
+  console.log("materialText type:", typeof materialText, materialText);
+
+  if (!materialText) {
+    const err = new Error("materialText is required");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const questions = await aiGenerateQuiz(materialText, numQuestions);
+
+  if (!questions.length) {
+    throw new Error("AI failed to generate questions");
+  }
+
+  return {
+    title: "AI Generated Quiz",
+    difficulty,
+    timeLimit,
+    questions,
+  };
+};

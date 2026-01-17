@@ -4,6 +4,7 @@ import {
   updateQuizByIdService,
   getQuizzesByUserIdService,
   deleteQuizByIdService,
+  aiGenerateQuizService,
 } from "../services/quiz.service.js";
 import { CreateQuizSchema, UpdateQuizSchema } from "../models/quiz.model.js";
 
@@ -59,5 +60,14 @@ export const getQuizzesByUserIdController = async (req, res) => {
     res.json(quizzes);
   } catch (e) {
     res.status(500).json({ error: e.message });
+  }
+};
+
+export const aiGenerateQuizController = async (req, res) => {
+  try {
+    const preview = await aiGenerateQuizService(req.body);
+    res.json(preview);
+  } catch (e) {
+    res.status(e.statusCode || 500).json({ error: e.message });
   }
 };

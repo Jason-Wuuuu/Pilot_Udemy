@@ -1,10 +1,12 @@
 import { Router } from "express";
+import { aiGenerateQuiz } from "../ai/genminiUtils.js";
 import {
   getQuizByIdController,
   createQuizController,
   updateQuizByIdController,
   getQuizzesByUserIdController,
   deleteQuizByIdController,
+  aiGenerateQuizController,
 } from "../controllers/quiz.controller.js";
 import {
   getQuizSubmissionsByUserController,
@@ -13,7 +15,8 @@ import {
 
 const router = Router();
 
-
+//Ai
+router.post("/generate", aiGenerateQuizController);
 
 //Todo: 加middleware auth
 router.get("/", getQuizzesByUserIdController);
