@@ -2,7 +2,7 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
-import { findUserByEmail, createUser } from "../dummy-db/users.js";
+import { findUserByEmail, createUser } from "../db/users.js";
 
 dotenv.config();
 
@@ -18,7 +18,7 @@ export async function register(req, res) {
     return res.status(400).json({ message: "Username, email and password are required" });
   }
 
-  if (findUserByEmail(email)) {
+  if (await findUserByEmail(email)) {
     return res.status(400).json({ message: "Email already exists" });
   }
 
@@ -34,7 +34,7 @@ export async function login(req, res) {
 
   if (!email || !password) return res.status(400).json({ message: "Email and password required" });
 
-  const user = findUserByEmail(email);
+  const user = await findUserByEmail(email);
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
     return res.status(401).json({ message: "Invalid credentials" });
   }
