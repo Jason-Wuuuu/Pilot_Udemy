@@ -11,3 +11,5 @@ export const generateAISummaryService = async ({ materialText }) => {
   const summary = await generateSummary(materialText);
   return { summary };
 };
+
+//----------------------------------------Explain Concept--------------------------------------//
