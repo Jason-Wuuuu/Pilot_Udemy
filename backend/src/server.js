@@ -28,7 +28,7 @@ app.use("/api/users", userRoutes);
 
 // Routes
 app.use("/api/homeworks", homeworkRoutes);
-app.use("/api/submissions", submissionRoutes);
+app.use("/api/homework-submissions", submissionRoutes);
 
 // 404 handler
 app.use((req, res) => {

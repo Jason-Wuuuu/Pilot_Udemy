@@ -82,3 +82,63 @@ export const deleteSubmission = async (id, studentId) => {
 
   return { status: 204 };
 };
+
+export const getStudentSubmissionForHomework = async (homeworkId, studentId) => {
+  if (!studentId) {
+    return { error: "studentId is required", status: 400 };
+  }
+
+  const homeworkResult = await homeworkService.getHomeworkById(homeworkId);
+  if (homeworkResult.error) {
+    return homeworkResult;
+  }
+
+  const submission = await submissionRepository.findByHomeworkIdAndStudentId(
+    homeworkId,
+    studentId
+  );
+
+  if (!submission) {
+    return { error: "Submission not found", status: 404 };
+  }
+
+  return { data: submission };
+};
+
+export const updateSubmissionContent = async (id, studentId, updateData) => {
+  if (!studentId) {
+    return { error: "studentId is required", status: 400 };
+  }
+
+  const submission = await submissionRepository.findById(id);
+  if (!submission) {
+    return { error: "Submission not found", status: 404 };
+  }
+
+  if (studentId !== submission.studentId) {
+    return { error: "Unauthorized: You can only update your own submission", status: 403 };
+  }
+
+  const { text, fileUrl } = updateData;
+  const updatedSubmission = await submissionRepository.update(id, {
+    ...(text !== undefined && { text }),
+    ...(fileUrl !== undefined && { fileUrl }),
+  });
+
+  return { data: updatedSubmission };
+};
+
+export const gradeSubmission = async (id, gradeData) => {
+  const submission = await submissionRepository.findById(id);
+  if (!submission) {
+    return { error: "Submission not found", status: 404 };
+  }
+
+  const { score, feedback } = gradeData;
+  const updatedSubmission = await submissionRepository.update(id, {
+    ...(score !== undefined && { score }),
+    ...(feedback !== undefined && { feedback }),
+  });
+
+  return { data: updatedSubmission };
+};
