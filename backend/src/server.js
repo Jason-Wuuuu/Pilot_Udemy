@@ -1,20 +1,30 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import quizRoutes from "../routes/quiz.routes.js";
+import quizSubmissionRoutes from "../routes/quizSubmission.routes.js";
+import aiRoutes from "../routes/ai.routes.js";
+import authRoutes from "../routes/auth.routes.js";
+import userRoutes from "../routes/user.routes.js";
 import homeworkRoutes from "../routes/homeworkRoutes.js";
 import submissionRoutes from "../routes/submissionRoutes.js";
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5001;
 
 app.use(cors());
 app.use(express.json());
 
-app.get("/api/status", (req, res) => {
-  res.json({ message: "Backend is live!", version: "1.0.0" });
-});
+const PORT = 3000;
+
+app.use("/api/quizzes", quizRoutes);
+app.use("/api/submissions", quizSubmissionRoutes);
+app.use("/api/ai", aiRoutes);
+
+
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 
 // Routes
 app.use("/api/homeworks", homeworkRoutes);
@@ -32,5 +42,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`Server running on ${PORT}`);
 });
