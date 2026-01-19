@@ -5,9 +5,6 @@ export const CreateQuizSchema = z
     // 由后端生成：不让客户端传
     // quizId: z.string().optional(),
 
-    // Todo: 还没做 auth，可以临时允许 body 传 userId, 后面要auth来
-    userId: z.string().min(1),
-
     title: z.string().min(1),
     difficulty: z.enum(["Easy", "Medium", "Hard"]),
     timeLimit: z.number().int().positive().optional(),

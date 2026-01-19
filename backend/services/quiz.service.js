@@ -10,7 +10,13 @@ import {
 import { aiGenerateQuiz } from "../ai/genminiUtils.js";
 
 //---------------------------------------------------------------------------------//
-export const getQuizByIdService = async (quizId, role = "student") => {
+export const getQuizByIdService = async ({ user, quizId }) => {
+  if (!user) {
+    const err = new Error("UNAUTHENTICATED");
+    err.statusCode = 401;
+    throw err;
+  }
+
   const quiz = await getQuizByIdRepo(quizId);
 
   if (!quiz) {
@@ -19,19 +25,31 @@ export const getQuizByIdService = async (quizId, role = "student") => {
     throw err;
   }
 
-  // student 只能看 published
-  if (role === "student") {
+  // 非 admin → student view
+  if (user.role !== "ADMIN") {
     return toStudentQuizView(quiz);
   }
 
-  // admin 看完整 quiz
+  // admin → full quiz
   return quiz;
 };
 
-export const createQuizService = async (payload) => {
+export const createQuizService = async ({ user, payload }) => {
+  if (!user) {
+    const err = new Error("UNAUTHENTICATED");
+    err.statusCode = 401;
+    throw err;
+  }
+
+  if (user.role !== "ADMIN") {
+    const err = new Error("FORBIDDEN");
+    err.statusCode = 403;
+    throw err;
+  }
+
   const quiz = {
     quizId: `quiz_${crypto.randomUUID()}`,
-    userId: payload.userId,
+    userId: user.userId, // ✅ 来自 auth user
     title: payload.title,
     difficulty: payload.difficulty,
     timeLimit: payload.timeLimit,
@@ -42,7 +60,19 @@ export const createQuizService = async (payload) => {
   return createQuizRepo(quiz);
 };
 
-export const updateQuizByIdService = async (quizId, payload) => {
+export const updateQuizByIdService = async ({ user, quizId, payload }) => {
+  if (!user) {
+    const err = new Error("UNAUTHENTICATED");
+    err.statusCode = 401;
+    throw err;
+  }
+
+  if (user.role !== "ADMIN") {
+    const err = new Error("FORBIDDEN");
+    err.statusCode = 403;
+    throw err;
+  }
+
   const existing = await getQuizByIdRepo(quizId);
   if (!existing) {
     const err = new Error("Quiz not found");
@@ -50,22 +80,48 @@ export const updateQuizByIdService = async (quizId, payload) => {
     throw err;
   }
 
+  // Step 2：这里才能判断是不是 admin / owner
   return updateQuizByIdRepo(quizId, payload);
 };
 
-export const deleteQuizByIdService = async (quizId) => {
-  const existing = await getQuizByIdController(quizId);
+export const deleteQuizByIdService = async ({ user, quizId }) => {
+  if (!user) {
+    const err = new Error("UNAUTHENTICATED");
+    err.statusCode = 401;
+    throw err;
+  }
+
+  if (user.role !== "ADMIN") {
+    const err = new Error("FORBIDDEN");
+    err.statusCode = 403;
+    throw err;
+  }
+
+  const existing = await getQuizByIdRepo(quizId);
   if (!existing) {
     const err = new Error("Quiz not found");
     err.statusCode = 404;
     throw err;
   }
 
+  // Step 2：权限判断
   await deleteQuizByIdRepo(quizId);
 };
 
-export const getQuizzesByUserIdService = async (userId) => {
-  return getQuizzesByUserIdRepo(userId);
+export const getMyQuizzesService = async ({ user }) => {
+  if (!user) {
+    const err = new Error("UNAUTHENTICATED");
+    err.statusCode = 401;
+    throw err;
+  }
+
+  // admin → 看全部（或以后扩展）
+  if (user.role === "ADMIN") {
+    return getAllQuizzesRepo();
+  }
+
+  // 普通用户 → 只看自己的
+  return getQuizzesByUserIdRepo(user.userId);
 };
 
 //-----------------------------------------------Student--------------------------------------//

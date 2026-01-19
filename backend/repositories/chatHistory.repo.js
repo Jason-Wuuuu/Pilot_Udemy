@@ -5,7 +5,7 @@ import {
   UpdateCommand,
   GetCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { ddb } from "../db/dynamodb.js";
+import { ddb } from "../config/dynamodb.js";
 
 const TABLE = "ChatHistory";
 

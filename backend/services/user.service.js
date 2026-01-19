@@ -1,6 +1,6 @@
-import { updateUser, deleteUser } from "../repositories/users.js";
+import { updateUser, deleteUser } from "../repositories/users.repo.js";
 
-export async function updateCurrentUser(userId, targetUserId, data) {
+export async function updateCurrentUser({ userId, targetUserId, data }) {
   if (userId !== targetUserId) {
     throw new Error("FORBIDDEN");
   }
@@ -11,7 +11,7 @@ export async function updateCurrentUser(userId, targetUserId, data) {
   return user;
 }
 
-export async function deleteCurrentUser(userId, targetUserId) {
+export async function deleteCurrentUser({ userId, targetUserId }) {
   if (userId !== targetUserId) {
     throw new Error("FORBIDDEN");
   }

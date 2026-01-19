@@ -6,45 +6,58 @@ import {
   getSubmissionByIdService,
 } from "../services/quizSubmission.service.js";
 
-//Student Get Submission History
+// Student: Get own submission history
 export const getQuizSubmissionsByUserController = async (req, res) => {
   try {
-    const userId = req.query.userId;
+    const result = await getQuizSubmissionsByUserService({
+      user: req.user,
+    });
 
-    const result = await getQuizSubmissionsByUserService(userId);
     res.json(result);
   } catch (e) {
     res.status(e.statusCode || 500).json({ error: e.message });
   }
 };
 
-//Admin Get quiz submission scores
+// Admin: Get all submissions for a quiz
 export const getSubmissionsByQuizController = async (req, res) => {
   try {
-    const { quizId } = req.params;
-    const result = await getSubmissionsByQuizService(quizId);
+    const result = await getSubmissionsByQuizService({
+      user: req.user,
+      quizId: req.params.quizId,
+    });
+
     res.json(result);
   } catch (e) {
     res.status(e.statusCode || 500).json({ error: e.message });
   }
 };
 
-//Get Single Submission By Id
+// Get single submission (student own OR admin)
 export const getSubmissionByIdController = async (req, res) => {
   try {
-    const { submissionId } = req.params;
-    const result = await getSubmissionByIdService(submissionId);
+    const result = await getSubmissionByIdService({
+      user: req.user,
+      submissionId: req.params.submissionId,
+    });
+
     res.json(result);
   } catch (e) {
     res.status(e.statusCode || 500).json({ error: e.message });
   }
 };
 
-//Submit Quiz
+// Student: Submit quiz
 export const submitQuizController = async (req, res) => {
   try {
     const payload = CreateSubmissionSchema.parse(req.body);
-    const result = await submitQuizService(req.params.quizId, payload);
+
+    const result = await submitQuizService({
+      user: req.user,
+      quizId: req.params.quizId,
+      payload,
+    });
+
     res.status(201).json(result);
   } catch (e) {
     res.status(e.statusCode || 400).json({ error: e.message });
