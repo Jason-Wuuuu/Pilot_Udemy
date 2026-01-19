@@ -5,6 +5,7 @@ dotenv.config();
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+//---------------------------------------------------quiz------------------------------------------------//
 export const aiGenerateQuiz = async (text, numQuestions = 5) => {
   if (typeof text !== "string") {
     throw new Error("materialText must be a string");
@@ -63,4 +64,77 @@ export const aiGenerateQuiz = async (text, numQuestions = 5) => {
   }
 
   return questions.slice(0, numQuestions);
+};
+
+//---------------------------------------------------------chat-------------------------------------------//
+export const chatWithContext = async (question, chunks) => {
+  const context = chunks
+    .map((c, i) => `[Chunk ${i + 1}]\n${c.content}`)
+    .join("\n\n");
+
+  const prompt = `Based on the following context from a document, Analyse the context and answer the user's question accurately and concisely according to the context.
+  If the answer is not in the context, say so.
+  
+  Context:
+  ${context}
+  
+  Question: ${question}
+  
+  Answer:`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash-lite",
+      contents: prompt,
+    });
+    const generatedText = response.text;
+    return generatedText;
+  } catch (error) {
+    console.error("Gemini API error:", error);
+    throw new Error("Failed to process chat request");
+  }
+};
+
+//--------------------------------------------------------------Generate  Summary------------------------------//
+export const generateSummary = async (text) => {
+  if (Array.isArray(text)) {
+    text = text.join("\n\n");
+  }
+
+  if (typeof text !== "string" || text.trim().length === 0) {
+    const err = new Error("text must be a non-empty string");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const MAX_CHARS = 20000;
+
+  const prompt = `
+Provide a concise summary of the following text.
+- Highlight key concepts and main ideas
+- Keep the summary clear and structured
+- Do NOT introduce information not present in the text
+
+Text:
+${text.slice(0, MAX_CHARS)}
+`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash-lite",
+      contents: prompt,
+    });
+
+    const generatedText =
+      response.text || response?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!generatedText) {
+      throw new Error("Empty AI response");
+    }
+
+    return generatedText;
+  } catch (error) {
+    console.error("Gemini API error:", error);
+    throw new Error("Failed to generate summary");
+  }
 };

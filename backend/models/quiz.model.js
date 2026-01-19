@@ -18,7 +18,7 @@ export const CreateQuizSchema = z
           questionId: z.string().min(1),
           prompt: z.string().min(1),
           options: z.array(z.string().min(1)).min(2),
-          Explains: z.string().optional(),
+          explains: z.string().optional(),
           answer: z.string().min(1),
         })
       )
