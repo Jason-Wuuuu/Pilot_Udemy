@@ -21,7 +21,7 @@ export async function loginUser({ email, password }) {
   }
 
   const token = generateToken(user.userId);
-  return { userId: user.userId, token };
+  return { user: toPublicUser(user), token };
 }
 
 function generateToken(userId) {
@@ -30,4 +30,16 @@ function generateToken(userId) {
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN }
   );
+}
+
+// utils/user.mapper.js
+function toPublicUser(user) {
+  return {
+    userId: user.userId,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    profileImage: user.profileImage
+
+  };
 }
