@@ -1,124 +1,76 @@
-import dotenv from "dotenv";
-dotenv.config();
+import {
+  getCourseById as getCourseByIdRepo,
+  getCoursesByCategoryId as getCoursesByCategoryIdRepo,
+  createCourse as createCourseRepo,
+  updateCourse as updateCourseRepo,
+  deleteCourse as deleteCourseRepo,
+} from "../repositories/course.repo.js";
 
 import {
-  PutItemCommand,
-  GetItemCommand,
-  QueryCommand,
-  UpdateItemCommand,
-  DeleteItemCommand,
-  TransactWriteItemsCommand,
-} from "@aws-sdk/client-dynamodb";
-import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import client from "../config/dynamoClient.js";
+  getLecturesByCourseId as getLecturesByCourseIdRepo,
+  createLecture as createLectureRepo,
+  updateLecture as updateLectureRepo,
+  deleteLecture as deleteLectureRepo,
+} from "../repositories/lecture.repo.js";
 
 import {
-  buildCourseItem,
-  buildCoursePK,
-  COURSE_METADATA_SK,
-} from "../models/course.model.js";
+  getMaterialsByLectureOrder,
+  createMaterial as createMaterialRepo,
+  updateMaterial as updateMaterialRepo,
+  deleteMaterial as deleteMaterialRepo,
+} from "../repositories/material.repo.js";
+import { uploadToS3, deleteFromS3 } from "../utils/s3Service.js";
 
-import { buildCategoryPK } from "../models/category.model.js";
-
-import {
-  buildLectureItem,
-  buildLectureSK,
-  buildMaterialItem,
-  buildMaterialSK,
-} from "../models/lecture.model.js";
-
-const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME;
+import fs from "fs/promises";
+import path from "path";
+/* =========================
+   COURSE
+========================= */
 
 export const getCourseById = async (courseId) => {
-  const { Item } = await client.send(
-    new GetItemCommand({
-      TableName: TABLE_NAME,
-      Key: marshall({
-        PK: buildCoursePK(courseId),
-        SK: COURSE_METADATA_SK,
-      }),
-    })
-  );
-
-  return Item ? unmarshall(Item) : null;
+  return getCourseByIdRepo(courseId);
 };
 
 export const getCoursesByCategoryId = async (categoryId) => {
-  const { Items = [] } = await client.send(
-    new QueryCommand({
-      TableName: TABLE_NAME,
-      IndexName: "GSI1",
-      KeyConditionExpression: "GSI1PK = :pk",
-      ExpressionAttributeValues: marshall({
-        ":pk": buildCategoryPK(categoryId),
-      }),
-    })
-  );
-
-  return Items.map(unmarshall);
+  return getCoursesByCategoryIdRepo(categoryId);
 };
 
-export const createCourseItem = async (payload) => {
-  const item = buildCourseItem(payload);
-
-  await client.send(
-    new PutItemCommand({
-      TableName: TABLE_NAME,
-      Item: marshall(item),
-      ConditionExpression:
-        "attribute_not_exists(PK) AND attribute_not_exists(SK)",
-    })
-  );
-
-  return item;
+export const createCourse = async (payload) => {
+  return createCourseRepo(payload);
 };
 
-export const updateCourseItem = async (courseId, updates) => {
+export const updateCourse = async (courseId, updates) => {
   if (!updates || Object.keys(updates).length === 0) {
     throw new Error("No update fields provided");
   }
-  const expressions = [];
-  const values = {};
-  const names = {};
-
-  Object.entries(updates).forEach(([key, value]) => {
-    const attrName = `#${key}`;
-    const attrValue = `:${key}`;
-
-    expressions.push(`${attrName} = ${attrValue}`);
-    names[attrName] = key;
-    values[attrValue] = value;
-  });
-
-  const { Attributes } = await client.send(
-    new UpdateItemCommand({
-      TableName: TABLE_NAME,
-      Key: marshall({
-        PK: buildCoursePK(courseId),
-        SK: COURSE_METADATA_SK,
-      }),
-      UpdateExpression: `SET ${expressions.join(", ")}`,
-      ExpressionAttributeNames: names,
-      ExpressionAttributeValues: marshall(values),
-      ConditionExpression: "attribute_exists(PK) AND attribute_exists(SK)",
-      ReturnValues: "ALL_NEW",
-    })
-  );
-
-  return unmarshall(Attributes);
+  return updateCourseRepo(courseId, updates);
 };
 
-export const deleteCourseItem = async (courseId) => {
-  await client.send(
-    new DeleteItemCommand({
-      TableName: TABLE_NAME,
-      Key: marshall({
-        PK: buildCoursePK(courseId),
-        SK: COURSE_METADATA_SK,
-      }),
-      ConditionExpression: "attribute_exists(PK) AND attribute_exists(SK)",
-    })
-  );
+export const deleteCourseCascade = async (courseId) => {
+  const lectures = await getLecturesByCourseIdRepo(courseId);
+
+  for (const lecture of lectures) {
+    const materials = await getMaterialsByLectureOrder(
+      courseId,
+      lecture.lectureOrder
+    );
+
+    for (const material of materials) {
+      if (material.filePath) {
+        await fs.unlink(material.filePath).catch(() => {});
+      }
+
+      await deleteMaterialRepo(
+        courseId,
+        lecture.lectureOrder,
+        material.materialOrder
+      );
+    }
+
+    await deleteLectureRepo(courseId, lecture.lectureId);
+  }
+
+  await deleteCourseRepo(courseId);
 };
 
 /* =========================
@@ -126,222 +78,230 @@ export const deleteCourseItem = async (courseId) => {
 ========================= */
 
 export const getLecturesByCourseId = async (courseId) => {
-  const { Items = [] } = await client.send(
-    new QueryCommand({
-      TableName: TABLE_NAME,
-      KeyConditionExpression: "PK = :pk AND begins_with(SK, :sk)",
-      ExpressionAttributeValues: marshall({
-        ":pk": buildCoursePK(courseId),
-        ":sk": "LECTURE#",
-      }),
-    })
-  );
-
-  return Items.map(unmarshall);
+  return getLecturesByCourseIdRepo(courseId);
 };
 
-export const createLectureItem = async (payload) => {
-  const item = buildLectureItem(payload);
-
-  await client.send(
-    new PutItemCommand({
-      TableName: TABLE_NAME,
-      Item: marshall(item),
-      ConditionExpression:
-        "attribute_not_exists(PK) AND attribute_not_exists(SK)",
-    })
-  );
-
-  return item;
+export const createLecture = async ({ courseId, ...payload }) => {
+  return createLectureRepo({ courseId, ...payload });
 };
 
-export const updateLectureItem = async (courseId, lectureId, updates) => {
+export const updateLecture = async (courseId, lectureId, updates) => {
   if (!updates || Object.keys(updates).length === 0) {
     throw new Error("No update fields provided");
   }
-  const expressions = [];
-  const values = {};
-
-  Object.entries(updates).forEach(([key, value]) => {
-    expressions.push(`${key} = :${key}`);
-    values[`:${key}`] = value;
-  });
-
-  const { Attributes } = await client.send(
-    new UpdateItemCommand({
-      TableName: TABLE_NAME,
-      Key: marshall({
-        PK: buildCoursePK(courseId),
-        SK: buildLectureSK(lectureId),
-      }),
-      UpdateExpression: `SET ${expressions.join(", ")}`,
-      ExpressionAttributeValues: marshall(values),
-      ConditionExpression: "attribute_exists(PK) AND attribute_exists(SK)",
-      ReturnValues: "ALL_NEW",
-    })
-  );
-
-  return unmarshall(Attributes);
+  return updateLectureRepo(courseId, lectureId, updates);
 };
 
-export const deleteLectureItem = async (courseId, lectureId) => {
-  await client.send(
-    new DeleteItemCommand({
-      TableName: TABLE_NAME,
-      Key: marshall({
-        PK: buildCoursePK(courseId),
-        SK: buildLectureSK(lectureId),
-      }),
-      ConditionExpression: "attribute_exists(PK) AND attribute_exists(SK)",
-    })
+export const deleteLecture = async (courseId, lectureId) => {
+  const lectures = await getLecturesByCourseIdRepo(courseId);
+  const lecture = lectures.find((l) => l.lectureId === lectureId);
+
+  if (!lecture) {
+    const err = new Error("Lecture not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const materials = await getMaterialsByLectureOrder(
+    courseId,
+    lecture.lectureOrder
   );
+
+  for (const material of materials) {
+    if (material.storageType === "S3" && material.s3Key) {
+      await deleteFromS3(material.s3Key);
+    }
+
+    await deleteMaterialRepo(
+      courseId,
+      lecture.lectureOrder,
+      material.materialOrder
+    );
+  }
+  await deleteLectureRepo(courseId, lecture.lectureOrder);
 };
 
 /* =========================
    MATERIALS
 ========================= */
 
-export const getMaterialsByLectureOrder = async (courseId, lectureOrder) => {
-
-  const { Items = [] } = await client.send(
-    new QueryCommand({
-      TableName: TABLE_NAME,
-      KeyConditionExpression: "PK = :pk AND begins_with(SK, :sk)",
-      ExpressionAttributeValues: marshall({
-        ":pk": buildCoursePK(courseId),
-        ":sk": `${buildLectureSK(lectureOrder)}#MATERIAL#`,
-      }),
-    })
-  );
-
-  return Items.map(unmarshall);
-};
-
 export const getMaterialTypeFromMime = (mimeType) => {
+  if (!mimeType) {
+    throw new Error("mimeType is required to determine material type");
+  }
   if (mimeType === "application/pdf") return "PDF";
   if (mimeType.startsWith("video/")) return "VIDEO";
-  throw new Error("Unsupported file type");
+  throw new Error(`Unsupported file type: ${mimeType}`);
 };
 
-export const createMaterialItem = async (payload) => {
-  const item = buildMaterialItem(payload);
 
-  await client.send(
-    new PutItemCommand({
-      TableName: TABLE_NAME,
-      Item: marshall(item, { removeUndefinedValues: true }),
-      ConditionExpression:
-        "attribute_not_exists(PK) AND attribute_not_exists(SK)",
-    })
-  );
+export const getMaterialsByLectureId = async ({ courseId, lectureId }) => {
+  const lectures = await getLecturesByCourseIdRepo(courseId);
+  const lecture = lectures.find((l) => l.lectureId === lectureId);
 
-  return item;
+  if (!lecture) {
+    const err = new Error("Lecture not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  return getMaterialsByLectureOrder(courseId, lecture.lectureOrder);
 };
 
-export const updateMaterialItem = async ({
+export const createMaterialService = async ({
   courseId,
-  lectureOrder,
-  materialOrder,
-  updates,
+  lectureId,
+  body,
+  file,
+  meta,
 }) => {
-  if (!courseId || lectureOrder === undefined || materialOrder === undefined) {
-    throw new Error("Missing required key fields");
+  const lectures = await getLecturesByCourseIdRepo(courseId);
+  const lecture = lectures.find((l) => l.lectureId === lectureId);
+
+  if (!lecture) {
+    const err = new Error("Lecture not found");
+    err.statusCode = 404;
+    throw err;
   }
 
-  if (!updates || Object.keys(updates).length === 0) {
-    throw new Error("No update fields provided");
-  }
+  const materialType = getMaterialTypeFromMime(file.mimetype);
 
-  const updateExpressions = [];
-  const expressionAttributeValues = {};
-  const expressionAttributeNames = {};
 
-  Object.entries(updates).forEach(([key, value]) => {
-    const attrName = `#${key}`;
-    const attrValue = `:${key}`;
+  return createMaterialRepo({
+    courseId,
+    lectureOrder: lecture.lectureOrder,
 
-    updateExpressions.push(`${attrName} = ${attrValue}`);
-    expressionAttributeNames[attrName] = key;
-    expressionAttributeValues[attrValue] = value;
+    materialOrder: meta.materialOrder,
+    materialId: meta.materialId,
+
+    title: body.title,
+    originalFileName: file.originalname,
+    displayFileName: body.title,
+
+    storageType: "S3",
+    s3Key: meta.s3Key,
+
+    filePath: null,
+    materialType,
+    mimeType: file.mimetype,
+    size: meta.size,
   });
-
-  const { Attributes } = await client.send(
-    new UpdateItemCommand({
-      TableName: TABLE_NAME,
-      Key: marshall({
-        PK: buildCoursePK(courseId),
-        SK: buildMaterialSK(lectureOrder, materialOrder),
-      }),
-      UpdateExpression: `SET ${updateExpressions.join(", ")}`,
-      ExpressionAttributeNames: expressionAttributeNames,
-      ExpressionAttributeValues: marshall(expressionAttributeValues),
-      ConditionExpression: "attribute_exists(PK) AND attribute_exists(SK)",
-      ReturnValues: "ALL_NEW",
-    })
-  );
-
-  return unmarshall(Attributes);
 };
 
-
-export const deleteMaterialItem = async (
+export const updateMaterial = async ({
   courseId,
-  lectureOrder,
-  materialOrder
-) => {
-  await client.send(
-    new DeleteItemCommand({
-      TableName: TABLE_NAME,
-      Key: marshall({
-        PK: buildCoursePK(courseId),
-        SK: buildMaterialSK(lectureOrder, materialOrder),
-      }),
-      ConditionExpression: "attribute_exists(PK) AND attribute_exists(SK)",
-    })
+  lectureId,
+  materialId,
+  body,
+  file,
+}) => {
+  // 1️ Find lecture
+  const lectures = await getLecturesByCourseIdRepo(courseId);
+  const lecture = lectures.find((l) => l.lectureId === lectureId);
+
+  if (!lecture) {
+    const err = new Error("Lecture not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  // 2️ Find material by ID (NOT order)
+  const materials = await getMaterialsByLectureOrder(
+    courseId,
+    lecture.lectureOrder
   );
 
-  return { deleted: true };
+
+  const material = materials.find(
+    (m) => String(m.materialId).trim() === String(materialId).trim()
+  );
+
+  if (!material) {
+    const err = new Error("Material not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  let fileUpdates = {};
+
+  // 3️ If replacing file → overwrite SAME S3 key
+  if (file) {
+    const ext =
+      path.extname(file.originalname) ||
+      (file.mimetype === "application/pdf" ? ".pdf" : "");
+
+    await uploadToS3({
+      file,
+      courseId,
+      lectureId,
+      materialId, // SAME identity → same S3 key
+    });
+
+    fileUpdates = {
+      mimeType: file.mimetype,
+      materialType: getMaterialTypeFromMime(file.mimetype),
+      originalFileName: file.originalname,
+      displayFileName: body.title
+        ? `${body.title}${ext}`
+        : material.displayFileName,
+    };
+  }
+
+  // 4️ Metadata-only updates
+  const updates = {
+    ...(body.title && { title: body.title }),
+    ...(body.isPreview !== undefined && {
+      isPreview: body.isPreview === "true",
+    }),
+    ...(body.duration && { duration: Number(body.duration) }),
+    ...fileUpdates,
+  };
+
+  // 5️ Persist (order stays unchanged)
+  return updateMaterialRepo(
+    courseId,
+    lecture.lectureOrder,
+    material.materialOrder,
+    updates
+  );
 };
 
-export const deleteCourseCascade = async (courseId) => {
-  const { Items = [] } = await client.send(
-    new QueryCommand({
-      TableName: TABLE_NAME,
-      KeyConditionExpression: "PK = :pk",
-      ExpressionAttributeValues: marshall({
-        ":pk": buildCoursePK(courseId),
-      }),
-    })
+export const deleteMaterial = async ({ courseId, lectureId, materialId }) => {
+  // 1️ Find lecture
+  const lectures = await getLecturesByCourseIdRepo(courseId);
+  const lecture = lectures.find((l) => l.lectureId === lectureId);
+
+  if (!lecture) {
+    const err = new Error("Lecture not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  // 2️ Find material by ID
+  const materials = await getMaterialsByLectureOrder(
+    courseId,
+    lecture.lectureOrder
   );
 
-  if (Items.length === 0) {
-    throw Object.assign(new Error("Course not found"), {
-      statusCode: 404,
-    });
+  const material = materials.find(
+    (m) => String(m.materialId).trim() === String(materialId).trim()
+  );
+
+  if (!material) {
+    const err = new Error("Material not found");
+    err.statusCode = 404;
+    throw err;
   }
 
-  const deleteRequests = Items.map((item) => ({
-    Delete: {
-      TableName: TABLE_NAME,
-      Key: {
-        PK: item.PK,
-        SK: item.SK,
-      },
-      ConditionExpression: "attribute_exists(PK) AND attribute_exists(SK)",
-    },
-  }));
-
-  const CHUNK_SIZE = 25;
-
-  for (let i = 0; i < deleteRequests.length; i += CHUNK_SIZE) {
-    const chunk = deleteRequests.slice(i, i + CHUNK_SIZE);
-
-    await client.send(
-      new TransactWriteItemsCommand({
-        TransactItems: chunk,
-      })
-    );
+  // 3️ Delete S3 object (if stored in S3)
+  if (material.storageType === "S3" && material.s3Key) {
+    await deleteFromS3(material.s3Key);
   }
 
-  return { deleted: true };
+  // 4️ Delete DB record LAST
+  await deleteMaterialRepo(
+    courseId,
+    lecture.lectureOrder,
+    material.materialOrder
+  );
 };

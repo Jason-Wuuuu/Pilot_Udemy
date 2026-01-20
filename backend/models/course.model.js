@@ -1,36 +1,52 @@
-
-
-
 import { buildCategoryPK } from "./category.model.js";
 
 export const COURSE_ENTITY = "COURSE";
-
-export const buildCoursePK = (courseId) => `COURSE#${courseId}`;
-
 export const COURSE_METADATA_SK = "METADATA";
 
-const now = new Date().toISOString();
+export const buildCoursePK = (courseId) =>
+  `COURSE#${courseId}`;
 
-export const buildCourseItem = (payload) => ({
-  PK: buildCoursePK(payload.courseId),
-  SK: COURSE_METADATA_SK,
+export const buildCourseItem = ({
+  courseId,
+  courseName,
+  description,
+  categoryId,
+  categoryName,
+  level,
+  contentType,
+  createdBy,
+  status = "DRAFT",
+  publishedAt = null,
+}) => {
+  const now = new Date().toISOString();
 
-  courseId: payload.courseId,
-  courseName: payload.courseName,
-  description: payload.description,
+  return {
+    PK: buildCoursePK(courseId),
+    SK: COURSE_METADATA_SK,
 
-  categoryId: payload.categoryId,
-  categoryName: payload.categoryName,
+    entityType: COURSE_ENTITY,
 
-  level: payload.level,
-  contentType: payload.contentType,
+    // identity
+    courseId,
 
-  status: "CREATED",
-  createdBy: payload.createdBy,
-  createdAt: now,
-  publishedAt: now,
+    // core fields
+    courseName,
+    description,
+    level,
+    contentType,
 
-  GSI1PK: buildCategoryPK(payload.categoryId),
-  GSI1SK: `CREATED_AT#${now}`
-});
+    // category (denormalized)
+    categoryId,
+    categoryName,
 
+    // lifecycle
+    status,
+    createdBy,
+    createdAt: now,
+    publishedAt,
+
+    // indexing
+    GSI1PK: buildCategoryPK(categoryId),
+    GSI1SK: `CREATED_AT#${now}`,
+  };
+};

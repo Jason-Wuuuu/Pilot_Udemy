@@ -1,17 +1,19 @@
+
 export const attachMaterialMeta = (req, res, next) => {
-  const rawMaterialId = req.params.materialId;
 
-  if (!rawMaterialId) {
-    return next(new Error("materialId is required"));
+  if (req.params.materialId) {
+    // UPDATE / DELETE
+    // Identity already exists, DO NOT infer order here
+    req.materialId = req.params.materialId;
+    return next();
   }
 
-  const materialOrder = Number(rawMaterialId.trim());
-
-  if (Number.isNaN(materialOrder)) {
-    return next(new Error("materialId must be a number (materialOrder)"));
-  }
+  // CREATE path
+  const materialOrder = Date.now(); // server-generated, monotonic
+  const materialId = String(materialOrder);
 
   req.materialOrder = materialOrder;
+  req.materialId = materialId;
 
   next();
 };

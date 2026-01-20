@@ -1,3 +1,10 @@
+/* =========================
+   LECTURE
+========================= */
+
+export const LECTURE_ENTITY = "LECTURE";
+export const MATERIAL_ENTITY = "MATERIAL";
+
 export const formatLectureOrder = (lectureOrder) =>
   String(lectureOrder).padStart(4, "0");
 
@@ -8,7 +15,7 @@ export const buildLectureItem = ({
   courseId,
   lectureId,
   lectureOrder,
-  title
+  title,
 }) => {
   const now = new Date().toISOString();
 
@@ -16,21 +23,25 @@ export const buildLectureItem = ({
     PK: `COURSE#${courseId}`,
     SK: buildLectureSK(lectureOrder),
 
+    entityType: LECTURE_ENTITY,
+
     lectureId,
     lectureOrder,
     title,
 
     createdAt: now,
     updatedAt: now,
-
-    entityType: "LECTURE"
   };
 };
 
-
+/* =========================
+   MATERIAL
+========================= */
 
 export const buildMaterialSK = (lectureOrder, materialOrder) =>
-  `LECTURE#${formatLectureOrder(lectureOrder)}#MATERIAL#${materialOrder}`;
+  `LECTURE#${formatLectureOrder(
+    lectureOrder
+  )}#MATERIAL#${materialOrder}`;
 
 export const buildMaterialItem = ({
   courseId,
@@ -42,15 +53,20 @@ export const buildMaterialItem = ({
   materialType,
   duration = 0,
   isPreview = false,
+
+  // storage
+  storageType = "LOCAL",
+  filePath = null,
+  mimeType = null,
   s3Key = null,
-  filePath = null, 
-  mimeType = null 
 }) => {
   const now = new Date().toISOString();
 
   return {
     PK: `COURSE#${courseId}`,
     SK: buildMaterialSK(lectureOrder, materialOrder),
+
+    entityType: MATERIAL_ENTITY,
 
     lectureId,
     materialId,
@@ -62,14 +78,12 @@ export const buildMaterialItem = ({
     duration,
     isPreview,
 
-    storageType: "LOCAL",
-    filePath,            
-    mimeType,          
+    storageType,
+    filePath,
+    mimeType,
     s3Key,
 
     createdAt: now,
     updatedAt: now,
-
-    entityType: "MATERIAL"
   };
 };

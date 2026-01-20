@@ -1,79 +1,145 @@
 import express from "express";
-import {
-  getCourse,
-  getCoursesByCategory,
-  getLectures,
-  getMaterials,
-  createCourse,
-  updateCourse,
-  deleteCourse,
-  createLecture,
-  updateLecture,
-  deleteLecture,
-  createMaterial,
-  updateMaterial,
-  deleteMaterial,
-} from "../controllers/courseControllers.js";
+import * as courseController from "../controllers/courseControllers.js";
+import { authenticate } from "../middleware/auth.middleware.js";
+import { roleVerification } from "../middleware/roleVerification.js";
 
-import { protect } from "../middleware/auth.js";
-import { adminOnly } from "../middleware/adminOnly.js";
 import uploadMaterial from "../middleware/materialUpload.js";
 import { attachMaterialMeta } from "../middleware/attachMaterialMeta.js";
 
+import { devBypassAuth } from "../middleware/devBypassAuth.js";
+
 const router = express.Router();
 
-// READ
-router.get("/courses/:courseId", protect, getCourse);
-router.get("/categories/:categoryId/courses", protect, getCoursesByCategory);
-router.get("/courses/:courseId/lectures", protect, getLectures);
+/* =========================
+   COURSE (Authenticated)
+========================= */
+
+// STUDENT + ADMIN
 router.get(
-  "/courses/:courseId/lectures/:lectureId/materials",
-  protect,
-  getMaterials
+  "/:courseId",
+  // authenticate,
+  devBypassAuth,
+  courseController.getCourse
 );
 
-// CREATE
-router.post("/courses", protect, adminOnly, createCourse);
-router.post("/courses/:courseId/lectures", protect, adminOnly, createLecture);
+router.get(
+  "/by-category/:categoryId",
+  // authenticate,
+  devBypassAuth,
+  courseController.getCoursesByCategory
+);
+
+/* =========================
+   COURSE (ADMIN only)
+========================= */
+
 router.post(
-  "/courses/:courseId/lectures/:lectureId/materials",
-  protect,
-  adminOnly,
-  attachMaterialMeta,
-  uploadMaterial.single("file"),
-  createMaterial
+  "/",
+  // authenticate,
+  // roleVerification("ADMIN"),
+  devBypassAuth,
+  courseController.createCourseHandler
 );
 
-// UPDATE
-router.put("/courses/:courseId", protect, adminOnly, updateCourse);
 router.put(
-  "/courses/:courseId/lectures/:lectureId",
-  protect,
-  adminOnly,
-  updateLecture
-);
-router.put(
-  "/courses/:courseId/lectures/:lectureId/materials/:materialId",
-  protect,
-  adminOnly,
-  attachMaterialMeta,
-  uploadMaterial.single("file"),
-  updateMaterial
+  "/:courseId",
+  // authenticate,
+  // roleVerification("ADMIN"),
+  devBypassAuth,
+  courseController.updateCourseHandler
 );
 
-// DELETE
-router.delete("/courses/:courseId", protect, adminOnly, deleteCourse);
 router.delete(
-  "/courses/:courseId/lectures/:lectureId",
-  protect,
-  adminOnly,
-  deleteLecture
+  "/:courseId",
+  // authenticate,
+  // roleVerification("ADMIN"),
+  devBypassAuth,
+  courseController.deleteCourseHandler
 );
+
+/* =========================
+   LECTURES
+========================= */
+
+// STUDENT + ADMIN
+router.get(
+  "/:courseId/lectures",
+  // authenticate,
+  devBypassAuth,
+  courseController.getLectures
+);
+
+// ADMIN
+router.post(
+  "/:courseId/lectures",
+  // authenticate,
+  // roleVerification("ADMIN"),
+  devBypassAuth,
+  courseController.createLectureHandler
+);
+
+router.put(
+  "/:courseId/lectures/:lectureId",
+  // authenticate,
+  // roleVerification("ADMIN"),
+  devBypassAuth,
+  courseController.updateLectureHandler
+);
+
 router.delete(
-  "/courses/:courseId/lectures/:lectureId/materials/:materialId",
-  protect,
-  adminOnly,
-  deleteMaterial
+  "/:courseId/lectures/:lectureId",
+  // authenticate,
+  // roleVerification("ADMIN"),
+  devBypassAuth,
+  courseController.deleteLectureHandler
+);
+
+/* =========================
+   MATERIALS
+========================= */
+
+// STUDENT + ADMIN
+router.get(
+  "/:courseId/lectures/:lectureId/materials",
+  // authenticate,
+  devBypassAuth,
+  courseController.getMaterials
+);
+
+// ADMIN
+// router.post(
+//   "/:courseId/lectures/:lectureId/materials",
+//   authenticate,
+//   roleVerification("ADMIN"),
+//   uploadMaterial.single("file"),
+//   attachMaterialMeta,
+//   courseController.createMaterialHandler
+// );
+
+router.post(
+  "/:courseId/lectures/:lectureId/materials",
+  devBypassAuth,
+  uploadMaterial.single("file"),
+  attachMaterialMeta,
+  courseController.createMaterialHandler
+);
+
+router.put(
+  "/:courseId/lectures/:lectureId/materials/:materialId",
+  // authenticate,
+  // roleVerification("ADMIN"),
+  devBypassAuth,
+  uploadMaterial.single("file"),
+  attachMaterialMeta,
+  courseController.updateMaterialHandler
+);
+
+router.delete(
+  "/:courseId/lectures/:lectureId/materials/:materialId",
+  // authenticate,
+  // roleVerification("ADMIN"),
+  devBypassAuth,
+  courseController.deleteMaterialHandler
 );
 
 export default router;
