@@ -9,22 +9,25 @@ import {
 } from "../repositories/chatHistory.repo.js";
 
 export const aiChatWithHistoryService = async ({
-  userId,
+  user,
   documentId,
   chatId,
   question,
   materialText,
 }) => {
-  if (!userId) {
-    const err = new Error("userId is required (no auth yet)");
-    err.statusCode = 400;
+  // ===== Auth =====
+  if (!user) {
+    const err = new Error("UNAUTHENTICATED");
+    err.statusCode = 401;
     throw err;
   }
+
   if (!question) {
     const err = new Error("question is required");
     err.statusCode = 400;
     throw err;
   }
+
   if (!materialText) {
     const err = new Error(
       "materialText is required (material table not integrated yet)"
@@ -41,39 +44,53 @@ export const aiChatWithHistoryService = async ({
     throw err;
   }
 
-  // 1) 确定 chatId：没传就新建
+  // ===== Chat ownership =====
   let finalChatId = chatId;
+
   if (!finalChatId) {
+    // new chat
     finalChatId = newChatId();
-    await createChatMeta({ chatId: finalChatId, userId, documentId });
+    await createChatMeta({
+      chatId: finalChatId,
+      userId: user.userId,
+      documentId,
+    });
   } else {
-    // chatId 传了就必须存在
+    // existing chat must belong to user
     const meta = await getChatMeta({ chatId: finalChatId });
+
     if (!meta) {
       const err = new Error("chatId not found");
       err.statusCode = 404;
       throw err;
     }
+
+    if (meta.userId !== user.userId) {
+      const err = new Error("FORBIDDEN");
+      err.statusCode = 403;
+      throw err;
+    }
   }
 
-  // 2) retrieval（你要的完整版）
+  // ===== Retrieval =====
   const chunks = chunkText(text);
   const relevantChunks = findRelevantChunks(chunks, question, 3);
   const finalChunks = relevantChunks.length
     ? relevantChunks
     : chunks.slice(0, 3);
 
-  // 3) LLM
+  // ===== LLM =====
   const answer = await chatWithContext(question, finalChunks);
   const usedChunkIndices = finalChunks.map((c) => c.chunkIndex);
 
-  // 4) 每轮写两条 message
+  // ===== Persist messages =====
   await appendMessage({
     chatId: finalChatId,
     role: "user",
     content: question,
     relevantChunks: [],
   });
+
   await appendMessage({
     chatId: finalChatId,
     role: "assistant",
