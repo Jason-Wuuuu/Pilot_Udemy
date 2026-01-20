@@ -1,5 +1,11 @@
+import QuizListPage from "./pages/QuizListPage";
+
 function App() {
-  return <></>;
+  return (
+    <>
+      <QuizListPage />
+    </>
+  );
 }
 
 export default App;
