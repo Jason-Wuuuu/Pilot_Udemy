@@ -6,6 +6,7 @@ import {
   updateQuizByIdController,
   deleteQuizByIdController,
   aiGenerateQuizController,
+  getCourseQuizzesController,
 } from "../controllers/quiz.controller.js";
 import {
   getQuizSubmissionsByUserController,
@@ -24,6 +25,12 @@ router.post("/", authenticate, createQuizController);
 router.get("/:quizId", authenticate, getQuizByIdController);
 router.put("/:quizId", authenticate, updateQuizByIdController);
 router.delete("/:quizId", authenticate, deleteQuizByIdController);
+// GET /api/courses/:courseId/quizzes
+router.get(
+  "/courses/:courseId/quizzes",
+  authenticate,
+  getCourseQuizzesController
+);
 
 //Submission
 router.post("/:quizId/submissions", authenticate, submitQuizController);

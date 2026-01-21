@@ -63,3 +63,22 @@ export const createSubmissionRepo = async (item) => {
   );
   return res;
 };
+
+//4. 一个quiz只能交一次
+export const getSubmissionByUserAndQuizRepo = async (userId, quizId) => {
+  const res = await ddb.send(
+    new QueryCommand({
+      TableName: TABLE_NAME,
+      IndexName: USER_INDEX,
+      KeyConditionExpression: "userId = :uid",
+      FilterExpression: "quizId = :qid",
+      ExpressionAttributeValues: {
+        ":uid": userId,
+        ":qid": quizId,
+      },
+      Limit: 1,
+    })
+  );
+
+  return res.Items?.[0] || null;
+};

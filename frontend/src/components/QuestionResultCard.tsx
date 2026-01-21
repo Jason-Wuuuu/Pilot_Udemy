@@ -4,7 +4,7 @@ type QuestionResult = {
   options: string[];
   yourAnswer?: string;
   correctAnswer: string;
-  explains?: string;
+  explanation?: string;
   isCorrect: boolean;
 };
 
@@ -49,15 +49,22 @@ export function QuestionResultCard({ q }: { q: QuestionResult }) {
           })}
         </div>
 
-        {q.explains && (
-          <>
-            <summary className="collapse-title text-sm font-medium">
-              Explanation
-            </summary>
-            <div className="collapse-content text-sm text-slate-600">
-              {q.explains}
+        {q.explanation && (
+          <div
+            className={`card ${
+              q.isCorrect
+                ? "bg-green-50 border border-green-200"
+                : "bg-red-50 border border-red-200"
+            }`}
+          >
+            <div className="card-body">
+              <h3 className="font-semibold text-lg">
+                {q.isCorrect ? "Why this is correct" : "Why this is incorrect"}
+              </h3>
+
+              <p className="text-slate-700 leading-relaxed">{q.explanation}</p>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>

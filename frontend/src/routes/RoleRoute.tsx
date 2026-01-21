@@ -6,7 +6,7 @@ interface Props {
 }
 
 const RoleRoute = ({ allowedRoles }: Props) => {
-   const user = useAppSelector((state) => state.auth.user);
+  const user = useAppSelector((state) => state.auth.user);
 
   if (!user) return <Navigate to="/login" replace />; // 未登录
   if (!allowedRoles.includes(user.role))

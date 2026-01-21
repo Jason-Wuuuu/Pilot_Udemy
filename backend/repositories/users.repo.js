@@ -10,7 +10,7 @@ import {
   QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
 
-const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || "Users";
+const TABLE_NAME = "Users";
 const EMAIL_INDEX = "email-index"; // Make sure your GSI exists in DynamoDB
 
 /**
@@ -27,7 +27,7 @@ export async function findUserByEmail(email) {
   };
 
   const result = await ddb.send(new QueryCommand(params));
-//   console.log("findUserByEmail result:", result);
+  //   console.log("findUserByEmail result:", result);
   return result.Items?.[0] || null;
 }
 

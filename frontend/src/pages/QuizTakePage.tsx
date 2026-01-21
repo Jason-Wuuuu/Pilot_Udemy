@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router";
 import { getQuizById, submitQuiz } from "../services/quiz.service";
 import QuestionCard from "../components/QuestionCard";
 
@@ -119,7 +119,7 @@ export default function QuizTakePage() {
 
       {/* Question Index */}
       <div className="flex flex-wrap gap-2 mt-6 justify-center">
-        {quiz.questions.map((q, i) => (
+        {quiz.questions.map((q: any, i: any) => (
           <button
             key={q.questionId}
             className={`btn btn-xs ${

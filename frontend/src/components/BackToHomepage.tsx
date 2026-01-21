@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link } from "react-router";
 
 const BackToHomepage = () => {
   return (
@@ -9,6 +9,6 @@ const BackToHomepage = () => {
       </Link>
     </div>
   );
-}
+};
 
-export default BackToHomepage
+export default BackToHomepage;
