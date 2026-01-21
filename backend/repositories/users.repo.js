@@ -27,7 +27,7 @@ export async function findUserByEmail(email) {
   };
 
   const result = await ddb.send(new QueryCommand(params));
-  //   console.log("findUserByEmail result:", result);
+//   console.log("findUserByEmail result:", result);
   return result.Items?.[0] || null;
 }
 

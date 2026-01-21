@@ -7,6 +7,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import RoleRoute from "./routes/RoleRoute";
 import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/ForgotPassword";
+import HomeworkDetail from "./components/Homework/HomeworkDetail";
 import CourseListPage from './pages/CourseListPage';
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
           {/* <Route path="/quiz" element={<QuizPage />} />
           <Route path="/homework" element={<HomeworkPage />} /> */}
           <Route path="/profile" element={<Profile />} />
+          <Route path="/homework/:homeworkId" element={<HomeworkDetail />} />
         </Route>
 
         {/* Role-protected pages */}
