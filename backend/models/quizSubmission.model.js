@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const CreateSubmissionSchema = z
   .object({
-    userId: z.string().min(1),
     answers: z
       .array(
         z.object({

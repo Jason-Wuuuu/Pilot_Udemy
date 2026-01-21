@@ -1,7 +1,7 @@
 // db/users.js
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { ddbDocClient } from "../config/dynamodb.js";
+import { ddb } from "../config/dynamodb.js";
 import {
   PutCommand,
   GetCommand,
@@ -26,8 +26,8 @@ export async function findUserByEmail(email) {
     ExpressionAttributeValues: { ":email": String(email) },
   };
 
-  const result = await ddbDocClient.send(new QueryCommand(params));
-//   console.log("findUserByEmail result:", result);
+  const result = await ddb.send(new QueryCommand(params));
+  //   console.log("findUserByEmail result:", result);
   return result.Items?.[0] || null;
 }
 
@@ -45,7 +45,7 @@ export async function findUserById(userId) {
     },
   };
 
-  const result = await ddbDocClient.send(new GetCommand(params));
+  const result = await ddb.send(new GetCommand(params));
   return result.Item || null;
 }
 
@@ -69,7 +69,7 @@ export async function createUser({ username, email, password, role }) {
     username,
     email,
     passwordHash,
-    role: role || "user",
+    role: role || "student",
     status: "ACTIVE",
     createdAt: new Date().toISOString(),
     profileImage: `https://cdn.app/avatar/${userId}.png`,
@@ -79,7 +79,7 @@ export async function createUser({ username, email, password, role }) {
     },
   };
 
-  await ddbDocClient.send(new PutCommand({ TableName: TABLE_NAME, Item: user }));
+  await ddb.send(new PutCommand({ TableName: TABLE_NAME, Item: user }));
   return user;
 }
 
@@ -117,7 +117,7 @@ export async function updateUser(userId, updates) {
     ReturnValues: "ALL_NEW",
   };
 
-  const result = await ddbDocClient.send(new UpdateCommand(params));
+  const result = await ddb.send(new UpdateCommand(params));
   return result.Attributes;
 }
 
@@ -132,6 +132,6 @@ export async function deleteUser(userId) {
     Key: { PK: `USER#${userId}`, SK: "PROFILE" },
   };
 
-  await ddbDocClient.send(new DeleteCommand(params));
+  await ddb.send(new DeleteCommand(params));
   return true;
 }

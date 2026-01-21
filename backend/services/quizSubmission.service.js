@@ -8,14 +8,20 @@ import {
 } from "../repositories/quizSubmission.repo.js";
 
 //Get submissions history for the student
-export const getQuizSubmissionsByUserService = async (userId) => {
-  if (!userId) {
-    const err = new Error("userId is required");
-    err.statusCode = 400;
+export const getQuizSubmissionsByUserService = async ({ user }) => {
+  if (!user) {
+    const err = new Error("UNAUTHENTICATED");
+    err.statusCode = 401;
     throw err;
   }
 
-  const submissions = await getQuizSubmissionsByUserRepo(userId);
+  if (user.role === "ADMIN") {
+    const err = new Error("FORBIDDEN");
+    err.statusCode = 403;
+    throw err;
+  }
+
+  const submissions = await getQuizSubmissionsByUserRepo(user.userId);
 
   // Student History View（不含答案）
   return submissions.map((s) => ({
@@ -29,8 +35,19 @@ export const getQuizSubmissionsByUserService = async (userId) => {
 };
 
 //Admin Get submission history for one quiz
-export const getSubmissionsByQuizService = async (quizId) => {
-  // 确认 quiz 存在
+export const getSubmissionsByQuizService = async ({ user, quizId }) => {
+  if (!user) {
+    const err = new Error("UNAUTHENTICATED");
+    err.statusCode = 401;
+    throw err;
+  }
+
+  if (user.role !== "ADMIN") {
+    const err = new Error("FORBIDDEN");
+    err.statusCode = 403;
+    throw err;
+  }
+
   const quiz = await getQuizByIdRepo(quizId);
   if (!quiz) {
     const err = new Error("Quiz not found");
@@ -53,12 +70,24 @@ export const getSubmissionsByQuizService = async (quizId) => {
 };
 
 //Get Single Submission Detail
-export const getSubmissionByIdService = async (submissionId) => {
-  const submission = await getSubmissionByIdRepo(submissionId);
+export const getSubmissionByIdService = async ({ user, submissionId }) => {
+  if (!user) {
+    const err = new Error("UNAUTHENTICATED");
+    err.statusCode = 401;
+    throw err;
+  }
 
+  const submission = await getSubmissionByIdRepo(submissionId);
   if (!submission) {
     const err = new Error("Submission not found");
     err.statusCode = 404;
+    throw err;
+  }
+
+  // 权限判断
+  if (user.role !== "ADMIN" && submission.userId !== user.userId) {
+    const err = new Error("FORBIDDEN");
+    err.statusCode = 403;
     throw err;
   }
 
@@ -69,7 +98,6 @@ export const getSubmissionByIdService = async (submissionId) => {
     throw err;
   }
 
-  // 组装“结果视图”
   const questions = quiz.questions.map((q) => {
     const ans = submission.answers.find((a) => a.questionId === q.questionId);
 
@@ -80,8 +108,8 @@ export const getSubmissionByIdService = async (submissionId) => {
       prompt: q.prompt,
       options: q.options,
       yourAnswer: ans?.selectedAnswer,
-      correctAnswer: q.answer,
-      explanation: q.Explains,
+      correctAnswer: user.role === "ADMIN" ? q.answer : undefined,
+      explanation: q.explains,
       isCorrect,
     };
   });
@@ -89,7 +117,6 @@ export const getSubmissionByIdService = async (submissionId) => {
   return {
     submissionId: submission.submissionId,
     quizId: submission.quizId,
-    userId: submission.userId,
     score: submission.score,
     correctCount: submission.correctCount,
     totalCount: submission.totalCount,
@@ -105,7 +132,7 @@ const gradeQuiz = (quiz, answers) => {
   quiz.questions.forEach((q) => {
     correctMap.set(q.questionId, {
       answer: q.answer,
-      explanation: q.explains,
+      explains: q.explains,
     });
   });
 
@@ -113,6 +140,13 @@ const gradeQuiz = (quiz, answers) => {
 
   const detailed = answers.map((a) => {
     const correct = correctMap.get(a.questionId);
+
+    if (!correct) {
+      const err = new Error(`Invalid questionId: ${a.questionId}`);
+      err.statusCode = 400;
+      throw err;
+    }
+
     const isCorrect = a.selectedAnswer === correct.answer;
     if (isCorrect) correctCount++;
 
@@ -132,9 +166,20 @@ const gradeQuiz = (quiz, answers) => {
 };
 
 /**Submit + Grade**/
-export const submitQuizService = async (quizId, payload) => {
-  const quiz = await getQuizByIdRepo(quizId);
+export const submitQuizService = async ({ user, quizId, payload }) => {
+  if (!user) {
+    const err = new Error("UNAUTHENTICATED");
+    err.statusCode = 401;
+    throw err;
+  }
 
+  if (user.role === "ADMIN") {
+    const err = new Error("FORBIDDEN");
+    err.statusCode = 403;
+    throw err;
+  }
+
+  const quiz = await getQuizByIdRepo(quizId);
   if (!quiz) {
     const err = new Error("Quiz not found");
     err.statusCode = 404;
@@ -143,11 +188,10 @@ export const submitQuizService = async (quizId, payload) => {
 
   const graded = gradeQuiz(quiz, payload.answers);
 
-  //存DB
   const submission = {
     submissionId: `sub_${uuidv4()}`,
     quizId,
-    userId: payload.userId,
+    userId: user.userId,
     answers: payload.answers,
     score: graded.score,
     correctCount: graded.correctCount,
@@ -157,7 +201,7 @@ export const submitQuizService = async (quizId, payload) => {
 
   await createSubmissionRepo(submission);
 
-  // Result View（只返回给学生，不存 DB）
+  // Student Result View
   return {
     submissionId: submission.submissionId,
     quizId,
