@@ -9,11 +9,16 @@ const user = useAppSelector((state) => state.auth.user);
     <div>
       {/* Top Navbar */}
       <header className="flex items-center justify-between px-6 py-4 border-b">
-        <h1 className="text-xl font-bold">Udemy-copy</h1>
+        <span
+          onClick={() => (window.location.href = "/")}
+          className="text-xl font-bold cursor-pointer"
+        >
+          Udemy-copy
+        </span>
 
         {user ? (
           <Link to="/profile" className="btn btn-primary btn-sm">
-           welcome {user.username}!
+            welcome {user.username}!
           </Link>
         ) : (
           <Link to="/login" className="btn btn-primary btn-sm">

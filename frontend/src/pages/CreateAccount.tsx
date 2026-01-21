@@ -10,11 +10,17 @@ const CreateAccount = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("STUDENT");
+    const [invitationCode, setInvitationCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
+    if (role === "ADMIN" && invitationCode !== "pilot") {
+      alert("Incorrect invitation code");
+      return;
+    }
+
     setLoading(true);
     try {
       await api.post("/auth/register", {
@@ -92,6 +98,17 @@ const CreateAccount = () => {
             STUDENT
           </label>
         </div>
+
+        {/* Invitation Code (only for ADMIN) */}
+        {role === "ADMIN" && (
+          <input
+            type="text"
+            value={invitationCode}
+            onChange={(e) => setInvitationCode(e.target.value)}
+            placeholder="Enter admin invitation code"
+            className="input input-bordered w-full"
+          />
+        )}
 
         {/* Submit */}
         <button
