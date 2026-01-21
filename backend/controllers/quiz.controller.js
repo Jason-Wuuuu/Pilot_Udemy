@@ -2,70 +2,93 @@ import {
   getQuizByIdService,
   createQuizService,
   updateQuizByIdService,
-  getQuizzesByUserIdService,
   deleteQuizByIdService,
   aiGenerateQuizService,
 } from "../services/quiz.service.js";
 import { CreateQuizSchema, UpdateQuizSchema } from "../models/quiz.model.js";
 
+// GET /api/quizzes/:quizId
 export const getQuizByIdController = async (req, res) => {
   try {
-    //Parse the role
-    const role = req.query.role || "student";
+    const quiz = await getQuizByIdService({
+      user: req.user,
+      quizId: req.params.quizId,
+    });
 
-    const quiz = await getQuizByIdService(req.params.quizId, role);
     res.json(quiz);
   } catch (e) {
     res.status(e.statusCode || 500).json({ error: e.message });
   }
 };
 
+// POST /api/quizzes
 export const createQuizController = async (req, res) => {
   try {
     const payload = CreateQuizSchema.parse(req.body);
-    const quiz = await createQuizService(payload);
+
+    const quiz = await createQuizService({
+      user: req.user,
+      payload,
+    });
+
     res.status(201).json(quiz);
   } catch (e) {
-    res.status(400).json({ error: e.message });
+    res.status(e.statusCode || 400).json({ error: e.message });
   }
 };
 
+// PUT /api/quizzes/:quizId
 export const updateQuizByIdController = async (req, res) => {
   try {
     const payload = UpdateQuizSchema.parse(req.body);
-    const quiz = await updateQuizByIdService(req.params.quizId, payload);
+
+    const quiz = await updateQuizByIdService({
+      user: req.user,
+      quizId: req.params.quizId,
+      payload,
+    });
+
     res.json(quiz);
   } catch (e) {
     res.status(e.statusCode || 400).json({ error: e.message });
   }
 };
 
+// DELETE /api/quizzes/:quizId
 export const deleteQuizByIdController = async (req, res) => {
   try {
-    await deleteQuizByIdService(req.params.quizId);
+    await deleteQuizByIdService({
+      user: req.user,
+      quizId: req.params.quizId,
+    });
+
     res.status(204).send();
   } catch (e) {
     res.status(e.statusCode || 500).json({ error: e.message });
   }
 };
 
-export const getQuizzesByUserIdController = async (req, res) => {
+// GET /api/quizzes/me
+export const getMyQuizzesController = async (req, res) => {
   try {
-    const userId = req.query.userId;
-    if (!userId) {
-      return res.status(400).json({ error: "userId is required" });
-    }
+    const quizzes = await getMyQuizzesService({
+      user: req.user,
+    });
 
-    const quizzes = await getQuizzesByUserIdService(userId);
     res.json(quizzes);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(e.statusCode || 500).json({ error: e.message });
   }
 };
 
+// POST /api/quizzes/ai/preview
 export const aiGenerateQuizController = async (req, res) => {
   try {
-    const preview = await aiGenerateQuizService(req.body);
+    const preview = await aiGenerateQuizService({
+      user: req.user,
+      payload: req.body,
+    });
+
     res.json(preview);
   } catch (e) {
     res.status(e.statusCode || 500).json({ error: e.message });

@@ -2,8 +2,8 @@ import { Router } from "express";
 import {
   getQuizByIdController,
   createQuizController,
+  getMyQuizzesController,
   updateQuizByIdController,
-  getQuizzesByUserIdController,
   deleteQuizByIdController,
   aiGenerateQuizController,
 } from "../controllers/quiz.controller.js";
@@ -11,20 +11,21 @@ import {
   getQuizSubmissionsByUserController,
   submitQuizController,
 } from "../controllers/quizSubmission.controller.js";
+import { authenticate } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
 //Ai
-router.post("/aigenerate", aiGenerateQuizController);
+router.post("/aigenerate", authenticate, aiGenerateQuizController);
 
 //Todo: 加middleware auth
-router.get("/", getQuizzesByUserIdController);
-router.post("/", createQuizController);
-router.get("/:quizId", getQuizByIdController);
-router.put("/:quizId", updateQuizByIdController);
-router.delete("/:quizId", deleteQuizByIdController);
+router.get("/me", authenticate, getMyQuizzesController);
+router.post("/", authenticate, createQuizController);
+router.get("/:quizId", authenticate, getQuizByIdController);
+router.put("/:quizId", authenticate, updateQuizByIdController);
+router.delete("/:quizId", authenticate, deleteQuizByIdController);
 
 //Submission
-router.post("/:quizId/submissions", submitQuizController);
+router.post("/:quizId/submissions", authenticate, submitQuizController);
 
 export default router;
