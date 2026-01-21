@@ -118,7 +118,7 @@ export const deleteLecture = async (courseId, lectureId) => {
       material.materialOrder
     );
   }
-  await deleteLectureRepo(courseId, lecture.lectureOrder);
+  await deleteLectureRepo(courseId, lecture.lectureId);
 };
 
 /* =========================
@@ -134,7 +134,6 @@ export const getMaterialTypeFromMime = (mimeType) => {
   throw new Error(`Unsupported file type: ${mimeType}`);
 };
 
-
 export const getMaterialsByLectureId = async ({ courseId, lectureId }) => {
   const lectures = await getLecturesByCourseIdRepo(courseId);
   const lecture = lectures.find((l) => l.lectureId === lectureId);
@@ -147,6 +146,8 @@ export const getMaterialsByLectureId = async ({ courseId, lectureId }) => {
 
   return getMaterialsByLectureOrder(courseId, lecture.lectureOrder);
 };
+
+
 
 export const createMaterialService = async ({
   courseId,
@@ -171,7 +172,6 @@ export const createMaterialService = async ({
     courseId,
     lectureOrder: lecture.lectureOrder,
 
-    materialOrder: meta.materialOrder,
     materialId: meta.materialId,
 
     title: body.title,
@@ -256,6 +256,12 @@ export const updateMaterial = async ({
     ...(body.duration && { duration: Number(body.duration) }),
     ...fileUpdates,
   };
+
+  if (Object.keys(updates).length === 0) {
+    const err = new Error("No valid fields to update");
+    err.statusCode = 400;
+    throw err;
+  }
 
   // 5️ Persist (order stays unchanged)
   return updateMaterialRepo(

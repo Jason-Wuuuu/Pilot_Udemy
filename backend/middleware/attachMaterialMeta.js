@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 
 export const attachMaterialMeta = (req, res, next) => {
 
@@ -9,11 +10,7 @@ export const attachMaterialMeta = (req, res, next) => {
   }
 
   // CREATE path
-  const materialOrder = Date.now(); // server-generated, monotonic
-  const materialId = String(materialOrder);
-
-  req.materialOrder = materialOrder;
-  req.materialId = materialId;
+  req.materialId = randomUUID();
 
   next();
 };

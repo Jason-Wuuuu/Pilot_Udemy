@@ -16,6 +16,7 @@ export const buildLectureItem = ({
   lectureId,
   lectureOrder,
   title,
+  description,
 }) => {
   const now = new Date().toISOString();
 
@@ -28,7 +29,8 @@ export const buildLectureItem = ({
     lectureId,
     lectureOrder,
     title,
-
+    description,
+    
     createdAt: now,
     updatedAt: now,
   };

@@ -14,14 +14,7 @@ const router = express.Router();
    COURSE (Authenticated)
 ========================= */
 
-// STUDENT + ADMIN
-router.get(
-  "/:courseId",
-  // authenticate,
-  devBypassAuth,
-  courseController.getCourse
-);
-
+// GET COURSE BY CATEGORY
 router.get(
   "/by-category/:categoryId",
   // authenticate,
@@ -29,10 +22,21 @@ router.get(
   courseController.getCoursesByCategory
 );
 
+// GET COURSE BY ID
+router.get(
+  "/:courseId",
+  // authenticate,
+  devBypassAuth,
+  courseController.getCourse
+);
+
+
+
 /* =========================
    COURSE (ADMIN only)
 ========================= */
 
+// CREATE A NEW COURSE
 router.post(
   "/",
   // authenticate,

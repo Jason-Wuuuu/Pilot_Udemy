@@ -7,6 +7,7 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import {ddb} from "../config/dynamodb.js";
+import crypto from "crypto";
 import {
   buildCoursePK,
   COURSE_METADATA_SK,
@@ -49,18 +50,17 @@ export const getCoursesByCategoryId = async (categoryId) => {
 
 export const createCourse = async (payload) => {
   const {
-    courseId,
     courseName,
     description,
-    categoryId,
     categoryName,
     level,
     createdBy,
+    instructor,
     status = "DRAFT",
   } = payload;
 
-  if (!courseId) throw new Error("courseId is required");
-
+  const courseId = crypto.randomUUID();
+  const categoryId = String(categoryName).toLowerCase()
   const now = new Date().toISOString();
 
   const item = {
@@ -78,6 +78,9 @@ export const createCourse = async (payload) => {
 
     status,
     createdBy,
+    instructor,
+
+    studentIds: [],
 
     GSI1PK: buildCategoryPK(categoryId),
     GSI1SK: `COURSE#${courseId}`,
@@ -85,11 +88,12 @@ export const createCourse = async (payload) => {
     createdAt: now,
     updatedAt: now,
   };
+  
 
   await ddb.send(
     new PutItemCommand({
       TableName: TABLE_NAME,
-      Item: marshall(item),
+      Item: marshall(item , { removeUndefinedValues: true }),
       ConditionExpression: "attribute_not_exists(PK)",
     })
   );

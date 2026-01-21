@@ -15,6 +15,7 @@ export const buildCourseItem = ({
   level,
   contentType,
   createdBy,
+  instructor,
   status = "DRAFT",
   publishedAt = null,
 }) => {
@@ -39,9 +40,13 @@ export const buildCourseItem = ({
     categoryId,
     categoryName,
 
+    // enrollment (mutable)
+    studentIds: [],
+
     // lifecycle
     status,
     createdBy,
+    instructor,
     createdAt: now,
     publishedAt,
 

@@ -7,6 +7,12 @@ const TEMP_UPLOAD_DIR = path.join(process.cwd(), "tmp");
 if (!fs.existsSync(TEMP_UPLOAD_DIR)) {
   fs.mkdirSync(TEMP_UPLOAD_DIR, { recursive: true });
 }
+const sanitizeFilename = (name) => {
+  return name
+    .replace(/[^a-zA-Z0-9._-]/g, "_")
+    .replace(/_+/g, "_")
+    .toLowerCase();
+};
 
 
 const storage = multer.diskStorage({
@@ -16,13 +22,13 @@ const storage = multer.diskStorage({
 
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
-    const safeName = `${Date.now()}-${Math.random()
-      .toString(36)
-      .slice(2)}${ext}`;
+    const baseName = path.basename(file.originalname, ext);
+    const safeBase = sanitizeFilename(baseName);
 
-    cb(null, safeName);
+    cb(null, `${safeBase}${ext}`);
   },
 });
+
 
 
 const fileFilter = (req, file, cb) => {
