@@ -429,7 +429,7 @@ export default function HomeworkDetail() {
           </div>
         )}
 
-        {userRole === "ADMIN" && (
+        {userRole === "ADMIN" && !isEditingHomework && (
           <div className="p-4 sm:p-6">
             <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
               Submissions ({homework.submissions?.length || 0})
