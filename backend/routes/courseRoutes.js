@@ -16,7 +16,7 @@ const router = express.Router();
 
 // GET COURSE BY CATEGORY
 router.get(
-  "/by-category/:categoryId",
+  "/categories/:categoryId",
   // authenticate,
   devBypassAuth,
   courseController.getCoursesByCategory
