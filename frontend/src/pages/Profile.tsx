@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import type { RootState, AppDispatch } from "../store";
 import { logout } from "../store/slices/authSlice";
-import DeleteAccountButton  from "../components/DeleteAccountButton";
+import DeleteAccountButton from "../components/DeleteAccountButton";
 import BackToHomepage from "../components/BackToHomepage";
 
 const Profile = () => {
@@ -25,7 +25,6 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen flex justify-center items-center">
-
       <BackToHomepage />
       <div className="w-full max-w-md p-6 border rounded space-y-6">
         <h1 className="text-2xl font-bold text-center">Profile</h1>

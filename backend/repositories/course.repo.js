@@ -6,17 +6,14 @@ import {
   DeleteItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import {ddb} from "../config/dynamodb.js";
+import { ddb } from "../config/dynamodb.js";
 import crypto from "crypto";
-import {
-  buildCoursePK,
-  COURSE_METADATA_SK,
-} from "../models/course.model.js";
+import { buildCoursePK, COURSE_METADATA_SK } from "../models/course.model.js";
 import { buildCategoryPK } from "../models/category.model.js";
 
-const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME;
-if (!TABLE_NAME){
-    throw new Error("DYNAMODB_TABLE_NAME is not configured");
+const TABLE_NAME = "Courses";
+if (!TABLE_NAME) {
+  throw new Error("DYNAMODB_TABLE_NAME is not configured");
 }
 
 export const getCourseById = async (courseId) => {
@@ -37,8 +34,7 @@ export const getCoursesByCategoryId = async (categoryId) => {
     new QueryCommand({
       TableName: TABLE_NAME,
       IndexName: "GSI1",
-      KeyConditionExpression:
-        "GSI1PK = :pk",
+      KeyConditionExpression: "GSI1PK = :pk",
       ExpressionAttributeValues: marshall({
         ":pk": buildCategoryPK(categoryId),
       }),
@@ -60,7 +56,7 @@ export const createCourse = async (payload) => {
   } = payload;
 
   const courseId = crypto.randomUUID();
-  const categoryId = String(categoryName).toLowerCase()
+  const categoryId = String(categoryName).toLowerCase();
   const now = new Date().toISOString();
 
   const item = {
@@ -88,19 +84,17 @@ export const createCourse = async (payload) => {
     createdAt: now,
     updatedAt: now,
   };
-  
 
   await ddb.send(
     new PutItemCommand({
       TableName: TABLE_NAME,
-      Item: marshall(item , { removeUndefinedValues: true }),
+      Item: marshall(item, { removeUndefinedValues: true }),
       ConditionExpression: "attribute_not_exists(PK)",
     })
   );
 
   return item;
 };
-
 
 export const updateCourse = async (courseId, updates) => {
   if (!updates || Object.keys(updates).length === 0) {
@@ -151,7 +145,6 @@ export const updateCourse = async (courseId, updates) => {
 
   return unmarshall(Attributes);
 };
-
 
 export const deleteCourse = async (courseId) => {
   await ddb.send(

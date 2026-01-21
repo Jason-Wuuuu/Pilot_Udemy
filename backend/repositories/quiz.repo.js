@@ -3,10 +3,12 @@ import {
   PutCommand,
   UpdateCommand,
   QueryCommand,
+  ScanCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { ddb } from "../config/dynamodb.js";
 
 const TABLE_NAME = "Quiz";
+const COURSE_TABLE = "Courses";
 const USER_INDEX = "userId-createdAt-index";
 //1. getquizbyid
 export const getQuizByIdRepo = async (quizId) => {
@@ -70,16 +72,16 @@ export const deleteQuizByIdRepo = async (quizId) => {
 };
 
 //5. get all quizzes
-export const getQuizzesByUserIdRepo = async (userId) => {
+export const getQuizzesByCourseIdRepo = async (courseId) => {
   const res = await ddb.send(
     new QueryCommand({
       TableName: TABLE_NAME,
-      IndexName: USER_INDEX,
-      KeyConditionExpression: "userId = :uid",
+      IndexName: "courseId-createdAt-index",
+      KeyConditionExpression: "courseId = :cid",
       ExpressionAttributeValues: {
-        ":uid": userId,
+        ":cid": courseId,
       },
-      ScanIndexForward: false, // 按 createdAt 倒序
+      ScanIndexForward: false,
     })
   );
 
@@ -91,6 +93,35 @@ export const getAllQuizzesRepo = async () => {
   const res = await ddb.send(
     new ScanCommand({
       TableName: TABLE_NAME,
+    })
+  );
+
+  return res.Items || [];
+};
+
+export const getCoursesByStudentIdRepo = async (studentId) => {
+  const res = await ddb.send(
+    new ScanCommand({
+      TableName: COURSE_TABLE,
+      FilterExpression: "entityType = :course AND contains(studentIds, :sid)",
+      ExpressionAttributeValues: {
+        ":course": "COURSE",
+        ":sid": studentId,
+      },
+    })
+  );
+
+  return res.Items || [];
+};
+
+export const getAllCoursesRepo = async () => {
+  const res = await ddb.send(
+    new ScanCommand({
+      TableName: COURSE_TABLE,
+      FilterExpression: "entityType = :course",
+      ExpressionAttributeValues: {
+        ":course": "COURSE",
+      },
     })
   );
 

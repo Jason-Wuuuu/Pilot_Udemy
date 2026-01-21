@@ -103,12 +103,15 @@ export const getSubmissionByIdService = async ({ user, submissionId }) => {
 
     const isCorrect = ans && ans.selectedAnswer === q.answer;
 
+    const showCorrectAnswer =
+      user.role === "ADMIN" || submission.userId === user.userId;
+
     return {
       questionId: q.questionId,
       prompt: q.prompt,
       options: q.options,
       yourAnswer: ans?.selectedAnswer,
-      correctAnswer: user.role === "ADMIN" ? q.answer : undefined,
+      correctAnswer: showCorrectAnswer ? q.answer : undefined,
       explanation: q.explains,
       isCorrect,
     };

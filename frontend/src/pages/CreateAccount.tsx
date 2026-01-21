@@ -10,7 +10,7 @@ const CreateAccount = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("STUDENT");
-    const [invitationCode, setInvitationCode] = useState("");
+  const [invitationCode, setInvitationCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();

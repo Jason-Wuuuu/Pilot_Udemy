@@ -8,6 +8,7 @@ export const CreateQuizSchema = z
     title: z.string().min(1),
     difficulty: z.enum(["Easy", "Medium", "Hard"]),
     timeLimit: z.number().int().positive().optional(),
+    courseId: z.string().min(1),
 
     questions: z
       .array(
@@ -34,7 +35,7 @@ export const UpdateQuizSchema = z
           questionId: z.string().min(1),
           prompt: z.string().min(1),
           options: z.array(z.string().min(1)).min(2),
-          Explains: z.string().optional(),
+          explains: z.string().optional(),
           answer: z.string().min(1),
         })
       )
