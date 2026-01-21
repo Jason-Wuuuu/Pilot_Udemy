@@ -1,23 +1,37 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import QuizListPage from "./pages/QuizListPage";
-import QuizTakePage from "./pages/QuizTakePage";
-import QuizResultPage from "./pages/QuizResultPage";
-import QuizCreatePage from "./pages/QuizCreatePage";
+import { Route, Routes } from "react-router";
+import HomePage from "./pages/HomePage";
+import Login from "./pages/Login";
+import CreateAccount from "./pages/CreateAccount";
+import AdminPage from "./pages/AdminPage";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import RoleRoute from "./routes/RoleRoute";
+import Profile from "./pages/Profile";
+import ForgotPassword from "./pages/ForgotPassword";
 
 function App() {
   return (
-    <>
+    <div>
       <Routes>
-        <Route path="/" element={<Navigate to="/quizzes" />} />
+        {/* public pages */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<CreateAccount />} />
+        <Route path="/forgot-password" element={<ForgotPassword />}></Route>
 
-        <Route path="/quizzes" element={<QuizListPage />} />
-        <Route path="/quizzes/:quizId" element={<QuizTakePage />} />
-        <Route path="/submissions/:submissionId" element={<QuizResultPage />} />
+        {/* Auth-protected pages */}
+        <Route element={<ProtectedRoute />}>
+          {/* <Route path="/course" element={<CoursePage />} />
+          <Route path="/quiz" element={<QuizPage />} />
+          <Route path="/homework" element={<HomeworkPage />} /> */}
+          <Route path="/profile" element={<Profile />} />
+        </Route>
 
-        {/* Admin / Author side */}
-        <Route path="/quizzes/new" element={<QuizCreatePage />} />
+        {/* Role-protected pages */}
+        <Route element={<RoleRoute allowedRoles={["ADMIN"]} />}>
+          <Route path="/admin" element={<AdminPage />} />
+        </Route>
       </Routes>
-    </>
+    </div>
   );
 }
 
