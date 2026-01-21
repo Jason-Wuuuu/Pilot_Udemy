@@ -7,6 +7,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import RoleRoute from "./routes/RoleRoute";
 import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/ForgotPassword";
+import CourseListPage from './pages/CourseListPage';
 
 function App() {
   return (
@@ -18,10 +19,14 @@ function App() {
         <Route path="/register" element={<CreateAccount />} />
         <Route path="/forgot-password" element={<ForgotPassword />}></Route>
 
+        <Route
+          path="/categories/:categoryId"
+          element={<CourseListPage />}
+        />
         {/* Auth-protected pages */}
         <Route element={<ProtectedRoute />}>
-          {/* <Route path="/course" element={<CoursePage />} />
-          <Route path="/quiz" element={<QuizPage />} />
+
+          {/* <Route path="/quiz" element={<QuizPage />} />
           <Route path="/homework" element={<HomeworkPage />} /> */}
           <Route path="/profile" element={<Profile />} />
         </Route>
