@@ -3,7 +3,7 @@ import { store } from "../store";
 import { logout } from "../store/slices/authSlice";
 
 const api = axios.create({
-  baseURL: "http://localhost:5001/api",
+  baseURL: "http://localhost:3000/api",
 });
 
 // 自动在请求头加 Authorization + userId

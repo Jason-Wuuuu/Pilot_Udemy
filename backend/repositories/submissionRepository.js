@@ -1,4 +1,4 @@
-import { ddb } from "../db/dynamodb.js";
+import { ddb } from "../config/dynamodb.js";
 import {
   PutCommand,
   ScanCommand,
@@ -94,4 +94,18 @@ export const remove = async (id) => {
       Key: { id },
     })
   );
+};
+
+export const findByHomeworkIdAndStudentId = async (homeworkId, studentId) => {
+  const result = await ddb.send(
+    new ScanCommand({
+      TableName: SUBMISSION_TABLE,
+      FilterExpression: "homeworkId = :homeworkId AND studentId = :studentId",
+      ExpressionAttributeValues: {
+        ":homeworkId": homeworkId,
+        ":studentId": studentId,
+      },
+    })
+  );
+  return result.Items?.[0] || null;
 };
