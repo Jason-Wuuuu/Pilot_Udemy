@@ -84,6 +84,7 @@ export default function Homework({courseId}: {courseId: string}) {
           <h1 className="text-lg @sm:text-2xl @md:text-3xl font-bold">
             Homeworks ({homeworks.length})
           </h1>
+          <button className="btn btn-primary">Primary</button>
           {user.role === "ADMIN" && (
             <button
               onClick={() => setShowForm({ mode: "create" })}
