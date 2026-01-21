@@ -6,6 +6,7 @@ import type { AppDispatch } from "../store";
 import { normalizeUser } from "../utils/normalizeUser";
 import api from "../api/axios"; // 使用统一 axios
 import { useAppSelector } from "../store/hooks";
+import BackToHomepage from "../components/BackToHomepage";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -44,6 +45,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
+      <BackToHomepage />
       <div className="w-full max-w-sm p-6 border rounded space-y-6">
         <h1 className="text-2xl font-bold text-center">Login</h1>
 

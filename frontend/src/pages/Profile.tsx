@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import type { RootState, AppDispatch } from "../store";
 import { logout } from "../store/slices/authSlice";
+import DeleteAccountButton  from "../components/DeleteAccountButton";
 
 const Profile = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -54,6 +55,11 @@ const Profile = () => {
         <button onClick={handleLogout} className="btn btn-error w-full">
           Logout
         </button>
+        {/* Delete Account button with extra styling */}
+        <DeleteAccountButton
+          userId={user.id}
+          className="btn btn-outline btn-error w-full mt-2"
+        />
       </div>
     </div>
   );

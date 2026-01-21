@@ -6,6 +6,7 @@ import AdminPage from "./pages/AdminPage";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import RoleRoute from "./routes/RoleRoute";
 import Profile from "./pages/Profile";
+import ForgotPassword from "./pages/ForgotPassword";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<CreateAccount />} />
+        <Route path="/forgot-password" element={<ForgotPassword />}></Route>
 
         {/* Auth-protected pages */}
         <Route element={<ProtectedRoute />}>

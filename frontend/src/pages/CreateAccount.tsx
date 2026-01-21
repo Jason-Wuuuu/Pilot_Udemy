@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import api from "../api/axios"; // your axios instance
+import BackToHomepage from "../components/BackToHomepage";
 
 type Role = "ADMIN" | "STUDENT";
 
@@ -35,6 +36,7 @@ const CreateAccount = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
+      <BackToHomepage />
       <div className="w-full max-w-md p-6 border rounded space-y-6">
         <h1 className="text-2xl font-bold text-center">Create an Account</h1>
 
