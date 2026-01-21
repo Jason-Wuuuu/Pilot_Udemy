@@ -55,8 +55,10 @@ export default function HomeworkCard({
   }, [homework.description]);
 
   return (
-    <div className="border border-gray-300 rounded-md overflow-hidden">
-      <div className="p-2 @sm:p-3 @md:p-4">
+    <div className={`border border-gray-300 rounded-md overflow-hidden flex flex-col ${
+      isExpanded ? "" : "h-56 @sm:h-64 @md:h-80 @lg:h-96"
+    }`}>
+      <div className="p-2 @sm:p-3 @md:p-4 flex-1 flex flex-col">
         <div className="flex items-start justify-between gap-2 mb-2">
           <h2 className="text-base @sm:text-lg @md:text-xl @lg:text-2xl font-bold">{homework.title}</h2>
           <button
@@ -72,42 +74,39 @@ export default function HomeworkCard({
         <div 
           ref={descriptionRef}
           className={`text-xs @sm:text-sm @md:text-base @lg:text-lg text-gray-500 whitespace-pre-wrap ${
-            isExpanded ? "" : "max-h-20 @sm:max-h-24 @md:max-h-32 @lg:max-h-40 overflow-hidden"
+            isExpanded ? "" : "h-20 @sm:h-24 @md:h-32 @lg:h-40 overflow-hidden"
           }`}
         >
           {homework.description}
         </div>
-        {(hasOverflow || isExpanded) && (
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="text-xs @sm:text-sm text-blue-500 hover:text-blue-700 mt-2 mb-4"
-          >
-            {isExpanded ? "Show less" : "Show more"}
-          </button>
-        )}
-        {!hasOverflow && !isExpanded && <div className="mb-4" />}
-        <div className="flex justify-end items-end gap-2">
+        <div className="h-6 @sm:h-7 mt-2 mb-2">
+          {(hasOverflow || isExpanded) && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-xs @sm:text-sm text-blue-500 hover:text-blue-700"
+            >
+              {isExpanded ? "Show less" : "Show more"}
+            </button>
+          )}
+        </div>
+        <div className="flex justify-end items-end gap-2 mt-auto">
           {userRole === "ADMIN" ? (
             <>
               <span className="text-xs @sm:text-sm @md:text-base text-gray-600 font-medium mr-2">
                 {homework.submissions?.length || 0} submission{(homework.submissions?.length || 0) !== 1 ? "s" : ""}
               </span>
-              {userId === homework.tutorId && (
-                <>
-                  <button 
-                    onClick={onUpdate}
-                    className="text-xs @sm:text-sm px-2 @sm:px-3 py-1 @sm:py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
-                  >
-                    Update
-                  </button>
-                  <button 
-                    onClick={onDelete}
-                    className="text-xs @sm:text-sm px-2 @sm:px-3 py-1 @sm:py-1.5 bg-red-500 text-white rounded hover:bg-red-600 cursor-pointer"
-                  >
-                    Delete
-                  </button>
-                </>
-              )}
+              <button 
+                onClick={onUpdate}
+                className="text-xs @sm:text-sm px-2 @sm:px-3 py-1 @sm:py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
+              >
+                Update
+              </button>
+              <button 
+                onClick={onDelete}
+                className="text-xs @sm:text-sm px-2 @sm:px-3 py-1 @sm:py-1.5 bg-red-500 text-white rounded hover:bg-red-600 cursor-pointer"
+              >
+                Delete
+              </button>
             </>
           ) : (
             <>
