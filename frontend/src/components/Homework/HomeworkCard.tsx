@@ -60,7 +60,7 @@ export default function HomeworkCard({
     }`}>
       <div className="p-2 @sm:p-3 @md:p-4 flex-1 flex flex-col">
         <div className="flex items-start justify-between gap-2 mb-2">
-          <h2 className="text-base @sm:text-lg @md:text-xl @lg:text-2xl font-bold">{homework.title}</h2>
+          <h2 className="text-base @sm:text-lg @md:text-xl @lg:text-2xl font-bold underline underline-offset-2">{homework.title}</h2>
           <button
             onClick={() => navigate(`/homework/${homework.id}`)}
             className="shrink-0 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors cursor-pointer"
@@ -83,7 +83,7 @@ export default function HomeworkCard({
           {(hasOverflow || isExpanded) && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-xs @sm:text-sm text-blue-500 hover:text-blue-700"
+              className="text-xs @sm:text-sm text-blue-500 hover:text-blue-700 underline underline-offset-2 cursor-pointer"
             >
               {isExpanded ? "Show less" : "Show more"}
             </button>
@@ -97,9 +97,14 @@ export default function HomeworkCard({
               </span>
               <button 
                 onClick={onUpdate}
-                className="text-xs @sm:text-sm px-2 @sm:px-3 py-1 @sm:py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
+                disabled={isOverdue}
+                className={`text-xs @sm:text-sm px-2 @sm:px-3 py-1 @sm:py-1.5 rounded ${
+                  isOverdue
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-blue-500 text-white hover:bg-blue-600 cursor-pointer"
+                }`}
               >
-                Update
+                Edit
               </button>
               <button 
                 onClick={onDelete}
@@ -156,7 +161,6 @@ export default function HomeworkCard({
         </span>
       </div>
 
-      {/* Student View/Edit Submission Modal */}
       {selectedSubmission && userRole === "STUDENT" && (
         <SubmissionModal
           submission={selectedSubmission}
@@ -166,7 +170,6 @@ export default function HomeworkCard({
         />
       )}
 
-      {/* Student Create Submission Modal */}
       {showCreateModal && userRole === "STUDENT" && (
         <SubmissionModal
           homeworkId={String(homework.id)}

@@ -20,7 +20,7 @@ export const getSubmissionById = async (id) => {
 };
 
 export const createSubmission = async (homeworkId, submissionData) => {
-  const { studentId, text, fileUrl } = submissionData;
+  const { studentId, studentName, text, fileUrl } = submissionData;
 
   const homeworkResult = await homeworkService.getHomeworkById(homeworkId);
   if (homeworkResult.error) {
@@ -37,6 +37,7 @@ export const createSubmission = async (homeworkId, submissionData) => {
 
   const newSubmission = await submissionRepository.create({
     studentId,
+    studentName: studentName || null,
     homeworkId,
     text: text || "",
     fileUrl: fileUrl || null,
@@ -119,10 +120,11 @@ export const updateSubmissionContent = async (id, studentId, updateData) => {
     return { error: "Unauthorized: You can only update your own submission", status: 403 };
   }
 
-  const { text, fileUrl } = updateData;
+  const { text, fileUrl, studentName } = updateData;
   const updatedSubmission = await submissionRepository.update(id, {
     ...(text !== undefined && { text }),
     ...(fileUrl !== undefined && { fileUrl }),
+    ...(studentName !== undefined && { studentName }),
   });
 
   return { data: updatedSubmission };

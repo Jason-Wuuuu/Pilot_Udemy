@@ -114,10 +114,11 @@ export const getMySubmission = async (req, res) => {
 export const updateSubmissionContent = async (req, res) => {
   try {
     const { id } = req.params;
-    const { studentId, text, fileUrl } = req.body;
+    const { studentId, studentName, text, fileUrl } = req.body;
     const result = await submissionService.updateSubmissionContent(id, studentId, {
       text,
       fileUrl,
+      studentName,
     });
 
     if (result.error) {

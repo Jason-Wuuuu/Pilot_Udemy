@@ -3,7 +3,7 @@ import { useAppSelector } from "../../store/hooks";
 import type { Submission } from "../../types/homework";
 
 interface SubmissionModalProps {
-  submission?: Submission; // undefined = create mode
+  submission?: Submission;
   homeworkId?: string;
   homeworkTitle?: string;
   isOverdue: boolean;
@@ -34,7 +34,6 @@ export default function SubmissionModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Student can only edit if not overdue AND not graded
   const canStudentEdit = userRole === "STUDENT" && !isOverdue && !isGraded;
 
   useEffect(() => {
@@ -63,6 +62,7 @@ export default function SubmissionModal({
         method = "POST";
         body = {
           studentId: userId,
+          studentName: user?.username,
           text: formData.text,
         };
       } else if (userRole === "ADMIN") {
@@ -79,6 +79,7 @@ export default function SubmissionModal({
         method = "PUT";
         body = {
           studentId: submission.studentId,
+          studentName: user?.username,
           text: formData.text,
         };
       }
@@ -132,7 +133,6 @@ export default function SubmissionModal({
               </div>
             )}
 
-            {/* Assignment Title (Create mode) */}
             {isCreateMode && homeworkTitle && (
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-gray-700">Assignment</label>
@@ -142,17 +142,15 @@ export default function SubmissionModal({
               </div>
             )}
 
-            {/* Student Info (Admin view, existing submission) */}
             {!isCreateMode && userRole === "ADMIN" && (
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-gray-700">Student</label>
                 <p className="text-sm text-gray-800 bg-gray-50 px-3 py-2 rounded border border-gray-200">
-                  {submission.studentId}
+                  {submission.studentName || submission.studentId}
                 </p>
               </div>
             )}
 
-            {/* Submitted At (existing submission only) */}
             {!isCreateMode && (
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-gray-700">Submitted At</label>
@@ -162,7 +160,6 @@ export default function SubmissionModal({
               </div>
             )}
 
-            {/* Submission Text */}
             <div className="flex flex-col gap-1 flex-1 min-h-0">
               <label htmlFor="text" className="text-sm font-medium text-gray-700 shrink-0">
                 {isCreateMode ? "Your Answer" : "Submission Content"}
@@ -183,7 +180,6 @@ export default function SubmissionModal({
               )}
             </div>
 
-            {/* File URL (if exists) */}
             {!isCreateMode && submission.fileUrl && (
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-gray-700">Attached File</label>
@@ -198,7 +194,6 @@ export default function SubmissionModal({
               </div>
             )}
 
-            {/* Admin Grading Section */}
             {!isCreateMode && userRole === "ADMIN" && (
               <>
                 <div className="flex flex-col gap-1">
@@ -238,7 +233,6 @@ export default function SubmissionModal({
               </>
             )}
 
-            {/* Student View: Show grade/feedback if graded */}
             {!isCreateMode && userRole === "STUDENT" && submission.score !== null && (
               <>
                 <div className="flex flex-col gap-1">
@@ -259,7 +253,6 @@ export default function SubmissionModal({
               </>
             )}
 
-            {/* Warning for students when they can't edit */}
             {!isCreateMode && userRole === "STUDENT" && !canStudentEdit && (
               <p className="text-sm text-gray-500 bg-gray-50 p-2 rounded shrink-0">
                 {isGraded 
@@ -268,7 +261,6 @@ export default function SubmissionModal({
               </p>
             )}
 
-            {/* Action buttons */}
             <div className="flex justify-end gap-2 sm:gap-3 mt-2 shrink-0">
               <button
                 type="button"

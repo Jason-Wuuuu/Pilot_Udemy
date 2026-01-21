@@ -14,6 +14,7 @@ export interface Submission {
   id: string;
   homeworkId: string;
   studentId: string;
+  studentName?: string;
   text: string;
   fileUrl?: string;
   score: number | null;

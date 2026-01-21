@@ -7,6 +7,7 @@ import { useAppSelector } from "../../store/hooks";
 import { getTimeRemaining } from "../../utils/time";
 import type { Submission } from "../../types/homework";
 import HomeworkForm from "./HomeworkForm";
+import SubmissionsTable from "../HomeworkSubmission/SubmissionsTable";
 
 export default function HomeworkDetail() {
   const { homeworkId } = useParams<{ homeworkId: string }>();
@@ -28,6 +29,7 @@ export default function HomeworkDetail() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingHomework, setIsEditingHomework] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const { homework, loading, error, refetch } = useHomework(homeworkId);
 
@@ -148,8 +150,8 @@ export default function HomeworkDetail() {
         : `http://localhost:3000/api/homework-submissions/${mySubmission.id}/content`;
       
       const body = isCreate
-        ? { studentId: userId, text: submissionText }
-        : { studentId: mySubmission.studentId, text: submissionText };
+        ? { studentId: userId, studentName: user?.username, text: submissionText }
+        : { studentId: mySubmission.studentId, studentName: user?.username, text: submissionText };
 
       const res = await fetch(url, {
         method: isCreate ? "POST" : "PUT",
@@ -169,6 +171,31 @@ export default function HomeworkDetail() {
       return false;
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!homework) return;
+    if (!confirm("Are you sure you want to delete this homework?")) return;
+
+    setDeleting(true);
+    try {
+      const res = await fetch(`http://localhost:3000/api/homeworks/${homework.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      navigate(-1);
+    } catch (err) {
+      console.error("Failed to delete homework:", err);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -200,7 +227,7 @@ export default function HomeworkDetail() {
     <div className={`w-full p-4 sm:p-6 md:p-8 ${userRole === "STUDENT" ? "min-h-full lg:h-dvh lg:flex lg:flex-col" : "min-h-full"}`}>
       <div className="flex items-center justify-between mb-6 shrink-0">
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate(-1)}
           className="text-sm px-3 py-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded flex items-center gap-1 cursor-pointer"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,12 +236,30 @@ export default function HomeworkDetail() {
           Back
         </button>
         {userRole === "ADMIN" && !isEditingHomework && (
-          <button
-            onClick={() => setIsEditingHomework(true)}
-            className="text-sm px-3 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-          >
-            Edit Homework
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsEditingHomework(true)}
+              disabled={isOverdue}
+              className={`text-sm px-3 py-1.5 rounded transition-colors cursor-pointer ${
+                isOverdue
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-blue-500 text-white hover:bg-blue-600"
+              }`}
+            >
+              Edit
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className={`text-sm px-3 py-1.5 rounded transition-colors cursor-pointer ${
+                deleting
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-red-500 text-white hover:bg-red-600"
+              }`}
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </button>
+          </div>
         )}
       </div>
 
@@ -365,7 +410,7 @@ export default function HomeworkDetail() {
                                     setSubmissionText(mySubmission.text);
                                     setIsEditing(true);
                                   }}
-                                  className="px-6 py-2 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                                  className="px-6 py-2 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors cursor-pointer"
                                 >
                                   Edit
                                 </button>
@@ -398,7 +443,7 @@ export default function HomeworkDetail() {
                                     setSaveError(null);
                                   }}
                                   disabled={saving}
-                                  className="px-4 py-2 rounded-lg font-medium border border-gray-300 hover:bg-gray-100 transition-colors"
+                                  className="px-4 py-2 rounded-lg font-medium border border-gray-300 hover:bg-gray-100 transition-colors cursor-pointer"
                                 >
                                   Cancel
                                 </button>
@@ -408,7 +453,7 @@ export default function HomeworkDetail() {
                                     if (success) setIsEditing(false);
                                   }}
                                   disabled={saving || !submissionText.trim()}
-                                  className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                                  className={`px-6 py-2 rounded-lg font-medium transition-colors cursor-pointer ${
                                     saving || !submissionText.trim()
                                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                                       : "bg-blue-500 text-white hover:bg-blue-600"
@@ -440,48 +485,11 @@ export default function HomeworkDetail() {
               <div className={`flex flex-col lg:flex-row gap-4 ${selectedSubmission ? "lg:h-[80vh]" : ""}`}>
                 <div className={`${selectedSubmission ? "lg:w-1/2 h-full" : "w-full"} transition-all`}>
                   <div className="border border-gray-200 rounded-lg h-full overflow-y-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-gray-100 text-left sticky top-0 z-10">
-                        <tr>
-                          <th className="px-3 py-2 font-medium text-gray-700 bg-gray-100">Student</th>
-                          <th className="px-3 py-2 font-medium text-gray-700 bg-gray-100">Submitted</th>
-                          <th className="px-3 py-2 font-medium text-gray-700 bg-gray-100">Score</th>
-                          <th className="px-3 py-2 font-medium text-gray-700 bg-gray-100">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        {submissions.map((sub) => (
-                          <tr
-                            key={sub.id}
-                            onClick={() => handleSelectSubmission(sub)}
-                            className={`cursor-pointer transition-colors ${
-                              selectedSubmission?.id === sub.id
-                                ? "bg-blue-50"
-                                : "hover:bg-gray-50"
-                            }`}
-                          >
-                            <td className="px-3 py-2 text-gray-800">{sub.studentId}</td>
-                            <td className="px-3 py-2 text-gray-600">
-                              {new Date(sub.submittedAt).toLocaleDateString()}
-                            </td>
-                            <td className="px-3 py-2 text-gray-800">
-                              {sub.score !== null ? sub.score : "—"}
-                            </td>
-                            <td className="px-3 py-2">
-                              {sub.score !== null ? (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                  Graded
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                  Pending
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <SubmissionsTable
+                      submissions={submissions}
+                      selectedId={selectedSubmission?.id}
+                      onRowClick={handleSelectSubmission}
+                    />
                   </div>
                 </div>
 
@@ -507,7 +515,7 @@ export default function HomeworkDetail() {
                       <div className="mb-4 shrink-0">
                         <label className="text-sm font-medium text-gray-700">Student</label>
                         <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded mt-1">
-                          {selectedSubmission.studentId}
+                          {selectedSubmission.studentName || selectedSubmission.studentId}
                         </p>
                       </div>
 
