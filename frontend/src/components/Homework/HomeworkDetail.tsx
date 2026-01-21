@@ -512,18 +512,19 @@ export default function HomeworkDetail() {
                         </div>
                       )}
 
-                      <div className="mb-4 shrink-0">
-                        <label className="text-sm font-medium text-gray-700">Student</label>
-                        <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded mt-1">
-                          {selectedSubmission.studentName || selectedSubmission.studentId}
-                        </p>
-                      </div>
-
-                      <div className="mb-4 shrink-0">
-                        <label className="text-sm font-medium text-gray-700">Submitted At</label>
-                        <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded mt-1">
-                          {new Date(selectedSubmission.submittedAt).toLocaleString()}
-                        </p>
+                      <div className="mb-4 shrink-0 flex gap-4">
+                        <div className="flex-1">
+                          <label className="text-sm font-medium text-gray-700">Student</label>
+                          <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded mt-1">
+                            {selectedSubmission.studentName || selectedSubmission.studentId}
+                          </p>
+                        </div>
+                        <div className="flex-1">
+                          <label className="text-sm font-medium text-gray-700">Submitted At</label>
+                          <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded mt-1">
+                            {new Date(selectedSubmission.submittedAt).toLocaleString()}
+                          </p>
+                        </div>
                       </div>
 
                       <div className="mb-4 flex-1 min-h-0 flex flex-col">
@@ -586,7 +587,7 @@ export default function HomeworkDetail() {
                               type="button"
                               onClick={handleResetGrade}
                               disabled={gradingSaving}
-                              className={`flex-1 py-2 rounded font-medium transition-colors ${
+                              className={`flex-1 py-2 rounded font-medium transition-colors cursor-pointer ${
                                 gradingSaving
                                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                                   : "bg-gray-500 text-white hover:bg-gray-600"
@@ -598,7 +599,7 @@ export default function HomeworkDetail() {
                           <button
                             onClick={handleGradeSubmit}
                             disabled={gradingSaving || gradeScore === null}
-                            className={`flex-1 py-2 rounded font-medium transition-colors ${
+                            className={`flex-1 py-2 rounded font-medium transition-colors cursor-pointer ${
                               gradingSaving || gradeScore === null
                                 ? "bg-blue-300 text-white cursor-not-allowed"
                                 : "bg-blue-500 text-white hover:bg-blue-600"
