@@ -88,3 +88,64 @@ export const deleteSubmission = async (req, res) => {
     res.status(500).json({ error: "Failed to delete submission" });
   }
 };
+
+// GET /api/homeworks/:homeworkId/submissions/my?studentId=xxx
+export const getMySubmission = async (req, res) => {
+  try {
+    const { homeworkId } = req.params;
+    const { studentId } = req.query;
+    const result = await submissionService.getStudentSubmissionForHomework(
+      homeworkId,
+      studentId
+    );
+
+    if (result.error) {
+      return res.status(result.status).json({ error: result.error });
+    }
+
+    res.json({ data: result.data });
+  } catch (error) {
+    console.error("Error fetching student submission:", error);
+    res.status(500).json({ error: "Failed to fetch submission" });
+  }
+};
+
+// PUT /api/submissions/:id/content
+export const updateSubmissionContent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { studentId, studentName, text, fileUrl } = req.body;
+    const result = await submissionService.updateSubmissionContent(id, studentId, {
+      text,
+      fileUrl,
+      studentName,
+    });
+
+    if (result.error) {
+      return res.status(result.status).json({ error: result.error });
+    }
+
+    res.json({ data: result.data });
+  } catch (error) {
+    console.error("Error updating submission content:", error);
+    res.status(500).json({ error: "Failed to update submission" });
+  }
+};
+
+// PUT /api/submissions/:id/grade
+export const gradeSubmission = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { score, feedback } = req.body;
+    const result = await submissionService.gradeSubmission(id, { score, feedback });
+
+    if (result.error) {
+      return res.status(result.status).json({ error: result.error });
+    }
+
+    res.json({ data: result.data });
+  } catch (error) {
+    console.error("Error grading submission:", error);
+    res.status(500).json({ error: "Failed to grade submission" });
+  }
+};

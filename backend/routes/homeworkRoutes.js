@@ -9,6 +9,7 @@ import {
 import {
   getSubmissionsByHomework,
   createSubmission,
+  getMySubmission,
 } from "../controllers/submissionController.js";
 
 const router = Router();
@@ -21,6 +22,7 @@ router.put("/:id", updateHomework);
 router.delete("/:id", deleteHomework);
 
 // /api/homeworks/:homeworkId/submissions
+router.get("/:homeworkId/submissions/my", getMySubmission); 
 router.get("/:homeworkId/submissions", getSubmissionsByHomework);
 router.post("/:homeworkId/submissions", createSubmission);
 
