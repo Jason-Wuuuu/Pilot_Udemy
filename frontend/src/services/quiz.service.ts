@@ -42,3 +42,72 @@ export async function getMySubmissions() {
     },
   ]);
 }
+
+//this is quiz take page
+export async function getQuizById(quizId: string) {
+  return {
+    quizId,
+    title: "Java Basics Quiz",
+    questions: [
+      {
+        questionId: "q1",
+        prompt: "What is JVM?",
+        options: [
+          "Java Virtual Machine",
+          "Java Variable Method",
+          "Joint Virtual Memory",
+          "None of the above",
+        ],
+      },
+      {
+        questionId: "q2",
+        prompt: "Which keyword is used to inherit a class in Java?",
+        options: ["this", "super", "extends", "implements"],
+      },
+    ],
+  };
+}
+
+export async function submitQuiz(
+  quizId: string,
+  answers: { questionId: string; selectedAnswer: string }[]
+) {
+  // mock submissionId
+  return { submissionId: "sub_mock_001" };
+}
+
+//Result Detail Page
+// services/submission.mock.ts
+export async function getSubmissionById(submissionId: string) {
+  return {
+    submissionId,
+    quizId: "quiz_001",
+    score: 50,
+    correctCount: 1,
+    totalCount: 2,
+    questions: [
+      {
+        questionId: "q1",
+        prompt: "What is JVM?",
+        options: [
+          "Java Virtual Machine",
+          "Java Variable Method",
+          "Joint Virtual Memory",
+        ],
+        yourAnswer: "Java Variable Method",
+        correctAnswer: "Java Virtual Machine",
+        explains: "JVM is the runtime that executes Java bytecode.",
+        isCorrect: false,
+      },
+      {
+        questionId: "q2",
+        prompt: "Which keyword is used to inherit a class in Java?",
+        options: ["this", "super", "extends", "implements"],
+        yourAnswer: "extends",
+        correctAnswer: "extends",
+        explains: "extends is used for class inheritance.",
+        isCorrect: true,
+      },
+    ],
+  };
+}

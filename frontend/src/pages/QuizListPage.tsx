@@ -101,6 +101,10 @@ export default function QuizListPage() {
           ))}
         </div>
       )}
+
+      <Link to="/quizzes/new" className="btn btn-primary btn-sm">
+        + Create Quiz
+      </Link>
     </div>
   );
 }
