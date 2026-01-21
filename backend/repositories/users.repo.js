@@ -69,7 +69,7 @@ export async function createUser({ username, email, password, role }) {
     username,
     email,
     passwordHash,
-    role: role || "user",
+    role: role || "student",
     status: "ACTIVE",
     createdAt: new Date().toISOString(),
     profileImage: `https://cdn.app/avatar/${userId}.png`,

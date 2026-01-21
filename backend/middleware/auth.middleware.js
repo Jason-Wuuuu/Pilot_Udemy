@@ -1,7 +1,7 @@
 // middleware/auth.middleware.js
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { findUserById } from "../repositories/users.js";
+import { findUserById } from "../repositories/users.repo.js";
 
 dotenv.config();
 
@@ -16,6 +16,8 @@ export async function authenticate(req, res, next) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await findUserById(decoded.userId);
     if (!user) throw new Error();
+    //处理脏数据
+    user.role = user.role?.toUpperCase();
     req.user = user; // attach current user to request
     next();
   } catch (err) {
