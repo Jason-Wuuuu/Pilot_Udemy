@@ -185,6 +185,7 @@ export default function HomeworkDetail() {
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({ tutorId: userId }),
       });
 
       if (!res.ok) {

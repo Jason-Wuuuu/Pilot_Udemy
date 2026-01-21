@@ -94,7 +94,7 @@ export default function Homework({courseId}: {courseId: string}) {
           )}
         </div>
         <div className="grid grid-cols-1 @2xl:grid-cols-2 items-start gap-2 @sm:gap-3 @md:gap-4">
-        {homeworks.map((homework: Homework) => (
+        {[...homeworks].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()).map((homework: Homework) => (
           <HomeworkCard
             key={homework.id}
             homework={homework}
