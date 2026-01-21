@@ -6,6 +6,7 @@ import { useMySubmission } from "../../hooks/useMySubmission";
 import { useAppSelector } from "../../store/hooks";
 import { getTimeRemaining } from "../../utils/time";
 import type { Submission } from "../../types/homework";
+import HomeworkForm from "./HomeworkForm";
 
 export default function HomeworkDetail() {
   const { homeworkId } = useParams<{ homeworkId: string }>();
@@ -26,8 +27,9 @@ export default function HomeworkDetail() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingHomework, setIsEditingHomework] = useState(false);
 
-  const { homework, loading, error } = useHomework(homeworkId);
+  const { homework, loading, error, refetch } = useHomework(homeworkId);
 
   const submissionIds = userRole === "ADMIN" ? homework?.submissions : undefined;
   const {
@@ -196,7 +198,7 @@ export default function HomeworkDetail() {
 
   return (
     <div className={`w-full p-4 sm:p-6 md:p-8 ${userRole === "STUDENT" ? "min-h-full lg:h-dvh lg:flex lg:flex-col" : "min-h-full"}`}>
-      <div className="flex items-center gap-4 mb-6 shrink-0">
+      <div className="flex items-center justify-between mb-6 shrink-0">
         <button
           onClick={() => navigate("/")}
           className="text-sm px-3 py-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded flex items-center gap-1 cursor-pointer"
@@ -206,6 +208,14 @@ export default function HomeworkDetail() {
           </svg>
           Back
         </button>
+        {userRole === "ADMIN" && !isEditingHomework && (
+          <button
+            onClick={() => setIsEditingHomework(true)}
+            className="text-sm px-3 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          >
+            Edit Homework
+          </button>
+        )}
       </div>
 
       <div className={`bg-white border border-gray-200 rounded-lg overflow-hidden ${userRole === "STUDENT" ? "lg:flex-1 lg:flex lg:flex-col lg:min-h-0" : ""}`}>
@@ -229,7 +239,27 @@ export default function HomeworkDetail() {
           </div>
         </div>
 
-        {userRole === "ADMIN" && (
+        {userRole === "ADMIN" && isEditingHomework && (
+          <div className="p-4 sm:p-6 border-b border-gray-200">
+            <HomeworkForm
+              mode="update"
+              courseId={homework.courseId}
+              homeworkId={homework.id.toString()}
+              initialData={{
+                title: homework.title,
+                description: homework.description,
+                dueDate: homework.dueDate.split("T")[0],
+              }}
+              onSuccess={() => {
+                setIsEditingHomework(false);
+                refetch();
+              }}
+              onCancel={() => setIsEditingHomework(false)}
+            />
+          </div>
+        )}
+
+        {userRole === "ADMIN" && !isEditingHomework && (
           <div className="p-4 sm:p-6 border-b border-gray-200">
             <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
               Description
