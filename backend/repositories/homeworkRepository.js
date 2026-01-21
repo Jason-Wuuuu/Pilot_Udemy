@@ -1,4 +1,4 @@
-import { ddb } from "../db/dynamodb.js";
+import { ddb } from "../config/dynamodb.js";
 import {
   PutCommand,
   ScanCommand,
