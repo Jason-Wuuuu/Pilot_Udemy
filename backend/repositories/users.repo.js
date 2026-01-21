@@ -27,7 +27,7 @@ export async function findUserByEmail(email) {
   };
 
   const result = await ddb.send(new QueryCommand(params));
-//   console.log("findUserByEmail result:", result);
+  //   console.log("findUserByEmail result:", result);
   return result.Items?.[0] || null;
 }
 
@@ -69,7 +69,7 @@ export async function createUser({ username, email, password, role }) {
     username,
     email,
     passwordHash,
-    role: role || "user",
+    role: role || "student",
     status: "ACTIVE",
     createdAt: new Date().toISOString(),
     profileImage: `https://cdn.app/avatar/${userId}.png`,

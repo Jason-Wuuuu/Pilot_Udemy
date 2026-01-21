@@ -4,7 +4,7 @@ import {
   UpdateCommand,
   QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { ddb } from "../db/dynamodb.js";
+import { ddb } from "../config/dynamodb.js";
 
 const TABLE_NAME = "Quiz";
 const USER_INDEX = "userId-createdAt-index";
@@ -66,6 +66,7 @@ export const deleteQuizByIdRepo = async (quizId) => {
       Key: { quizId },
     })
   );
+  return true;
 };
 
 //5. get all quizzes
@@ -79,6 +80,17 @@ export const getQuizzesByUserIdRepo = async (userId) => {
         ":uid": userId,
       },
       ScanIndexForward: false, // 按 createdAt 倒序
+    })
+  );
+
+  return res.Items || [];
+};
+
+// 6️⃣ get all quizzes（ADMIN 用）
+export const getAllQuizzesRepo = async () => {
+  const res = await ddb.send(
+    new ScanCommand({
+      TableName: TABLE_NAME,
     })
   );
 
