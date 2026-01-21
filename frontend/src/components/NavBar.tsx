@@ -9,6 +9,7 @@ const user = useAppSelector((state) => state.auth.user);
     <div>
       {/* Top Navbar */}
       <header className="flex items-center justify-between px-6 py-4 border-b">
+        {/* when you click the website name Udemy-copy, it will refresh the website */}
         <span
           onClick={() => (window.location.href = "/")}
           className="text-xl font-bold cursor-pointer"
