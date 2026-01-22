@@ -9,6 +9,7 @@ const ProtectedRoute = () => {
   if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
+  console.log(user);
 
   return <Outlet />; // rerender route
 };

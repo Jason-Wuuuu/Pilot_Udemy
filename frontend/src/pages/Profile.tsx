@@ -1,4 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import type { RootState, AppDispatch } from "../store";
 import { logout } from "../store/slices/authSlice";
@@ -13,10 +14,14 @@ const Profile = () => {
 
   // 理论上 Profile 已经被 ProtectedRoute 包了
   // 但多一层保险是好习惯
-  if (!user) {
-    navigate("/login");
-    return null;
-  }
+  useEffect(() => {
+    if (user === null) {
+      navigate("/login", { replace: true });
+    }
+  }, [user, navigate]);
+  console.log("profile",user);
+  if (!user) return null;
+ 
 
   const handleLogout = () => {
     dispatch(logout()); // 清 redux + localStorage
@@ -24,9 +29,8 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center">
-
-      <BackToHomepage />
+    <div className="flex justify-center items-center h-full w-full">
+      {/* <BackToHomepage /> */}
       <div className="w-full max-w-md p-6 border rounded space-y-6">
         <h1 className="text-2xl font-bold text-center">Profile</h1>
 

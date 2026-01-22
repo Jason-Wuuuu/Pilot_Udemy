@@ -29,7 +29,7 @@ const user = useAppSelector((state) => state.auth.user);
       </header>
 
       {/* Sub Navigation Bar */}
-      <nav className="px-6 py-3 border-b flex gap-6">
+      {/* <nav className="px-6 py-3 border-b flex gap-6">
         <Link to="/course" className="font-medium">
           Course
         </Link>
@@ -39,7 +39,7 @@ const user = useAppSelector((state) => state.auth.user);
         <Link to="/quiz" className="font-medium">
           Quiz
         </Link>
-      </nav>
+      </nav> */}
     </div>
   );
 };
