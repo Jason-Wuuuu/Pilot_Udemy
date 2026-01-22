@@ -56,9 +56,9 @@ export const updateHomework = async (id, updateData) => {
     return { error: "Homework not found", status: 404 };
   }
 
-  if (tutorId !== existingHomework.tutorId) {
-    return { error: "tutorId does not match", status: 400 };
-  }
+  // if (tutorId !== existingHomework.tutorId) {
+  //   return { error: "tutorId does not match", status: 400 };
+  // }
 
   const updatedHomework = await homeworkRepository.update(id, {
     ...(title !== undefined && { title }),
