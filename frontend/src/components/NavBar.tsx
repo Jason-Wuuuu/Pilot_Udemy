@@ -2,8 +2,7 @@ import { Link } from "react-router";
 import { useAppSelector } from "../store/hooks";
 
 const NavBar = () => {
-
-const user = useAppSelector((state) => state.auth.user);
+  const user = useAppSelector((state) => state.auth.user);
 
   return (
     <div>

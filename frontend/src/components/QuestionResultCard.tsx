@@ -4,21 +4,36 @@ type QuestionResult = {
   options: string[];
   yourAnswer?: string;
   correctAnswer: string;
-  explains?: string;
-  isCorrect: boolean;
+  explanation?: string;
+  isCorrect?: boolean;
 };
 
-export function QuestionResultCard({ q }: { q: QuestionResult }) {
+export function QuestionResultCard({
+  q,
+  mode,
+}: {
+  q: QuestionResult;
+  mode: "STUDENT" | "ADMIN";
+}) {
+  const isStudent = mode === "STUDENT";
+
   return (
     <div className="card bg-base-100 shadow-md">
       <div className="card-body gap-4">
+        {/*Header*/}
         <div className="flex items-start justify-between">
           <h3 className="font-semibold text-base">{q.prompt}</h3>
-          <span
-            className={`badge ${q.isCorrect ? "badge-success" : "badge-error"}`}
-          >
-            {q.isCorrect ? "Correct" : "Wrong"}
-          </span>
+
+          {/* ✅ 只有 Student 才显示 Correct / Wrong */}
+          {isStudent && q.isCorrect !== undefined && (
+            <span
+              className={`badge ${
+                q.isCorrect ? "badge-success" : "badge-error"
+              }`}
+            >
+              {q.isCorrect ? "Correct" : "Wrong"}
+            </span>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -40,7 +55,11 @@ export function QuestionResultCard({ q }: { q: QuestionResult }) {
                     }`}
               >
                 <span>{opt}</span>
-                {isCorrect && <span className="text-success text-sm">✔</span>}
+                {/*正确答案*/}
+                {isCorrect && (
+                  <span className="text-success text-sm">✔ Correct Answer</span>
+                )}
+
                 {wrongSelected && (
                   <span className="text-error text-sm">Your Answer</span>
                 )}
@@ -49,15 +68,26 @@ export function QuestionResultCard({ q }: { q: QuestionResult }) {
           })}
         </div>
 
-        {q.explains && (
-          <>
-            <summary className="collapse-title text-sm font-medium">
-              Explanation
-            </summary>
-            <div className="collapse-content text-sm text-slate-600">
-              {q.explains}
+        {q.explanation && (
+          <div
+            className={`card ${
+              q.isCorrect
+                ? "bg-green-50 border border-green-200"
+                : "bg-red-50 border border-red-200"
+            }`}
+          >
+            <div className="card-body">
+              <h3 className="font-semibold text-lg">
+                {isStudent
+                  ? q.isCorrect
+                    ? "Why this is correct"
+                    : "Why this is incorrect"
+                  : "Explanation"}
+              </h3>
+
+              <p className="text-slate-700 leading-relaxed">{q.explanation}</p>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>

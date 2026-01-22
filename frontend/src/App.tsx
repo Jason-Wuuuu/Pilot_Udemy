@@ -7,12 +7,20 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import RoleRoute from "./routes/RoleRoute";
 import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/ForgotPassword";
-import CourseListPage from './pages/CourseListPage';
+import CourseListPage from "./pages/CourseListPage";
 import CourseDetailPage from "./pages/CourseDetailPage";
 import HomeworkDetail from "./components/Homework/HomeworkDetail";
-import StartLearningPage from './pages/StartLearningPage'
+import StartLearningPage from "./pages/StartLearningPage";
 import { Toaster } from "react-hot-toast";
 
+import QuizListPage from "./pages/QuizListPage";
+import QuizTakePage from "./pages/QuizTakePage";
+import QuizResultPage from "./pages/QuizResultPage";
+import QuizCreatePage from "./pages/QuizCreatePage";
+import AdminCourseQuizListPage from "./pages/AdminCourseQuizListPage";
+import AdminQuizPreviewPage from "./pages/AdminQuizPreviewPage";
+import QuizEditPage from "./pages/QuizEditPage";
+import AdminSubmissionListPage from "./pages/AdminSubmissionListPage";
 
 function App() {
   return (
@@ -30,33 +38,55 @@ function App() {
         <Route path="/register" element={<CreateAccount />} />
         <Route path="/forgot-password" element={<ForgotPassword />}></Route>
 
-        <Route
-          path="/categories/:categoryId"
-          element={<CourseListPage />}
-        />
-        <Route
-          path="/courses/:courseId"
-          element={<CourseDetailPage />}
-        />
+        <Route path="/categories/:categoryId" element={<CourseListPage />} />
+        <Route path="/courses/:courseId" element={<CourseDetailPage />} />
 
         {/* Auth-protected pages */}
         <Route element={<ProtectedRoute />}>
-
           {/* <Route path="/quiz" element={<QuizPage />} />
           <Route path="/homework" element={<HomeworkPage />} /> */}
           <Route path="/profile" element={<Profile />} />
           <Route path="/homework/:homeworkId" element={<HomeworkDetail />} />
           <Route
             path="/learn/courses/:courseId"
-            element={
-              <StartLearningPage />
-            }
+            element={<StartLearningPage />}
+          />
+
+          {/* Quiz */}
+          <Route path="/quizzes" element={<QuizListPage />} />
+
+          <Route path="/quizzes/:quizId" element={<QuizTakePage />} />
+
+          {/* Submission / Result */}
+          <Route
+            path="/submissions/:submissionId"
+            element={<QuizResultPage />}
           />
         </Route>
 
         {/* Role-protected pages */}
         <Route element={<RoleRoute allowedRoles={["ADMIN"]} />}>
           <Route path="/admin" element={<AdminPage />} />
+          <Route
+            path="/admin/courses/:courseId/quizzes/create"
+            element={<QuizCreatePage />}
+          />
+          <Route
+            path="/admin/courses/:courseId/quizzes"
+            element={<AdminCourseQuizListPage />}
+          />
+          <Route
+            path="/admin/courses/:courseId/quizzes/:quizId/preview"
+            element={<AdminQuizPreviewPage />}
+          />
+          <Route
+            path="/admin/courses/:courseId/quizzes/:quizId/edit"
+            element={<QuizEditPage />}
+          />
+          <Route
+            path="/admin/courses/:courseId/quizzes/:quizId/submissions"
+            element={<AdminSubmissionListPage />}
+          />
         </Route>
       </Routes>
     </div>

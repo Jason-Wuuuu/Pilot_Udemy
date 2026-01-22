@@ -10,11 +10,11 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const auth = localStorage.getItem("auth");
   if (auth) {
-    const { token, user } = JSON.parse(auth);
+    const { token } = JSON.parse(auth); //user
     if (token) config.headers.Authorization = `Bearer ${token}`;
-    if (user) {
-      config.params = { ...(config.params || {}), userId: user.id };
-    }
+    // if (user) {
+    //   config.params = { ...(config.params || {}), userId: user.id };
+    // }
   }
   return config;
 });
@@ -28,7 +28,7 @@ api.interceptors.response.use(
       window.location.href = "/login"; // 强制跳回 login
     }
     return Promise.reject(err);
-  },
+  }
 );
 
 export default api;
