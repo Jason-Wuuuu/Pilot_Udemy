@@ -25,6 +25,11 @@ export default function QuizCard({ quiz }: { quiz: QuizListItem }) {
         </div>
       )}
 
+      {/* Course label */}
+      <div className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-500">
+        {quiz.courseTitle}
+      </div>
+
       {/* Title */}
       <h2 className="text-lg font-semibold leading-snug line-clamp-2 mb-2">
         {quiz.title}

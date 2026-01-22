@@ -2,12 +2,17 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { getSubmissionById } from "../services/quiz.service";
 import { QuestionResultCard } from "../components/QuestionResultCard";
+import { useAppSelector } from "../store/hooks";
 
 export default function QuizResultDetailPage() {
   const { submissionId } = useParams<{ submissionId: string }>();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [current, setCurrent] = useState(0); // 👈 分页状态
+  const [current, setCurrent] = useState(0); // 分页状态
+
+  const user = useAppSelector((state) => state.auth.user);
+
+  const isAdmin = user?.role === "ADMIN";
 
   useEffect(() => {
     async function load() {
@@ -34,19 +39,21 @@ export default function QuizResultDetailPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
       {/* Score Summary（保持不变） */}
-      <div className="card bg-base-100 shadow-lg">
-        <div className="card-body items-center text-center">
-          <h2 className="text-3xl font-bold">{data.score}%</h2>
-          <p className="text-slate-500">
-            {data.correctCount} / {data.totalCount} correct
-          </p>
-          <progress
-            className="progress progress-primary w-full"
-            value={data.correctCount}
-            max={data.totalCount}
-          />
+      {!isAdmin && (
+        <div className="card bg-base-100 shadow-lg">
+          <div className="card-body items-center text-center">
+            <h2 className="text-3xl font-bold">{data.score}%</h2>
+            <p className="text-slate-500">
+              {data.correctCount} / {data.totalCount} correct
+            </p>
+            <progress
+              className="progress progress-primary w-full"
+              value={data.correctCount}
+              max={data.totalCount}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 单题结果（分页核心） */}
       <QuestionResultCard q={question} />

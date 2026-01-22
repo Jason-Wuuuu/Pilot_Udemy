@@ -55,15 +55,15 @@ export default function HomeworkCard({
   }, [homework.description]);
 
   return (
-    <div className={`border border-gray-300 rounded-md overflow-hidden flex flex-col ${
+    <div className={`card bg-base-100 overflow-hidden flex flex-col border-2 border-base-300 transition-colors hover:border-base-content/40 ${
       isExpanded ? "" : "h-56 @sm:h-64 @md:h-80 @lg:h-96"
     }`}>
-      <div className="p-2 @sm:p-3 @md:p-4 flex-1 flex flex-col">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h2 className="text-base @sm:text-lg @md:text-xl @lg:text-2xl font-bold underline underline-offset-2">{homework.title}</h2>
+      <div className="card-body p-3 @sm:p-4 @md:p-5 flex-1 flex flex-col">
+        <div className="flex items-start justify-between gap-2">
+          <h2 className="card-title text-base @sm:text-lg @md:text-xl @lg:text-2xl">{homework.title}</h2>
           <button
             onClick={() => navigate(`/homework/${homework.id}`)}
-            className="shrink-0 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors cursor-pointer"
+            className="btn btn-ghost btn-xs shrink-0"
             title="Expand to full page"
           >
             <svg className="w-4 h-4 @sm:w-5 @sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,42 +73,38 @@ export default function HomeworkCard({
         </div>
         <div 
           ref={descriptionRef}
-          className={`text-xs @sm:text-sm @md:text-base @lg:text-lg text-gray-500 whitespace-pre-wrap ${
+          className={`text-xs @sm:text-sm @md:text-base @lg:text-lg text-base-content/70 whitespace-pre-wrap ${
             isExpanded ? "" : "h-20 @sm:h-24 @md:h-32 @lg:h-40 overflow-hidden"
           }`}
         >
           {homework.description}
         </div>
-        <div className="h-6 @sm:h-7 mt-2 mb-2">
+        <div className="h-6 @sm:h-7 mt-2">
           {(hasOverflow || isExpanded) && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-xs @sm:text-sm text-blue-500 hover:text-blue-700 underline underline-offset-2 cursor-pointer"
+              className="btn btn-link btn-xs @sm:btn-sm p-0 h-auto min-h-0"
             >
               {isExpanded ? "Show less" : "Show more"}
             </button>
           )}
         </div>
-        <div className="flex justify-end items-end gap-2 mt-auto">
+        <div className="card-actions justify-end items-end mt-auto">
           {userRole === "ADMIN" ? (
             <>
-              <span className="text-xs @sm:text-sm @md:text-base text-gray-600 font-medium mr-2">
+              <span className="text-xs @sm:text-sm @md:text-base text-base-content/60 font-medium mr-2">
                 {homework.submissions?.length || 0} submission{(homework.submissions?.length || 0) !== 1 ? "s" : ""}
               </span>
               <button 
                 onClick={onUpdate}
                 disabled={isOverdue}
-                className={`text-xs @sm:text-sm px-2 @sm:px-3 py-1 @sm:py-1.5 rounded ${
-                  isOverdue
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    : "bg-blue-500 text-white hover:bg-blue-600 cursor-pointer"
-                }`}
+                className="btn btn-primary btn-xs @sm:btn-sm"
               >
                 Edit
               </button>
               <button 
                 onClick={onDelete}
-                className="text-xs @sm:text-sm px-2 @sm:px-3 py-1 @sm:py-1.5 bg-red-500 text-white rounded hover:bg-red-600 cursor-pointer"
+                className="btn btn-error btn-xs @sm:btn-sm"
               >
                 Delete
               </button>
@@ -116,7 +112,7 @@ export default function HomeworkCard({
           ) : (
             <>
               {loadingMySubmission ? (
-                <span className="text-xs @sm:text-sm text-gray-500">Loading...</span>
+                <span className="text-xs @sm:text-sm text-base-content/60">Loading...</span>
               ) : mySubmission ? (
                 (() => {
                   const isGraded = mySubmission.score !== null && mySubmission.score !== undefined;
@@ -124,13 +120,13 @@ export default function HomeworkCard({
                   return (
                     <div className="flex items-center gap-2">
                       {isGraded && (
-                        <span className="text-xs @sm:text-sm font-semibold px-2 @sm:px-3 py-1 @sm:py-1.5 bg-blue-100 text-blue-800 rounded">
+                        <span className="badge badge-info badge-outline badge-sm @sm:badge-md">
                           Score: {mySubmission.score}/100
                         </span>
                       )}
                       <button 
                         onClick={() => setSelectedSubmission(mySubmission)}
-                        className="text-xs @sm:text-sm px-2 @sm:px-3 py-1 @sm:py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
+                        className="btn btn-primary btn-xs @sm:btn-sm"
                       >
                         {canEdit ? "Edit Submission" : "View Details"}
                       </button>
@@ -141,11 +137,7 @@ export default function HomeworkCard({
                 <button 
                   onClick={() => setShowCreateModal(true)}
                   disabled={isOverdue}
-                  className={`text-xs @sm:text-sm px-2 @sm:px-3 py-1 @sm:py-1.5 rounded ${
-                    isOverdue 
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
-                      : "bg-green-500 text-white hover:bg-green-600 cursor-pointer"
-                  }`}
+                  className="btn btn-success btn-xs @sm:btn-sm"
                 >
                   Submit
                 </button>
@@ -153,10 +145,10 @@ export default function HomeworkCard({
             </>
           )}
         </div>
-        </div>
-      <div className="border-t border-gray-200 px-2 @sm:px-3 @md:px-4 py-1.5 @sm:py-2 flex justify-between items-center bg-gray-50">
-        <span className="text-xs @sm:text-sm text-gray-500">Due: {homework.dueDate}</span>
-        <span className={`text-xs @sm:text-sm font-medium ${isOverdue ? "text-red-500" : "text-green-600"}`}>
+      </div>
+      <div className="border-t border-base-200 px-3 @sm:px-4 @md:px-5 py-4 flex justify-between items-center bg-base-200/50">
+        <span className="text-xs @sm:text-sm text-base-content/60">Due: {homework.dueDate}</span>
+        <span className={`badge badge-sm @sm:badge-md ${isOverdue ? "badge-error" : "badge-success badge-outline"}`}>
           {text}
         </span>
       </div>

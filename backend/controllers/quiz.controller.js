@@ -4,6 +4,8 @@ import {
   updateQuizByIdService,
   deleteQuizByIdService,
   aiGenerateQuizService,
+  getMyQuizzesService,
+  getQuizzesByCourseService,
 } from "../services/quiz.service.js";
 import { CreateQuizSchema, UpdateQuizSchema } from "../models/quiz.model.js";
 
@@ -90,6 +92,34 @@ export const aiGenerateQuizController = async (req, res) => {
     });
 
     res.json(preview);
+  } catch (e) {
+    res.status(e.statusCode || 500).json({ error: e.message });
+  }
+};
+
+//GET /api/courses/my
+//every courses' quizzes
+export const getMyCoursesWithQuizzesController = async (req, res) => {
+  try {
+    const data = await getMyCoursesWithQuizzesService({
+      user: req.user,
+    });
+
+    res.json(data);
+  } catch (e) {
+    res.status(e.statusCode || 500).json({ error: e.message });
+  }
+};
+
+//Get api/courses/:courseId/quizzes
+export const getCourseQuizzesController = async (req, res) => {
+  try {
+    const data = await getQuizzesByCourseService({
+      user: req.user,
+      courseId: req.params.courseId,
+    });
+
+    res.json(data);
   } catch (e) {
     res.status(e.statusCode || 500).json({ error: e.message });
   }

@@ -1,4 +1,4 @@
-import { Link,Navigate, useNavigate, useLocation } from "react-router";
+import { Link, Navigate, useNavigate, useLocation } from "react-router";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../store/slices/authSlice";
@@ -41,7 +41,6 @@ const Login = () => {
     // Already logged in → redirect to homepage
     return <Navigate to="/" replace />;
   }
-
 
   return (
     <div className="min-h-screen flex items-center justify-center">

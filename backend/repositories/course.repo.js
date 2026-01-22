@@ -7,17 +7,14 @@ import {
   ScanCommand
 } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import {ddb} from "../config/dynamodb.js";
+import { ddb } from "../config/dynamodb.js";
 import crypto from "crypto";
-import {
-  buildCoursePK,
-  COURSE_METADATA_SK,
-} from "../models/course.model.js";
+import { buildCoursePK, COURSE_METADATA_SK } from "../models/course.model.js";
 import { buildCategoryPK } from "../models/category.model.js";
 
 const TABLE_NAME = process.env.DYNANODB_COURSE_TABLE_NAME || "Courses";
-if (!TABLE_NAME){
-    throw new Error("DYNAMODB_TABLE_NAME is not configured");
+if (!TABLE_NAME) {
+  throw new Error("DYNAMODB_TABLE_NAME is not configured");
 }
 
 
@@ -47,7 +44,7 @@ export const getCourseById = async (courseId) => {
         PK: buildCoursePK(courseId),
         SK: COURSE_METADATA_SK,
       }),
-    })
+    }),
   );
   return Item ? unmarshall(Item) : null;
 };
@@ -57,12 +54,11 @@ export const getCoursesByCategoryId = async (categoryId) => {
     new QueryCommand({
       TableName: TABLE_NAME,
       IndexName: "GSI1",
-      KeyConditionExpression:
-        "GSI1PK = :pk",
+      KeyConditionExpression: "GSI1PK = :pk",
       ExpressionAttributeValues: marshall({
         ":pk": buildCategoryPK(categoryId),
       }),
-    })
+    }),
   );
 
   return Items.map(unmarshall);
@@ -80,7 +76,7 @@ export const createCourse = async (payload) => {
   } = payload;
 
   const courseId = crypto.randomUUID();
-  const categoryId = String(categoryName).toLowerCase()
+  const categoryId = String(categoryName).toLowerCase();
   const now = new Date().toISOString();
 
   const item = {
@@ -108,19 +104,17 @@ export const createCourse = async (payload) => {
     createdAt: now,
     updatedAt: now,
   };
-  
 
   await ddb.send(
     new PutItemCommand({
       TableName: TABLE_NAME,
-      Item: marshall(item , { removeUndefinedValues: true }),
+      Item: marshall(item, { removeUndefinedValues: true }),
       ConditionExpression: "attribute_not_exists(PK)",
-    })
+    }),
   );
 
   return item;
 };
-
 
 export const updateCourse = async (courseId, updates) => {
   if (!updates || Object.keys(updates).length === 0) {
@@ -166,12 +160,11 @@ export const updateCourse = async (courseId, updates) => {
       ExpressionAttributeValues: marshall(values),
       ReturnValues: "ALL_NEW",
       ConditionExpression: "attribute_exists(PK)",
-    })
+    }),
   );
 
   return unmarshall(Attributes);
 };
-
 
 export const deleteCourse = async (courseId) => {
   await ddb.send(
@@ -182,7 +175,7 @@ export const deleteCourse = async (courseId) => {
         SK: COURSE_METADATA_SK,
       }),
       ConditionExpression: "attribute_exists(PK)",
-    })
+    }),
   );
 };
 export const registerStudents = async ({ courseId, studentIds }) => {

@@ -5,6 +5,8 @@ export type Quiz = {
   title: string;
   createdAt: string;
   difficulty?: Difficulty;
+  courseId: string;
+  courseTitle: string;
 };
 
 export type Submission = {
