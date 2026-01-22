@@ -3,6 +3,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <NavBar />
+
       {/* Main Content */}
 
       <main className="flex-1 px-6 py-8 space-y-8">

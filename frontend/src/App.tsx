@@ -21,22 +21,23 @@ import AdminCourseQuizListPage from "./pages/AdminCourseQuizListPage";
 import AdminQuizPreviewPage from "./pages/AdminQuizPreviewPage";
 import QuizEditPage from "./pages/QuizEditPage";
 import AdminSubmissionListPage from "./pages/AdminSubmissionListPage";
+import AppLayout from "./layouts/AppLayout";
+import Testing from "./pages/Testing";
 
 function App() {
   return (
-    <div>
       <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
         }}
       />
-      <Routes>
-        {/* public pages */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<CreateAccount />} />
-        <Route path="/forgot-password" element={<ForgotPassword />}></Route>
+    <Routes>
+      {/* ------------------ Public Pages ------------------ */}
+      <Route path="/" element={<HomePage />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<CreateAccount />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
 
         <Route path="/categories/:categoryId" element={<CourseListPage />} />
         <Route path="/courses/:courseId" element={<CourseDetailPage />} />
@@ -64,9 +65,10 @@ function App() {
           />
         </Route>
 
-        {/* Role-protected pages */}
-        <Route element={<RoleRoute allowedRoles={["ADMIN"]} />}>
-          <Route path="/admin" element={<AdminPage />} />
+      {/* ------------------ Admin Pages ------------------ */}
+      <Route element={<RoleRoute allowedRoles={["ADMIN"]} />}>
+      <Route path="/" element={<AppLayout />}>
+        <Route path="/admin" element={<AdminPage />} />
           <Route
             path="/admin/courses/:courseId/quizzes/create"
             element={<QuizCreatePage />}
@@ -87,9 +89,9 @@ function App() {
             path="/admin/courses/:courseId/quizzes/:quizId/submissions"
             element={<AdminSubmissionListPage />}
           />
-        </Route>
-      </Routes>
-    </div>
+      </Route>
+      </Route>
+    </Routes>
   );
 }
 
