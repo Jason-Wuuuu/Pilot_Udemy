@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router";
 import { getQuizById, submitQuiz } from "../services/quiz.service";
 import QuestionCard from "../components/QuestionCard";
 

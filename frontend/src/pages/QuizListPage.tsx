@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { getAllQuizzes, getMySubmissions } from "../services/quiz.service";
 import type { Quiz, Submission, QuizListItem } from "../types/quiz";
 import QuizCard from "../components/QuizCard";

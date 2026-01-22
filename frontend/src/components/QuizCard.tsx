@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import type { QuizListItem } from "../types/quiz";
 
 const difficultyStyle: Record<string, string> = {

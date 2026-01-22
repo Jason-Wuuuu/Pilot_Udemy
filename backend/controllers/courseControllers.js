@@ -37,11 +37,12 @@ export const getCourse = async (req, res, next) => {
   }
 };
 
-// GET /categories/:categoryId/courses
+// GET /categories/:categoryId
 export const getCoursesByCategory = async (req, res, next) => {
   try {
     const courses = await getCoursesByCategoryId(req.params.categoryId);
-
+    console.log("courses:", courses);
+    
     res.json({
       success: true,
       count: courses.length,
