@@ -1,4 +1,3 @@
-
 export type CourseLevel = "EASY" | "INTERMEDIATE" | "ADVANCED";
 
 export type CourseStatus = "DRAFT" | "CREATED";
@@ -30,26 +29,19 @@ export interface Course {
 
 export interface Lecture {
   lectureId: string;
-  lectureTitle: string;
+  title: string;
   lectureOrder: number;
-
+  description?: string;
   // Optional – fetched separately
   materials?: Material[];
 }
 
 export interface Material {
   materialId: string;
-  materialName: string;
-
-  type: MaterialType;
-
-  // For video/pdf/doc
-  url?: string;
-
-  // For display
-  size?: number;
-  duration?: number;
-
-  createdAt: string;
-  updatedAt: string;
+  title: string;
+  materialType: "PDF" | "VIDEO" | "SLIDE" | "TEXT";
+  mimeType?: string;
+  downloadUrl?: string;
+  materialOrder: number;
+  isPreview: boolean;
 }

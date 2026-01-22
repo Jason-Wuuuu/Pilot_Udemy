@@ -1,58 +1,37 @@
-/*
-Purpose
-
-Show all courses under a category
-
-This matches the “All courses / Web Design / Product Design” screenshot
-
-Used by
-
-Students (browse & enroll)
-
-Admins (see what exists, click “edit”)
-
-UI elements
-
-Category breadcrumb
-
-Grid/list of course cards
-
-Each card shows:
-
-title
-
-short description
-
-level
-
-total lectures
-
-CTA: “View course”
-*/
-// import React from 'react'
-import { getCoursesByCategory } from '../services/course.service'
-import { useEffect, useState } from 'react';
-import NavBar from '../components/NavBar';
-import { Link, useParams } from "react-router"
-import type { CourseLevel, Course } from '../types/course';
-import CourseCard from '../components/CourseCard';
-
+import {
+    getCoursesByCategory, createCourse, updateCourse,
+    deleteCourse,
+} from "../services/course.service";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router";
+import NavBar from "../components/NavBar";
+import CourseCard from "../components/Courses/CourseCard";
+import type { Course } from "../types/course";
+import { useAppSelector } from "../store/hooks";
+import CourseFormModal from "../components/Courses/CourseFormModal";
+import ConfirmDangerModal from "../components/Courses/ConfirmingDangerModal"
+import toast from "react-hot-toast";
 
 
 export default function CourseListPage() {
     const { categoryId } = useParams<{ categoryId: string }>();
+    const user = useAppSelector((state) => state.auth.user);
+    const isAdmin = user?.role === "ADMIN";
 
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+    const [deletingCourse, setDeletingCourse] = useState<Course | null>(null);
+    const [isCreating, setIsCreating] = useState(false);
+
 
     useEffect(() => {
-        console.log("categoryId:", categoryId)
         if (!categoryId) return;
-
 
         const fetchCourses = async () => {
             try {
+                setLoading(true);
                 const data = await getCoursesByCategory(categoryId);
                 setCourses(data);
             } catch (err) {
@@ -66,67 +45,203 @@ export default function CourseListPage() {
         fetchCourses();
     }, [categoryId]);
 
-    // show categories bar
-    // show courses (use course card, put all courses here [maybe pagination later])
-
-    // ADMIN-only
-    //course card have Edit, Update, Delete
-    // after all courses cards, a placeholder for Admin to create a new course (虚线， 中间加号)
-
-    // create course/lecture/upload file 可以用同一个modal?
-    if (loading) {
-        return (
-            <div>
-                <NavBar />
-                <div className="p-8">Loading courses...</div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div>
-                <NavBar />
-                <div className="p-8 text-red-500">{error}</div>
-            </div>
-        );
-    }
-
     return (
-        <div>
-            <div>
-                <NavBar />
-                {/* Headings */}
-                <section className="px-8 py-6">
-                    <h2 className="text-3xl font-bold mb-2">
-                        Skills to transform your career and life
-                    </h2>
-                    <p className="text-gray-600">
-                        From critical skills to technical topics, Pilot Academy supports your
-                        professional development.
-                    </p>
-                </section>
+        <div className="min-h-screen bg-gradient-to-b from-base-100 to-base-200">
+            <NavBar />
 
-                {/* Course Grids */}
-                <section className="px-8 py-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {courses.map((course) => (
-                            <CourseCard
-                                key={course.courseId}
-                                course={course}
-                            />
-                        ))}
+            <main className="max-w-7xl mx-auto px-6 py-12">
+
+                {/* Hero / Header */}
+                <section className="mb-12">
+                    <div className="max-w-3xl">
+                        <h1 className="text-4xl font-bold leading-tight mb-4">
+                            Learn skills that compound over time
+                        </h1>
+                        <p className="text-base-content/70 text-lg">
+                            Structured courses designed to move you from fundamentals to
+                            real-world confidence — without the noise.
+                        </p>
                     </div>
 
-                    {courses.length === 0 && (
-                        <div className="text-gray-500 mt-6">
-                            No courses found in this category.
-                        </div>
-                    )}
+                    <div className="divider mt-8" />
                 </section>
 
-            </div>
+                {/* Loading State */}
+                {loading && (
+                    <div className="flex flex-col items-center justify-center py-24 gap-4">
+                        <span className="loading loading-spinner loading-lg text-primary" />
+                        <p className="text-base-content/60">Loading courses…</p>
+                    </div>
+                )}
 
+                {/* Error State */}
+                {error && !loading && (
+                    <div className="max-w-xl mx-auto">
+                        <div className="alert alert-error shadow-lg">
+                            <span>{error}</span>
+                        </div>
+                    </div>
+                )}
+
+                {/* Content */}
+                {!loading && !error && (
+                    <>
+                        {courses.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-32 text-center">
+                                <div className="text-6xl opacity-20 mb-6">📚</div>
+                                <h3 className="text-xl font-semibold mb-2">
+                                    No courses yet
+                                </h3>
+                                <p className="text-base-content/60 max-w-md">
+                                    This category is still warming up. Check back soon — or create
+                                    the first course if you’re an admin.
+                                </p>
+                            </div>
+                        ) : (
+                            <section
+                                className="
+                  grid gap-8
+                  grid-cols-1
+                  sm:grid-cols-2
+                  lg:grid-cols-3
+                  xl:grid-cols-4
+                "
+                            >
+                                {courses.map((course) => (
+                                    <CourseCard
+                                        key={course.courseId}
+                                        course={course}
+                                        isAdmin={isAdmin}
+                                        onEdit={() => setEditingCourse(course)}
+                                        onDelete={() => setDeletingCourse(course)}
+                                    />
+                                ))}
+
+                                {editingCourse && (
+                                    <CourseFormModal
+                                        open={!!editingCourse}
+                                        mode="edit"
+                                        initialData={editingCourse ?? undefined}
+                                        onClose={() => setEditingCourse(null)}
+                                        onSubmit={async (payload) => {
+                                            if (!editingCourse) return;
+
+                                            try {
+                                                const saved = await updateCourse(
+                                                    editingCourse.courseId,
+                                                    payload
+                                                );
+
+                                                setCourses((prev) =>
+                                                    prev.map((c) =>
+                                                        c.courseId === saved.courseId ? saved : c
+                                                    )
+                                                );
+
+                                                toast.success("Course updated successfully");
+                                            } catch (err) {
+                                                console.error(err);
+                                                toast.error("Failed to update course");
+                                                throw err; // 👈 keep modal open & stop spinner
+                                            } finally {
+                                                setEditingCourse(null);
+                                            }
+                                        }}
+                                    />
+
+                                )}
+                                {deletingCourse && (
+                                    <ConfirmDangerModal
+                                        open={!!deletingCourse}
+                                        title="Delete course"
+                                        description={`Deleting "${deletingCourse.courseName}" will permanently remove:
+• all lectures
+• all materials
+• all assignments
+• all student progress
+
+This action cannot be undone.`}
+                                        confirmText="Delete course"
+                                        onClose={() => setDeletingCourse(null)}
+                                        onConfirm={async () => {
+                                            if (!deletingCourse) return;
+
+                                            try {
+                                                await deleteCourse(deletingCourse.courseId);
+
+                                                // optimistic UI update
+                                                setCourses((prev) =>
+                                                    prev.filter(
+                                                        (c) => c.courseId !== deletingCourse.courseId
+                                                    )
+                                                );
+
+                                                toast.success("Course deleted successfully");
+                                            } catch (err) {
+                                                console.error("Failed to delete course", err);
+                                                toast.error("Failed to delete course");
+                                                throw err; // IMPORTANT: keeps modal open
+                                            } finally {
+                                                setDeletingCourse(null);
+                                            }
+                                        }}
+                                    />
+                                )}
+
+                                {isCreating && (<CourseFormModal
+                                    open={isCreating}
+                                    mode="create"
+                                    onClose={() => setIsCreating(false)}
+                                    onSubmit={async (payload) => {
+                                        try {
+                                            const created = await createCourse(payload);
+
+                                            // add new course to top of list
+                                            setCourses((prev) => [created, ...prev]);
+
+                                            toast.success("Course created successfully");
+                                        } catch (err) {
+                                            console.error("Failed to create course", err);
+                                            toast.error("Failed to create course");
+                                            throw err; // keeps modal open
+                                        } finally {
+                                            setIsCreating(false);
+                                        }
+                                    }}
+                                />
+                                )}
+
+
+                                {isAdmin && (
+                                    <button
+                                        className="
+      group card bg-base-100
+      border-2 border-dashed border-base-300
+      hover:border-primary hover:bg-base-200
+      transition-all duration-200
+      min-h-[260px]
+      flex items-center justify-center
+    "
+                                        onClick={() => setIsCreating(true)}
+
+                                    >
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="text-5xl text-base-content/40 group-hover:text-primary transition">
+                                                +
+                                            </div>
+                                            <span className="text-sm text-base-content/60">
+                                                Create new course
+                                            </span>
+                                        </div>
+                                    </button>
+                                )}
+
+                            </section>
+                        )}
+                    </>
+                )}
+
+            </main>
         </div>
-    )
+    );
 }

@@ -15,7 +15,7 @@ import {
 
 
 
-const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME;
+const TABLE_NAME = process.env.DYNANODB_COURSE_TABLE_NAME || "Courses";
 
 
 

@@ -14,7 +14,7 @@ import {
 } from "../models/course.model.js";
 import { buildCategoryPK } from "../models/category.model.js";
 
-const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME;
+const TABLE_NAME = process.env.DYNANODB_COURSE_TABLE_NAME || "Courses";
 if (!TABLE_NAME){
     throw new Error("DYNAMODB_TABLE_NAME is not configured");
 }
