@@ -118,19 +118,12 @@ export default function HomeworkCard({
                   const isGraded = mySubmission.score !== null && mySubmission.score !== undefined;
                   const canEdit = !isOverdue && !isGraded;
                   return (
-                    <div className="flex items-center gap-2">
-                      {isGraded && (
-                        <span className="badge badge-info badge-outline badge-sm @sm:badge-md">
-                          Score: {mySubmission.score}/100
-                        </span>
-                      )}
-                      <button 
-                        onClick={() => setSelectedSubmission(mySubmission)}
-                        className="btn btn-primary btn-xs @sm:btn-sm"
-                      >
-                        {canEdit ? "Edit Submission" : "View Details"}
-                      </button>
-                    </div>
+                    <button 
+                      onClick={() => setSelectedSubmission(mySubmission)}
+                      className="btn btn-primary btn-xs @sm:btn-sm"
+                    >
+                      {canEdit ? "Edit Submission" : "View Details"}
+                    </button>
                   );
                 })()
               ) : (
@@ -148,9 +141,16 @@ export default function HomeworkCard({
       </div>
       <div className="border-t border-base-200 px-3 @sm:px-4 @md:px-5 py-4 flex justify-between items-center bg-base-200/50">
         <span className="text-xs @sm:text-sm text-base-content/60">Due: {homework.dueDate}</span>
-        <span className={`badge badge-sm @sm:badge-md ${isOverdue ? "badge-error" : "badge-success badge-outline"}`}>
-          {text}
-        </span>
+        <div className="flex items-center gap-2">
+          {userRole === "STUDENT" && mySubmission?.score !== null && mySubmission?.score !== undefined && (
+            <span className="badge badge-info badge-outline badge-sm @sm:badge-md">
+              Score: {mySubmission.score}/100
+            </span>
+          )}
+          <span className={`badge badge-sm @sm:badge-md ${isOverdue ? "badge-error" : "badge-success badge-outline"}`}>
+            {text}
+          </span>
+        </div>
       </div>
 
       {selectedSubmission && userRole === "STUDENT" && (
