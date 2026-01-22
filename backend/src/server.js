@@ -6,6 +6,7 @@ import quizSubmissionRoutes from "../routes/quizSubmission.routes.js";
 import aiRoutes from "../routes/ai.routes.js";
 import authRoutes from "../routes/auth.routes.js";
 import userRoutes from "../routes/user.routes.js";
+import courseRoutes from "../routes/courseRoutes.js";
 import homeworkRoutes from "../routes/homeworkRoutes.js";
 import submissionRoutes from "../routes/submissionRoutes.js";
 
@@ -22,6 +23,7 @@ app.use("/api/quizzes", quizRoutes);
 app.use("/api/submissions", quizSubmissionRoutes);
 app.use("/api/ai", aiRoutes);
 
+app.use("/api/courses", courseRoutes);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
