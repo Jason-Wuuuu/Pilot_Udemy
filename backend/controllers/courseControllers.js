@@ -1,4 +1,5 @@
 import {
+  getAllCourses,
   getCourseById,
   getCoursesByCategoryId,
   createCourse,
@@ -6,7 +7,8 @@ import {
   deleteCourseCascade,
   getLecturesByCourseId,
   createLecture,
-  
+  registerStudents,
+  deleteStudents,
   updateLecture,
   deleteLecture,
   getMaterialsByLectureId,
@@ -21,6 +23,25 @@ import { uploadToS3, getSignedUrlFromKey } from "../utils/s3Service.js";
 /* =========================
    COURSE
 ========================= */
+
+// GET /courses
+export const getAllCoursesHandler = async(req, res,next) =>{
+  try{
+    const courses = await getAllCourses();
+
+    if(!courses){
+      return res.status(404).json({
+        message:"Courses not available"
+      });
+    }
+
+    res.json({
+      success: true, data: courses
+    });
+  }catch(err){
+    next(err)
+  }
+}
 
 // GET /courses/:courseId
 export const getCourse = async (req, res, next) => {
@@ -41,7 +62,6 @@ export const getCourse = async (req, res, next) => {
 export const getCoursesByCategory = async (req, res, next) => {
   try {
     const courses = await getCoursesByCategoryId(req.params.categoryId);
-    console.log("courses:", courses);
     
     res.json({
       success: true,
@@ -90,6 +110,41 @@ export const deleteCourseHandler = async (req, res, next) => {
     next(err);
   }
 };
+
+// POST /courses/:courseId/students (ADMIN)
+export const registerStudentHandler = async (req, res, next) => {
+  try {
+    const { courseId } = req.params;
+    const { studentIds } = req.body;
+
+    const result = await registerStudents({ courseId, studentIds });
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+// DELETE /courses/:courseId/students (ADMIN)
+export const deleteStudentHandler = async(req, res, next)=>{
+  try{
+    await deleteStudents({
+      courseId: req.params.courseId,
+      studentIds: req.params.studentIds,
+    });
+    res.json({
+      success: true,
+      message:"Student(s) deleted."
+    });
+  } catch(err){
+    next(err)
+  }
+}
+
 
 /* =========================
    LECTURES

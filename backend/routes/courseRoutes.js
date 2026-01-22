@@ -14,6 +14,13 @@ const router = express.Router();
    COURSE (Authenticated)
 ========================= */
 
+// GET ALL COURSES
+router.get(
+  "/",
+  devBypassAuth,
+  courseController.getAllCoursesHandler
+)
+
 // GET COURSE BY CATEGORY
 router.get(
   "/categories/:categoryId",
@@ -45,6 +52,7 @@ router.post(
   courseController.createCourseHandler
 );
 
+// UPDATE A COURSE
 router.put(
   "/:courseId",
   // authenticate,
@@ -52,7 +60,7 @@ router.put(
   devBypassAuth,
   courseController.updateCourseHandler
 );
-
+// DELETE A COURSE
 router.delete(
   "/:courseId",
   // authenticate,
@@ -60,6 +68,19 @@ router.delete(
   devBypassAuth,
   courseController.deleteCourseHandler
 );
+
+// REGISTER A STUDENT INTO A COURSE
+router.post(
+  "/:courseId/students",
+  devBypassAuth,
+  courseController.registerStudentHandler
+)
+// DELETE A STUDENT FROM A COURSE
+router.delete(
+  "/:courseId/students",
+  devBypassAuth,
+  courseController.deleteStudentHandler
+)
 
 /* =========================
    LECTURES
