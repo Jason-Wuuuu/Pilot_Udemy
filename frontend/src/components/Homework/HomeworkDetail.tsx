@@ -263,7 +263,7 @@ export default function HomeworkDetail() {
               {homework.title}
             </h1>
             <div className="flex items-center gap-3">
-              <span className={`badge ${isOverdue ? "badge-error" : "badge-success"}`}>
+              <span className={`badge ${isOverdue ? "badge-error" : "badge-success badge-outline"}`}>
                 {timeText}
               </span>
             </div>
@@ -466,8 +466,46 @@ export default function HomeworkDetail() {
               <div className="text-gray-500">Loading submissions...</div>
             ) : submissions.length > 0 ? (
               <div className={`flex flex-col lg:flex-row gap-4 ${selectedSubmission ? "lg:h-[80vh]" : ""}`}>
-                <div className={`${selectedSubmission ? "lg:w-1/2 h-full" : "w-full"} transition-all`}>
-                  <div className="border border-gray-200 rounded-lg h-full overflow-y-auto">
+                <div className={`${selectedSubmission ? "lg:w-1/2 h-full" : "w-full"} transition-all flex flex-col gap-4`}>
+                  {(() => {
+                    const gradedSubmissions = submissions.filter(s => s.score !== null);
+                    const pendingCount = submissions.length - gradedSubmissions.length;
+                    const avgScore = gradedSubmissions.length > 0
+                      ? Math.round(gradedSubmissions.reduce((sum, s) => sum + (s.score || 0), 0) / gradedSubmissions.length)
+                      : null;
+                    const minScore = gradedSubmissions.length > 0
+                      ? Math.min(...gradedSubmissions.map(s => s.score || 0))
+                      : null;
+                    const maxScore = gradedSubmissions.length > 0
+                      ? Math.max(...gradedSubmissions.map(s => s.score || 0))
+                      : null;
+
+                    return (
+                      <div className="stats stats-horizontal shadow-sm border border-base-200 w-full">
+                        <div className="stat py-3 px-4">
+                          <div className="stat-title text-xs">Pending</div>
+                          <div className={`stat-value text-lg ${pendingCount > 0 ? "text-warning" : "text-success"}`}>
+                            {pendingCount}
+                          </div>
+                        </div>
+                        <div className="stat py-3 px-4">
+                          <div className="stat-title text-xs">Graded</div>
+                          <div className="stat-value text-lg">{gradedSubmissions.length}</div>
+                        </div>
+                        <div className="stat py-3 px-4">
+                          <div className="stat-title text-xs">Avg Score</div>
+                          <div className="stat-value text-lg">{avgScore !== null ? avgScore : "—"}</div>
+                        </div>
+                        <div className="stat py-3 px-4">
+                          <div className="stat-title text-xs">Range</div>
+                          <div className="stat-value text-lg">
+                            {minScore !== null ? `${minScore}–${maxScore}` : "—"}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  <div className="border border-gray-200 rounded-lg flex-1 overflow-y-auto">
                     <SubmissionsTable
                       submissions={submissions}
                       selectedId={selectedSubmission?.id}

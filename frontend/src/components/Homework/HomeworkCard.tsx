@@ -120,7 +120,7 @@ export default function HomeworkCard({
                   return (
                     <div className="flex items-center gap-2">
                       {isGraded && (
-                        <span className="badge badge-info badge-sm @sm:badge-md">
+                        <span className="badge badge-info badge-outline badge-sm @sm:badge-md">
                           Score: {mySubmission.score}/100
                         </span>
                       )}
@@ -148,7 +148,7 @@ export default function HomeworkCard({
       </div>
       <div className="border-t border-base-200 px-3 @sm:px-4 @md:px-5 py-4 flex justify-between items-center bg-base-200/50">
         <span className="text-xs @sm:text-sm text-base-content/60">Due: {homework.dueDate}</span>
-        <span className={`badge badge-sm @sm:badge-md ${isOverdue ? "badge-error" : "badge-success"}`}>
+        <span className={`badge badge-sm @sm:badge-md ${isOverdue ? "badge-error" : "badge-success badge-outline"}`}>
           {text}
         </span>
       </div>
