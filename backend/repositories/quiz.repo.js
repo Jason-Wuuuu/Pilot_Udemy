@@ -4,6 +4,7 @@ import {
   UpdateCommand,
   QueryCommand,
   ScanCommand,
+  DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { ddb } from "../config/dynamodb.js";
 
@@ -127,3 +128,5 @@ export const getAllCoursesRepo = async () => {
 
   return res.Items || [];
 };
+
+//get all users by ids

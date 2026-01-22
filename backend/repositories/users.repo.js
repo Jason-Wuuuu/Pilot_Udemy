@@ -8,6 +8,7 @@ import {
   UpdateCommand,
   DeleteCommand,
   QueryCommand,
+  BatchGetCommand,
 } from "@aws-sdk/lib-dynamodb";
 
 const TABLE_NAME = "Users";
@@ -134,4 +135,29 @@ export async function deleteUser(userId) {
 
   await ddb.send(new DeleteCommand(params));
   return true;
+}
+
+//New Might be error here
+/**
+ * Batch get users by userIds
+ * @param {string[]} userIds
+ * @returns {Promise<Object[]>}
+ */
+export async function getUsersByIds(userIds) {
+  if (!userIds || userIds.length === 0) return [];
+
+  const params = {
+    RequestItems: {
+      [TABLE_NAME]: {
+        Keys: userIds.map((userId) => ({
+          PK: `USER#${userId}`,
+          SK: "PROFILE",
+        })),
+      },
+    },
+  };
+
+  const result = await ddb.send(new BatchGetCommand(params));
+
+  return result.Responses?.[TABLE_NAME] || [];
 }

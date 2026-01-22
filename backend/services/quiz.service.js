@@ -173,7 +173,7 @@ export const getMyQuizzesService = async ({ user }) => {
       );
       quizzes.push({
         courseId: course.courseId,
-        courseTitle: course.title,
+        courseTitle: course.title ? course.title : "Unknown",
         quizId: quiz.quizId,
         title: quiz.title,
         difficulty: quiz.difficulty,
@@ -195,6 +195,7 @@ function toStudentQuizView(quiz) {
     quizId: quiz.quizId,
     title: quiz.title,
     difficulty: quiz.difficulty,
+    timeLimit: quiz.timeLimit,
     questions: quiz.questions.map((q) => ({
       questionId: q.questionId,
       prompt: q.prompt,

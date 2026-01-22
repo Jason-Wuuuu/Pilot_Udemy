@@ -11,6 +11,11 @@ import HomeworkDetail from "./components/Homework/HomeworkDetail";
 import QuizListPage from "./pages/QuizListPage";
 import QuizTakePage from "./pages/QuizTakePage";
 import QuizResultPage from "./pages/QuizResultPage";
+import QuizCreatePage from "./pages/QuizCreatePage";
+import AdminCourseQuizListPage from "./pages/AdminCourseQuizListPage";
+import AdminQuizPreviewPage from "./pages/AdminQuizPreviewPage";
+import QuizEditPage from "./pages/QuizEditPage";
+import AdminSubmissionListPage from "./pages/AdminSubmissionListPage";
 
 function App() {
   return (
@@ -45,6 +50,26 @@ function App() {
         {/* Role-protected pages */}
         <Route element={<RoleRoute allowedRoles={["ADMIN"]} />}>
           <Route path="/admin" element={<AdminPage />} />
+          <Route
+            path="/admin/courses/:courseId/quizzes/create"
+            element={<QuizCreatePage />}
+          />
+          <Route
+            path="/admin/courses/:courseId/quizzes"
+            element={<AdminCourseQuizListPage />}
+          />
+          <Route
+            path="/admin/courses/:courseId/quizzes/:quizId/preview"
+            element={<AdminQuizPreviewPage />}
+          />
+          <Route
+            path="/admin/courses/:courseId/quizzes/:quizId/edit"
+            element={<QuizEditPage />}
+          />
+          <Route
+            path="/admin/courses/:courseId/quizzes/:quizId/submissions"
+            element={<AdminSubmissionListPage />}
+          />
         </Route>
       </Routes>
     </div>
