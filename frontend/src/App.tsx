@@ -26,72 +26,76 @@ import Testing from "./pages/Testing";
 
 function App() {
   return (
+    <>
       <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
         }}
       />
-    <Routes>
-      {/* ------------------ Public Pages ------------------ */}
-      <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<CreateAccount />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Routes>
+        {/* ------------------ Public Pages ------------------ */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<CreateAccount />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         <Route path="/categories/:categoryId" element={<CourseListPage />} />
         <Route path="/courses/:courseId" element={<CourseDetailPage />} />
 
         {/* Auth-protected pages */}
         <Route element={<ProtectedRoute />}>
-          {/* <Route path="/quiz" element={<QuizPage />} />
+          <Route path="/" element={<AppLayout />}>
+            {/* <Route path="/quiz" element={<QuizPage />} />
           <Route path="/homework" element={<HomeworkPage />} /> */}
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/homework/:homeworkId" element={<HomeworkDetail />} />
-          <Route
-            path="/learn/courses/:courseId"
-            element={<StartLearningPage />}
-          />
+            <Route path="profile" element={<Profile />} />
+            <Route path="homework/:homeworkId" element={<HomeworkDetail />} />
+            <Route
+              path="learn/courses/:courseId"
+              element={<StartLearningPage />}
+            />
 
-          {/* Quiz */}
-          <Route path="/quizzes" element={<QuizListPage />} />
+            {/* Quiz */}
+            <Route path="quizzes" element={<QuizListPage />} />
 
-          <Route path="/quizzes/:quizId" element={<QuizTakePage />} />
+            <Route path="quizzes/:quizId" element={<QuizTakePage />} />
 
-          {/* Submission / Result */}
-          <Route
-            path="/submissions/:submissionId"
-            element={<QuizResultPage />}
-          />
+            {/* Submission / Result */}
+            <Route
+              path="submissions/:submissionId"
+              element={<QuizResultPage />}
+            />
+          </Route>
         </Route>
 
-      {/* ------------------ Admin Pages ------------------ */}
-      <Route element={<RoleRoute allowedRoles={["ADMIN"]} />}>
-      <Route path="/" element={<AppLayout />}>
-        <Route path="/admin" element={<AdminPage />} />
-          <Route
-            path="/admin/courses/:courseId/quizzes/create"
-            element={<QuizCreatePage />}
-          />
-          <Route
-            path="/admin/courses/:courseId/quizzes"
-            element={<AdminCourseQuizListPage />}
-          />
-          <Route
-            path="/admin/courses/:courseId/quizzes/:quizId/preview"
-            element={<AdminQuizPreviewPage />}
-          />
-          <Route
-            path="/admin/courses/:courseId/quizzes/:quizId/edit"
-            element={<QuizEditPage />}
-          />
-          <Route
-            path="/admin/courses/:courseId/quizzes/:quizId/submissions"
-            element={<AdminSubmissionListPage />}
-          />
-      </Route>
-      </Route>
-    </Routes>
+        {/* ------------------ Admin Pages ------------------ */}
+        <Route element={<RoleRoute allowedRoles={["ADMIN"]} />}>
+          <Route path="/" element={<AppLayout />}>
+            <Route path="/admin" element={<AdminPage />} />
+            <Route
+              path="/admin/courses/:courseId/quizzes/create"
+              element={<QuizCreatePage />}
+            />
+            <Route
+              path="/admin/courses/:courseId/quizzes"
+              element={<AdminCourseQuizListPage />}
+            />
+            <Route
+              path="/admin/courses/:courseId/quizzes/:quizId/preview"
+              element={<AdminQuizPreviewPage />}
+            />
+            <Route
+              path="/admin/courses/:courseId/quizzes/:quizId/edit"
+              element={<QuizEditPage />}
+            />
+            <Route
+              path="/admin/courses/:courseId/quizzes/:quizId/submissions"
+              element={<AdminSubmissionListPage />}
+            />
+          </Route>
+        </Route>
+      </Routes>
+    </>
   );
 }
 
