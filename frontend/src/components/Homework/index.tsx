@@ -55,15 +55,9 @@ export default function Homework({courseId}: {courseId: string}) {
 
   return (
     <>
-      {showForm && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-          onClick={() => setShowForm(null)}
-        >
-          <div 
-            className="w-[90vw] max-w-2xl max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
+      <dialog className={`modal ${showForm ? "modal-open" : ""}`}>
+        <div className="modal-box w-11/12 max-w-2xl max-h-[90vh] p-0">
+          {showForm && (
             <HomeworkForm
               mode={showForm.mode}
               courseId={courseId}
@@ -76,19 +70,21 @@ export default function Homework({courseId}: {courseId: string}) {
               onSuccess={handleFormSuccess}
               onCancel={() => setShowForm(null)}
             />
-          </div>
+          )}
         </div>
-      )}
+        <form method="dialog" className="modal-backdrop">
+          <button type="button" onClick={() => setShowForm(null)}>close</button>
+        </form>
+      </dialog>
       <div className="@container w-full h-full p-2 @sm:p-3 @md:p-4">
         <div className="flex items-center justify-between mb-2 @sm:mb-3 @md:mb-4 px-1">
           <h1 className="text-lg @sm:text-2xl @md:text-3xl font-bold">
             Homeworks ({homeworks.length})
           </h1>
-          <button className="btn btn-primary">Primary</button>
           {user.role === "ADMIN" && (
             <button
               onClick={() => setShowForm({ mode: "create" })}
-              className="text-xs @sm:text-sm px-3 @sm:px-4 py-2 @sm:py-2.5 bg-green-500 text-white rounded hover:bg-green-600 cursor-pointer"
+              className="btn btn-success btn-sm @sm:btn-md"
             >
               Create Homework
             </button>

@@ -102,20 +102,31 @@ export default function HomeworkForm({
 
   return (
     <form onSubmit={handleSubmit} className="w-full">
-      <div className="flex flex-col gap-3 sm:gap-4 p-4 sm:p-6 border border-gray-300 rounded-md bg-white shadow-lg">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-bold">
-          {mode === "create" ? "Create Homework" : "Update Homework"}
-        </h2>
+      <div className="flex flex-col gap-3 sm:gap-4 p-4 sm:p-6">
+        <div className="flex justify-between items-start">
+          <h3 className="text-lg sm:text-xl font-bold">
+            {mode === "create" ? "Create Homework" : "Update Homework"}
+          </h3>
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="btn btn-ghost btn-sm btn-circle"
+            >
+              ✕
+            </button>
+          )}
+        </div>
 
         {error && (
-          <div className="text-sm text-red-500 bg-red-50 p-2 rounded">
-            {error}
+          <div className="alert alert-error py-2">
+            <span className="text-sm">{error}</span>
           </div>
         )}
 
-        <div className="flex flex-col gap-1">
-          <label htmlFor="title" className="text-sm font-medium text-gray-700">
-            Title
+        <div className="form-control">
+          <label htmlFor="title" className="label py-1">
+            <span className="label-text font-medium">Title</span>
           </label>
           <input
             type="text"
@@ -123,14 +134,15 @@ export default function HomeworkForm({
             name="title"
             value={formData.title}
             onChange={handleChange}
-            className="text-sm px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="input input-bordered input-sm"
             required
           />
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label htmlFor="description" className="text-sm font-medium text-gray-700">
-            Description <span className="text-gray-400 font-normal">(optional)</span>
+        <div className="form-control">
+          <label htmlFor="description" className="label py-1">
+            <span className="label-text font-medium">Description</span>
+            <span className="label-text-alt">(optional)</span>
           </label>
           <textarea
             id="description"
@@ -138,13 +150,13 @@ export default function HomeworkForm({
             value={formData.description}
             onChange={handleChange}
             rows={4}
-            className="text-sm px-3 py-2 min-h-[30vh] border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="textarea textarea-bordered text-sm min-h-[30vh] resize-none"
           />
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label htmlFor="dueDate" className="text-sm font-medium text-gray-700">
-            Due Date
+        <div className="form-control">
+          <label htmlFor="dueDate" className="label py-1">
+            <span className="label-text font-medium">Due Date</span>
           </label>
           <input
             type="date"
@@ -152,17 +164,17 @@ export default function HomeworkForm({
             name="dueDate"
             value={formData.dueDate}
             onChange={handleChange}
-            className="text-sm px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="input input-bordered input-sm"
             required
           />
         </div>
 
-        <div className="flex justify-end gap-2 sm:gap-3 mt-2">
+        <div className="modal-action mt-2">
           {onCancel && (
             <button
               type="button"
               onClick={onCancel}
-              className="text-sm px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
+              className="btn btn-outline btn-sm"
             >
               Cancel
             </button>
@@ -170,11 +182,7 @@ export default function HomeworkForm({
           <button
             type="submit"
             disabled={loading}
-            className={`text-sm px-4 py-2 rounded text-white ${
-              loading 
-                ? "bg-blue-300 cursor-not-allowed" 
-                : "bg-blue-500 hover:bg-blue-600"
-            }`}
+            className="btn btn-primary btn-sm"
           >
             {loading ? "Saving..." : mode === "create" ? "Create" : "Update"}
           </button>

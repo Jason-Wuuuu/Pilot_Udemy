@@ -214,7 +214,7 @@ export default function HomeworkDetail() {
         <div className="text-red-500">{error || "Homework not found"}</div>
         <button
           onClick={() => navigate("/")}
-          className="text-sm px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+          className="btn btn-neutral btn-sm"
         >
           Back to Homework List
         </button>
@@ -229,7 +229,7 @@ export default function HomeworkDetail() {
       <div className="flex items-center justify-between mb-6 shrink-0">
         <button
           onClick={() => navigate(-1)}
-          className="text-sm px-3 py-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded flex items-center gap-1 cursor-pointer"
+          className="btn btn-ghost btn-sm"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -241,22 +241,14 @@ export default function HomeworkDetail() {
             <button
               onClick={() => setIsEditingHomework(true)}
               disabled={isOverdue}
-              className={`text-sm px-3 py-1.5 rounded transition-colors cursor-pointer ${
-                isOverdue
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-blue-500 text-white hover:bg-blue-600"
-              }`}
+              className="btn btn-primary btn-sm"
             >
               Edit
             </button>
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className={`text-sm px-3 py-1.5 rounded transition-colors cursor-pointer ${
-                deleting
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-red-500 text-white hover:bg-red-600"
-              }`}
+              className="btn btn-error btn-sm"
             >
               {deleting ? "Deleting..." : "Delete"}
             </button>
@@ -271,11 +263,7 @@ export default function HomeworkDetail() {
               {homework.title}
             </h1>
             <div className="flex items-center gap-3">
-              <span className={`text-sm font-medium px-3 py-1 rounded-full ${
-                isOverdue 
-                  ? "bg-red-100 text-red-700" 
-                  : "bg-green-100 text-green-700"
-              }`}>
+              <span className={`badge ${isOverdue ? "badge-error" : "badge-success"}`}>
                 {timeText}
               </span>
             </div>
@@ -342,24 +330,26 @@ export default function HomeworkDetail() {
                   return (
                     <div className="lg:flex-1 flex flex-col lg:min-h-0">
                       {isGraded && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 shrink-0">
-                          <div className="flex items-center gap-4 mb-2">
-                            <span className="text-xl font-bold text-blue-800">Grade:</span>
-                            <span className="text-xl font-bold text-blue-800">{mySubmission.score}/100</span>
-                          </div>
-                          {mySubmission.feedback && (
-                            <div>
-                              <span className="text-base font-bold text-blue-800">Feedback:</span>
-                              <span className="mt-1 ml-4 text-base font-medium text-blue-900 whitespace-pre-wrap">{mySubmission.feedback}</span>
+                        <div className="alert alert-info mb-4 shrink-0">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg font-bold">Grade:</span>
+                              <span className="text-lg font-bold">{mySubmission.score}/100</span>
                             </div>
-                          )}
+                            {mySubmission.feedback && (
+                              <div>
+                                <span className="font-semibold">Feedback:</span>
+                                <span className="ml-2 whitespace-pre-wrap">{mySubmission.feedback}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
 
                       <div className="lg:flex-1 flex flex-col lg:min-h-0">
                         {saveError && (
-                          <div className="text-sm text-red-500 bg-red-50 p-3 rounded-lg mb-2 shrink-0">
-                            {saveError}
+                          <div className="alert alert-error py-2 mb-2 shrink-0">
+                            <span className="text-sm">{saveError}</span>
                           </div>
                         )}
 
@@ -369,20 +359,16 @@ export default function HomeworkDetail() {
                               value={submissionText}
                               onChange={(e) => setSubmissionText(e.target.value)}
                               placeholder="Type your answer here..."
-                              className="min-h-[200px] lg:min-h-0 lg:flex-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-700"
+                              className="textarea textarea-bordered min-h-[200px] lg:min-h-0 lg:flex-1 w-full resize-none"
                             />
                             <div className="flex items-end justify-between mt-3 shrink-0">
-                              <p className="text-sm text-gray-500">
+                              <p className="text-sm text-base-content/60">
                                 Submit your work before the deadline.
                               </p>
                               <button
                                 onClick={handleStudentSubmit}
                                 disabled={saving || !submissionText.trim()}
-                                className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                                  saving || !submissionText.trim()
-                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                    : "bg-green-500 text-white hover:bg-green-600"
-                                }`}
+                                className="btn btn-success"
                               >
                                 {saving ? "Saving..." : "Submit"}
                               </button>
@@ -411,7 +397,7 @@ export default function HomeworkDetail() {
                                     setSubmissionText(mySubmission.text);
                                     setIsEditing(true);
                                   }}
-                                  className="px-6 py-2 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors cursor-pointer"
+                                  className="btn btn-primary"
                                 >
                                   Edit
                                 </button>
@@ -433,7 +419,7 @@ export default function HomeworkDetail() {
                               value={submissionText}
                               onChange={(e) => setSubmissionText(e.target.value)}
                               placeholder="Type your answer here..."
-                              className="min-h-[200px] lg:min-h-0 lg:flex-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-700"
+                              className="textarea textarea-bordered min-h-[200px] lg:min-h-0 lg:flex-1 w-full resize-none"
                             />
                             <div className="flex items-center justify-end mt-3 shrink-0">
                               <div className="flex gap-2">
@@ -444,7 +430,7 @@ export default function HomeworkDetail() {
                                     setSaveError(null);
                                   }}
                                   disabled={saving}
-                                  className="px-4 py-2 rounded-lg font-medium border border-gray-300 hover:bg-gray-100 transition-colors cursor-pointer"
+                                  className="btn btn-outline"
                                 >
                                   Cancel
                                 </button>
@@ -454,11 +440,7 @@ export default function HomeworkDetail() {
                                     if (success) setIsEditing(false);
                                   }}
                                   disabled={saving || !submissionText.trim()}
-                                  className={`px-6 py-2 rounded-lg font-medium transition-colors cursor-pointer ${
-                                    saving || !submissionText.trim()
-                                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                      : "bg-blue-500 text-white hover:bg-blue-600"
-                                  }`}
+                                  className="btn btn-primary"
                                 >
                                   {saving ? "Saving..." : "Save Changes"}
                                 </button>
@@ -501,41 +483,47 @@ export default function HomeworkDetail() {
                         <h3 className="font-semibold text-gray-900">Grade Submission</h3>
                         <button
                           onClick={() => setSelectedSubmission(null)}
-                          className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+                          className="btn btn-ghost btn-sm btn-circle"
                         >
                           &times;
                         </button>
                       </div>
 
                       {gradingError && (
-                        <div className="text-sm text-red-500 bg-red-50 p-3 rounded-lg mb-4 shrink-0">
-                          {gradingError}
+                        <div className="alert alert-error py-2 mb-4 shrink-0">
+                          <span className="text-sm">{gradingError}</span>
                         </div>
                       )}
 
                       <div className="mb-4 shrink-0 flex gap-4">
-                        <div className="flex-1">
-                          <label className="text-sm font-medium text-gray-700">Student</label>
-                          <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded mt-1">
+                        <div className="form-control flex-1">
+                          <label className="label py-1">
+                            <span className="label-text font-medium">Student</span>
+                          </label>
+                          <p className="bg-base-200 px-3 py-2 rounded-lg text-sm">
                             {selectedSubmission.studentName || selectedSubmission.studentId}
                           </p>
                         </div>
-                        <div className="flex-1">
-                          <label className="text-sm font-medium text-gray-700">Submitted At</label>
-                          <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded mt-1">
+                        <div className="form-control flex-1">
+                          <label className="label py-1">
+                            <span className="label-text font-medium">Submitted At</span>
+                          </label>
+                          <p className="bg-base-200 px-3 py-2 rounded-lg text-sm">
                             {new Date(selectedSubmission.submittedAt).toLocaleString()}
                           </p>
                         </div>
                       </div>
 
-                      <div className="mb-4 flex-1 min-h-0 flex flex-col">
+                      <div className="form-control mb-4 flex-1 min-h-0 flex flex-col">
                         <div className="flex items-center justify-between shrink-0">
-                          <label className="text-sm font-medium text-gray-700">Submission Content</label>
+                          <label className="label py-1">
+                            <span className="label-text font-medium">Submission Content</span>
+                          </label>
                           <button
                             onClick={() => {
                               navigator.clipboard.writeText(selectedSubmission.text);
                             }}
-                            className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors cursor-pointer"
+                            className="btn btn-ghost btn-xs btn-square"
                             title="Copy to clipboard"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -543,15 +531,17 @@ export default function HomeworkDetail() {
                             </svg>
                           </button>
                         </div>
-                        <div className="text-gray-800 bg-gray-50 px-3 py-2 rounded mt-1 whitespace-pre-wrap flex-1 overflow-y-auto">
+                        <div className="bg-base-200 px-3 py-2 rounded-lg whitespace-pre-wrap flex-1 overflow-y-auto text-sm">
                           {selectedSubmission.text}
                         </div>
                       </div>
 
                       <div className="shrink-0 space-y-4">
-                        <div>
-                          <label htmlFor="score" className="text-sm font-medium text-gray-700">
-                            Score <span className="text-red-500">*</span>
+                        <div className="form-control">
+                          <label htmlFor="score" className="label py-1">
+                            <span className="label-text font-medium">
+                              Score <span className="text-error">*</span>
+                            </span>
                           </label>
                           <input
                             type="number"
@@ -563,14 +553,14 @@ export default function HomeworkDetail() {
                               setGradeScore(e.target.value === "" ? null : Number(e.target.value))
                             }
                             placeholder="Enter score (0-100)"
-                            className="w-full mt-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="input input-bordered input-sm w-full"
                             required
                           />
                         </div>
 
-                        <div>
-                          <label htmlFor="feedback" className="text-sm font-medium text-gray-700">
-                            Feedback
+                        <div className="form-control">
+                          <label htmlFor="feedback" className="label py-1">
+                            <span className="label-text font-medium">Feedback</span>
                           </label>
                           <textarea
                             id="feedback"
@@ -578,7 +568,7 @@ export default function HomeworkDetail() {
                             onChange={(e) => setGradeFeedback(e.target.value)}
                             rows={3}
                             placeholder="Enter feedback for the student..."
-                            className="w-full mt-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                            className="textarea textarea-bordered text-sm w-full resize-none"
                           />
                         </div>
 
@@ -588,11 +578,7 @@ export default function HomeworkDetail() {
                               type="button"
                               onClick={handleResetGrade}
                               disabled={gradingSaving}
-                              className={`flex-1 py-2 rounded font-medium transition-colors cursor-pointer ${
-                                gradingSaving
-                                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                  : "bg-gray-500 text-white hover:bg-gray-600"
-                              }`}
+                              className="btn btn-neutral flex-1"
                             >
                               Reset Grade
                             </button>
@@ -600,11 +586,7 @@ export default function HomeworkDetail() {
                           <button
                             onClick={handleGradeSubmit}
                             disabled={gradingSaving || gradeScore === null}
-                            className={`flex-1 py-2 rounded font-medium transition-colors cursor-pointer ${
-                              gradingSaving || gradeScore === null
-                                ? "bg-blue-300 text-white cursor-not-allowed"
-                                : "bg-blue-500 text-white hover:bg-blue-600"
-                            }`}
+                            className="btn btn-primary flex-1"
                           >
                             {gradingSaving ? "Saving..." : "Save Grade"}
                           </button>

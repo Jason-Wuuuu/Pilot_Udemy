@@ -106,63 +106,71 @@ export default function SubmissionModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl h-[85vh] flex flex-col">
+    <dialog className="modal modal-open">
+      <div className="modal-box w-11/12 max-w-2xl h-[85vh] flex flex-col p-0">
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
           <div className="flex flex-col gap-4 p-4 sm:p-6 flex-1 min-h-0">
             <div className="flex justify-between items-start">
-              <h2 className="text-lg sm:text-xl font-bold">
+              <h3 className="text-lg sm:text-xl font-bold">
                 {isCreateMode
                   ? "Submit Homework"
                   : userRole === "ADMIN"
                   ? "Grade Submission"
                   : "Your Submission"}
-              </h2>
+              </h3>
               <button
                 type="button"
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+                className="btn btn-ghost btn-sm btn-circle"
               >
-                &times;
+                ✕
               </button>
             </div>
 
             {error && (
-              <div className="text-sm text-red-500 bg-red-50 p-2 rounded">
-                {error}
+              <div className="alert alert-error py-2">
+                <span className="text-sm">{error}</span>
               </div>
             )}
 
             {isCreateMode && homeworkTitle && (
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">Assignment</label>
-                <p className="text-sm text-gray-800 bg-gray-50 px-3 py-2 rounded border border-gray-200">
+              <div className="form-control">
+                <label className="label py-1">
+                  <span className="label-text font-medium">Assignment</span>
+                </label>
+                <p className="text-sm bg-base-200 px-3 py-2 rounded-lg">
                   {homeworkTitle}
                 </p>
               </div>
             )}
 
             {!isCreateMode && userRole === "ADMIN" && (
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">Student</label>
-                <p className="text-sm text-gray-800 bg-gray-50 px-3 py-2 rounded border border-gray-200">
+              <div className="form-control">
+                <label className="label py-1">
+                  <span className="label-text font-medium">Student</span>
+                </label>
+                <p className="text-sm bg-base-200 px-3 py-2 rounded-lg">
                   {submission.studentName || submission.studentId}
                 </p>
               </div>
             )}
 
             {!isCreateMode && (
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">Submitted At</label>
-                <p className="text-sm text-gray-800 bg-gray-50 px-3 py-2 rounded border border-gray-200">
+              <div className="form-control">
+                <label className="label py-1">
+                  <span className="label-text font-medium">Submitted At</span>
+                </label>
+                <p className="text-sm bg-base-200 px-3 py-2 rounded-lg">
                   {new Date(submission.submittedAt).toLocaleString()}
                 </p>
               </div>
             )}
 
-            <div className="flex flex-col gap-1 flex-1 min-h-0">
-              <label htmlFor="text" className="text-sm font-medium text-gray-700 shrink-0">
-                {isCreateMode ? "Your Answer" : "Submission Content"}
+            <div className="form-control flex-1 min-h-0 flex flex-col">
+              <label htmlFor="text" className="label py-1 shrink-0">
+                <span className="label-text font-medium">
+                  {isCreateMode ? "Your Answer" : "Submission Content"}
+                </span>
               </label>
               {isCreateMode || canStudentEdit ? (
                 <textarea
@@ -171,23 +179,25 @@ export default function SubmissionModal({
                   onChange={(e) => setFormData((prev) => ({ ...prev, text: e.target.value }))}
                   placeholder={isCreateMode ? "Enter your submission..." : undefined}
                   required
-                  className="text-sm px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none flex-1"
+                  className="textarea textarea-bordered text-sm flex-1 resize-none"
                 />
               ) : (
-                <div className="text-sm text-gray-800 bg-gray-50 px-3 py-2 rounded border border-gray-200 whitespace-pre-wrap flex-1 overflow-y-auto">
+                <div className="text-sm bg-base-200 px-3 py-2 rounded-lg whitespace-pre-wrap flex-1 overflow-y-auto">
                   {submission.text}
                 </div>
               )}
             </div>
 
             {!isCreateMode && submission.fileUrl && (
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">Attached File</label>
+              <div className="form-control">
+                <label className="label py-1">
+                  <span className="label-text font-medium">Attached File</span>
+                </label>
                 <a
                   href={submission.fileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-blue-500 hover:text-blue-700 underline"
+                  className="link link-primary text-sm"
                 >
                   View File
                 </a>
@@ -196,9 +206,9 @@ export default function SubmissionModal({
 
             {!isCreateMode && userRole === "ADMIN" && (
               <>
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="score" className="text-sm font-medium text-gray-700">
-                    Score
+                <div className="form-control">
+                  <label htmlFor="score" className="label py-1">
+                    <span className="label-text font-medium">Score</span>
                   </label>
                   <input
                     type="number"
@@ -213,13 +223,13 @@ export default function SubmissionModal({
                       }))
                     }
                     placeholder="Enter score (0-100)"
-                    className="text-sm px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="input input-bordered input-sm"
                   />
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="feedback" className="text-sm font-medium text-gray-700">
-                    Feedback
+                <div className="form-control">
+                  <label htmlFor="feedback" className="label py-1">
+                    <span className="label-text font-medium">Feedback</span>
                   </label>
                   <textarea
                     id="feedback"
@@ -227,7 +237,7 @@ export default function SubmissionModal({
                     onChange={(e) => setFormData((prev) => ({ ...prev, feedback: e.target.value }))}
                     rows={4}
                     placeholder="Enter feedback for the student..."
-                    className="text-sm px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    className="textarea textarea-bordered text-sm resize-none"
                   />
                 </div>
               </>
@@ -235,17 +245,21 @@ export default function SubmissionModal({
 
             {!isCreateMode && userRole === "STUDENT" && submission.score !== null && (
               <>
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm font-medium text-gray-700">Score</label>
-                  <p className="text-sm text-gray-800 bg-gray-50 px-3 py-2 rounded border border-gray-200">
+                <div className="form-control">
+                  <label className="label py-1">
+                    <span className="label-text font-medium">Score</span>
+                  </label>
+                  <p className="text-sm bg-base-200 px-3 py-2 rounded-lg">
                     {submission.score}/100
                   </p>
                 </div>
 
                 {submission.feedback && (
-                  <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-gray-700">Feedback</label>
-                    <div className="text-sm text-gray-800 bg-gray-50 px-3 py-2 rounded border border-gray-200 whitespace-pre-wrap">
+                  <div className="form-control">
+                    <label className="label py-1">
+                      <span className="label-text font-medium">Feedback</span>
+                    </label>
+                    <div className="text-sm bg-base-200 px-3 py-2 rounded-lg whitespace-pre-wrap">
                       {submission.feedback}
                     </div>
                   </div>
@@ -254,18 +268,20 @@ export default function SubmissionModal({
             )}
 
             {!isCreateMode && userRole === "STUDENT" && !canStudentEdit && (
-              <p className="text-sm text-gray-500 bg-gray-50 p-2 rounded shrink-0">
-                {isGraded 
-                  ? "This submission has been graded and can no longer be edited."
-                  : "This assignment is past due. You can no longer edit your submission."}
-              </p>
+              <div className="alert alert-warning py-2">
+                <span className="text-sm">
+                  {isGraded 
+                    ? "This submission has been graded and can no longer be edited."
+                    : "This assignment is past due. You can no longer edit your submission."}
+                </span>
+              </div>
             )}
 
-            <div className="flex justify-end gap-2 sm:gap-3 mt-2 shrink-0">
+            <div className="modal-action mt-2 shrink-0">
               <button
                 type="button"
                 onClick={onClose}
-                className="text-sm px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
+                className="btn btn-outline btn-sm"
               >
                 {isCreateMode || userRole === "ADMIN" || canStudentEdit ? "Cancel" : "Close"}
               </button>
@@ -273,11 +289,7 @@ export default function SubmissionModal({
                 <button
                   type="submit"
                   disabled={loading || (isCreateMode && !formData.text.trim())}
-                  className={`text-sm px-4 py-2 rounded text-white ${
-                    loading || (isCreateMode && !formData.text.trim())
-                      ? isCreateMode ? "bg-green-300 cursor-not-allowed" : "bg-blue-300 cursor-not-allowed"
-                      : isCreateMode ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
-                  }`}
+                  className={`btn btn-sm ${isCreateMode ? "btn-success" : "btn-primary"}`}
                 >
                   {loading 
                     ? (isCreateMode ? "Submitting..." : "Saving...") 
@@ -288,6 +300,9 @@ export default function SubmissionModal({
           </div>
         </form>
       </div>
-    </div>
+      <form method="dialog" className="modal-backdrop">
+        <button type="button" onClick={onClose}>close</button>
+      </form>
+    </dialog>
   );
 }
