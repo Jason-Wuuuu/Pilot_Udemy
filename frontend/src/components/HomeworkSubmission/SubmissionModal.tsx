@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { useAppSelector } from "../../store/hooks";
 import type { Submission } from "../../types/homework";
 
@@ -32,7 +33,6 @@ export default function SubmissionModal({
     feedback: submission?.feedback || "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const canStudentEdit = userRole === "STUDENT" && !isOverdue && !isGraded;
 
@@ -49,7 +49,6 @@ export default function SubmissionModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
     try {
       let url: string;
@@ -99,7 +98,7 @@ export default function SubmissionModal({
       const data = await res.json();
       onSave(data.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      toast.error(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -126,12 +125,6 @@ export default function SubmissionModal({
                 ✕
               </button>
             </div>
-
-            {error && (
-              <div className="alert alert-error py-2">
-                <span className="text-sm">{error}</span>
-              </div>
-            )}
 
             {isCreateMode && homeworkTitle && (
               <div className="form-control">

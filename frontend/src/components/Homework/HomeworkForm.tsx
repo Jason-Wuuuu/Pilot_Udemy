@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { useAppSelector } from "../../store/hooks";
 
 interface HomeworkFormData {
@@ -38,7 +39,6 @@ export default function HomeworkForm({
     dueDate: initialData?.dueDate || getDefaultDueDate(),
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialData) {
@@ -58,7 +58,6 @@ export default function HomeworkForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
     try {
       const url = mode === "create" 
@@ -94,7 +93,7 @@ export default function HomeworkForm({
 
       onSuccess?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      toast.error(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -117,12 +116,6 @@ export default function HomeworkForm({
             </button>
           )}
         </div>
-
-        {error && (
-          <div className="alert alert-error py-2">
-            <span className="text-sm">{error}</span>
-          </div>
-        )}
 
         <div className="form-control">
           <label htmlFor="title" className="label py-1">

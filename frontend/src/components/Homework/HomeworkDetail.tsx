@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
+import toast from "react-hot-toast";
 import { useHomework } from "../../hooks/useHomework";
 import { useSubmissions } from "../../hooks/useSubmissions";
 import { useMySubmission } from "../../hooks/useMySubmission";
@@ -18,22 +19,22 @@ export default function HomeworkDetail() {
   const userId = user?.id;
   const userRole = user?.role;
 
-  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  const [selectedSubmission, setSelectedSubmission] =
+    useState<Submission | null>(null);
   const [gradeScore, setGradeScore] = useState<number | null>(null);
   const [gradeFeedback, setGradeFeedback] = useState("");
   const [gradingSaving, setGradingSaving] = useState(false);
-  const [gradingError, setGradingError] = useState<string | null>(null);
 
   const [submissionText, setSubmissionText] = useState("");
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingHomework, setIsEditingHomework] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const { homework, loading, error, refetch } = useHomework(homeworkId);
 
-  const submissionIds = userRole === "ADMIN" ? homework?.submissions : undefined;
+  const submissionIds =
+    userRole === "ADMIN" ? homework?.submissions : undefined;
   const {
     submissions,
     loading: loadingSubmissions,
@@ -51,7 +52,10 @@ export default function HomeworkDetail() {
     submission: mySubmission,
     loading: loadingMySubmission,
     setSubmission: setMySubmission,
-  } = useMySubmission(userRole === "STUDENT" ? homework?.id : undefined, userId);
+  } = useMySubmission(
+    userRole === "STUDENT" ? homework?.id : undefined,
+    userId,
+  );
 
   useEffect(() => {
     if (mySubmission) {
@@ -63,14 +67,16 @@ export default function HomeworkDetail() {
     if (selectedSubmission) {
       setGradeScore(selectedSubmission.score);
       setGradeFeedback(selectedSubmission.feedback || "");
-      setGradingError(null);
     }
   }, [selectedSubmission]);
 
   const handleSelectSubmission = (submission: Submission) => {
     setSelectedSubmission(submission);
     setTimeout(() => {
-      gradingPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      gradingPanelRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }, 50);
   };
 
@@ -78,7 +84,6 @@ export default function HomeworkDetail() {
     if (!selectedSubmission) return;
 
     setGradingSaving(true);
-    setGradingError(null);
 
     try {
       const res = await fetch(
@@ -87,7 +92,7 @@ export default function HomeworkDetail() {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ score: gradeScore, feedback: gradeFeedback }),
-        }
+        },
       );
 
       if (!res.ok) {
@@ -97,8 +102,9 @@ export default function HomeworkDetail() {
       const data = await res.json();
       updateSubmission(data.data);
       setSelectedSubmission(data.data);
+      toast.success("Grade saved successfully");
     } catch (err) {
-      setGradingError(err instanceof Error ? err.message : "Failed to save grade");
+      toast.error(err instanceof Error ? err.message : "Failed to save grade");
     } finally {
       setGradingSaving(false);
     }
@@ -106,10 +112,14 @@ export default function HomeworkDetail() {
 
   const handleResetGrade = async () => {
     if (!selectedSubmission) return;
-    if (!confirm("Are you sure you want to reset this grade? The submission will return to pending status.")) return;
+    if (
+      !confirm(
+        "Are you sure you want to reset this grade? The submission will return to pending status.",
+      )
+    )
+      return;
 
     setGradingSaving(true);
-    setGradingError(null);
 
     try {
       const res = await fetch(
@@ -118,7 +128,7 @@ export default function HomeworkDetail() {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ score: null, feedback: "" }),
-        }
+        },
       );
 
       if (!res.ok) {
@@ -130,8 +140,9 @@ export default function HomeworkDetail() {
       setSelectedSubmission(data.data);
       setGradeScore(null);
       setGradeFeedback("");
+      toast.success("Grade reset successfully");
     } catch (err) {
-      setGradingError(err instanceof Error ? err.message : "Failed to reset grade");
+      toast.error(err instanceof Error ? err.message : "Failed to reset grade");
     } finally {
       setGradingSaving(false);
     }
@@ -141,17 +152,24 @@ export default function HomeworkDetail() {
     if (!homework || !submissionText.trim() || !userId) return false;
 
     setSaving(true);
-    setSaveError(null);
 
     try {
       const isCreate = !mySubmission;
       const url = isCreate
         ? `http://localhost:3000/api/homeworks/${homework.id}/submissions`
         : `http://localhost:3000/api/homework-submissions/${mySubmission.id}/content`;
-      
+
       const body = isCreate
-        ? { studentId: userId, studentName: user?.username, text: submissionText }
-        : { studentId: mySubmission.studentId, studentName: user?.username, text: submissionText };
+        ? {
+            studentId: userId,
+            studentName: user?.username,
+            text: submissionText,
+          }
+        : {
+            studentId: mySubmission.studentId,
+            studentName: user?.username,
+            text: submissionText,
+          };
 
       const res = await fetch(url, {
         method: isCreate ? "POST" : "PUT",
@@ -165,9 +183,12 @@ export default function HomeworkDetail() {
 
       const data = await res.json();
       setMySubmission(data.data);
+      toast.success(isCreate ? "Submission created" : "Submission updated");
       return true;
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "Failed to save submission");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to save submission",
+      );
       return false;
     } finally {
       setSaving(false);
@@ -180,13 +201,16 @@ export default function HomeworkDetail() {
 
     setDeleting(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/homeworks/${homework.id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
+      const res = await fetch(
+        `http://localhost:3000/api/homeworks/${homework.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ tutorId: userId }),
         },
-        body: JSON.stringify({ tutorId: userId }),
-      });
+      );
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -225,14 +249,23 @@ export default function HomeworkDetail() {
   const { isOverdue, text: timeText } = getTimeRemaining(homework.dueDate);
 
   return (
-    <div className={`w-full p-4 sm:p-6 md:p-8 ${userRole === "STUDENT" ? "min-h-full lg:h-dvh lg:flex lg:flex-col" : "min-h-full"}`}>
+    <div
+      className={`w-full p-4 sm:p-6 md:p-8 ${userRole === "STUDENT" ? "min-h-full lg:h-dvh lg:flex lg:flex-col" : "min-h-full"}`}
+    >
       <div className="flex items-center justify-between mb-6 shrink-0">
-        <button
-          onClick={() => navigate(-1)}
-          className="btn btn-ghost btn-sm"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        <button onClick={() => navigate(-1)} className="btn btn-ghost btn-sm">
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           Back
         </button>
@@ -256,14 +289,20 @@ export default function HomeworkDetail() {
         )}
       </div>
 
-      <div className={`bg-white border border-gray-200 rounded-lg overflow-hidden ${userRole === "STUDENT" ? "lg:flex-1 lg:flex lg:flex-col lg:min-h-0" : ""}`}>
-        <div className={`p-4 sm:p-6 border-b border-gray-200 ${userRole === "STUDENT" ? "lg:shrink-0" : ""}`}>
+      <div
+        className={`bg-white border border-gray-200 rounded-lg overflow-hidden ${userRole === "STUDENT" ? "lg:flex-1 lg:flex lg:flex-col lg:min-h-0" : ""}`}
+      >
+        <div
+          className={`p-4 sm:p-6 border-b border-gray-200 ${userRole === "STUDENT" ? "lg:shrink-0" : ""}`}
+        >
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
               {homework.title}
             </h1>
             <div className="flex items-center gap-3">
-              <span className={`badge ${isOverdue ? "badge-error" : "badge-success badge-outline"}`}>
+              <span
+                className={`badge ${isOverdue ? "badge-error" : "badge-success badge-outline"}`}
+              >
                 {timeText}
               </span>
             </div>
@@ -320,138 +359,151 @@ export default function HomeworkDetail() {
                 <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3 shrink-0">
                   Your Submission
                 </h2>
-                
+
                 {loadingMySubmission ? (
                   <div className="text-gray-500">Loading...</div>
-                ) : (() => {
-                  const isGraded = mySubmission?.score !== null && mySubmission?.score !== undefined;
-                  const canEdit = !isOverdue && !isGraded;
+                ) : (
+                  (() => {
+                    const isGraded =
+                      mySubmission?.score !== null &&
+                      mySubmission?.score !== undefined;
+                    const canEdit = !isOverdue && !isGraded;
 
-                  return (
-                    <div className="lg:flex-1 flex flex-col lg:min-h-0">
-                      {isGraded && (
-                        <div className="alert alert-info mb-4 shrink-0">
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-lg font-bold">Grade:</span>
-                              <span className="text-lg font-bold">{mySubmission.score}/100</span>
-                            </div>
-                            {mySubmission.feedback && (
-                              <div>
-                                <span className="font-semibold">Feedback:</span>
-                                <span className="ml-2 whitespace-pre-wrap">{mySubmission.feedback}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
+                    return (
                       <div className="lg:flex-1 flex flex-col lg:min-h-0">
-                        {saveError && (
-                          <div className="alert alert-error py-2 mb-2 shrink-0">
-                            <span className="text-sm">{saveError}</span>
-                          </div>
-                        )}
-
-                        {!mySubmission && !isOverdue && (
-                          <div className="lg:flex-1 flex flex-col lg:min-h-0">
-                            <textarea
-                              value={submissionText}
-                              onChange={(e) => setSubmissionText(e.target.value)}
-                              placeholder="Type your answer here..."
-                              className="textarea textarea-bordered min-h-[200px] lg:min-h-0 lg:flex-1 w-full resize-none"
-                            />
-                            <div className="flex items-end justify-between mt-3 shrink-0">
-                              <p className="text-sm text-base-content/60">
-                                Submit your work before the deadline.
-                              </p>
-                              <button
-                                onClick={handleStudentSubmit}
-                                disabled={saving || !submissionText.trim()}
-                                className="btn btn-success"
-                              >
-                                {saving ? "Saving..." : "Submit"}
-                              </button>
-                            </div>
-                          </div>
-                        )}
-
-                        {!mySubmission && isOverdue && (
-                          <p className="text-gray-500 italic">
-                            Deadline has passed. No submission was made.
-                          </p>
-                        )}
-
-                        {mySubmission && !isEditing && (
-                          <div className="lg:flex-1 flex flex-col lg:min-h-0">
-                            <div className="bg-gray-50 rounded-lg p-4 text-gray-700 whitespace-pre-wrap min-h-[150px] max-h-[300px] lg:min-h-0 lg:max-h-none lg:flex-1 overflow-y-auto">
-                              {mySubmission.text}
-                            </div>
-                            <div className="flex items-end justify-between mt-3 shrink-0">
-                              <div className="text-base text-gray-500">
-                                Submitted: {new Date(mySubmission.submittedAt).toLocaleString()}
+                        {isGraded && (
+                          <div className="alert alert-info mb-4 shrink-0">
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg font-bold">
+                                  Grade:
+                                </span>
+                                <span className="text-lg font-bold">
+                                  {mySubmission.score}/100
+                                </span>
                               </div>
-                              {canEdit && (
-                                <button
-                                  onClick={() => {
-                                    setSubmissionText(mySubmission.text);
-                                    setIsEditing(true);
-                                  }}
-                                  className="btn btn-primary"
-                                >
-                                  Edit
-                                </button>
+                              {mySubmission.feedback && (
+                                <div>
+                                  <span className="font-semibold">
+                                    Feedback:
+                                  </span>
+                                  <span className="ml-2 whitespace-pre-wrap">
+                                    {mySubmission.feedback}
+                                  </span>
+                                </div>
                               )}
                             </div>
-                            {!canEdit && (
-                              <p className="text-sm text-gray-500 italic mt-2 shrink-0">
-                                {isGraded 
-                                  ? "This submission has been graded and can no longer be edited."
-                                  : "The deadline has passed. You can no longer edit your submission."}
-                              </p>
-                            )}
                           </div>
                         )}
 
-                        {mySubmission && isEditing && (
-                          <div className="lg:flex-1 flex flex-col lg:min-h-0">
-                            <textarea
-                              value={submissionText}
-                              onChange={(e) => setSubmissionText(e.target.value)}
-                              placeholder="Type your answer here..."
-                              className="textarea textarea-bordered min-h-[200px] lg:min-h-0 lg:flex-1 w-full resize-none"
-                            />
-                            <div className="flex items-center justify-end mt-3 shrink-0">
-                              <div className="flex gap-2">
+                        <div className="lg:flex-1 flex flex-col lg:min-h-0">
+                          {!mySubmission && !isOverdue && (
+                            <div className="lg:flex-1 flex flex-col lg:min-h-0">
+                              <textarea
+                                value={submissionText}
+                                onChange={(e) =>
+                                  setSubmissionText(e.target.value)
+                                }
+                                placeholder="Type your answer here..."
+                                className="textarea textarea-bordered min-h-[200px] lg:min-h-0 lg:flex-1 w-full resize-none"
+                              />
+                              <div className="flex items-end justify-between mt-3 shrink-0">
+                                <p className="text-sm text-base-content/60">
+                                  Submit your work before the deadline.
+                                </p>
                                 <button
-                                  onClick={() => {
-                                    setSubmissionText(mySubmission.text);
-                                    setIsEditing(false);
-                                    setSaveError(null);
-                                  }}
-                                  disabled={saving}
-                                  className="btn btn-outline"
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  onClick={async () => {
-                                    const success = await handleStudentSubmit();
-                                    if (success) setIsEditing(false);
-                                  }}
+                                  onClick={handleStudentSubmit}
                                   disabled={saving || !submissionText.trim()}
-                                  className="btn btn-primary"
+                                  className="btn btn-success"
                                 >
-                                  {saving ? "Saving..." : "Save Changes"}
+                                  {saving ? "Saving..." : "Submit"}
                                 </button>
                               </div>
                             </div>
-                          </div>
-                        )}
+                          )}
+
+                          {!mySubmission && isOverdue && (
+                            <p className="text-gray-500 italic">
+                              Deadline has passed. No submission was made.
+                            </p>
+                          )}
+
+                          {mySubmission && !isEditing && (
+                            <div className="lg:flex-1 flex flex-col lg:min-h-0">
+                              <div className="bg-gray-50 rounded-lg p-4 text-gray-700 whitespace-pre-wrap min-h-[150px] max-h-[300px] lg:min-h-0 lg:max-h-none lg:flex-1 overflow-y-auto">
+                                {mySubmission.text}
+                              </div>
+                              <div className="flex items-end justify-between mt-3 shrink-0">
+                                <div className="text-base text-gray-500">
+                                  Submitted:{" "}
+                                  {new Date(
+                                    mySubmission.submittedAt,
+                                  ).toLocaleString()}
+                                </div>
+                                {canEdit && (
+                                  <button
+                                    onClick={() => {
+                                      setSubmissionText(mySubmission.text);
+                                      setIsEditing(true);
+                                    }}
+                                    className="btn btn-primary"
+                                  >
+                                    Edit
+                                  </button>
+                                )}
+                              </div>
+                              {!canEdit && (
+                                <p className="text-sm text-gray-500 italic mt-2 shrink-0">
+                                  {isGraded
+                                    ? "This submission has been graded and can no longer be edited."
+                                    : "The deadline has passed. You can no longer edit your submission."}
+                                </p>
+                              )}
+                            </div>
+                          )}
+
+                          {mySubmission && isEditing && (
+                            <div className="lg:flex-1 flex flex-col lg:min-h-0">
+                              <textarea
+                                value={submissionText}
+                                onChange={(e) =>
+                                  setSubmissionText(e.target.value)
+                                }
+                                placeholder="Type your answer here..."
+                                className="textarea textarea-bordered min-h-[200px] lg:min-h-0 lg:flex-1 w-full resize-none"
+                              />
+                              <div className="flex items-center justify-end mt-3 shrink-0">
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => {
+                                      setSubmissionText(mySubmission.text);
+                                      setIsEditing(false);
+                                    }}
+                                    disabled={saving}
+                                    className="btn btn-outline"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    onClick={async () => {
+                                      const success =
+                                        await handleStudentSubmit();
+                                      if (success) setIsEditing(false);
+                                    }}
+                                    disabled={saving || !submissionText.trim()}
+                                    className="btn btn-primary"
+                                  >
+                                    {saving ? "Saving..." : "Save Changes"}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })()}
+                    );
+                  })()
+                )}
               </div>
             </div>
           </div>
@@ -465,41 +517,68 @@ export default function HomeworkDetail() {
             {loadingSubmissions ? (
               <div className="text-gray-500">Loading submissions...</div>
             ) : submissions.length > 0 ? (
-              <div className={`flex flex-col lg:flex-row gap-4 ${selectedSubmission ? "lg:h-[80vh]" : ""}`}>
-                <div className={`${selectedSubmission ? "lg:w-1/2 h-full" : "w-full"} transition-all flex flex-col gap-4`}>
+              <div
+                className={`flex flex-col lg:flex-row gap-4 ${selectedSubmission ? "lg:h-[80vh]" : ""}`}
+              >
+                <div
+                  className={`${selectedSubmission ? "lg:w-1/2 h-full" : "w-full"} transition-all flex flex-col gap-4`}
+                >
                   {(() => {
-                    const gradedSubmissions = submissions.filter(s => s.score !== null);
-                    const pendingCount = submissions.length - gradedSubmissions.length;
-                    const avgScore = gradedSubmissions.length > 0
-                      ? Math.round(gradedSubmissions.reduce((sum, s) => sum + (s.score || 0), 0) / gradedSubmissions.length)
-                      : null;
-                    const minScore = gradedSubmissions.length > 0
-                      ? Math.min(...gradedSubmissions.map(s => s.score || 0))
-                      : null;
-                    const maxScore = gradedSubmissions.length > 0
-                      ? Math.max(...gradedSubmissions.map(s => s.score || 0))
-                      : null;
+                    const gradedSubmissions = submissions.filter(
+                      (s) => s.score !== null,
+                    );
+                    const pendingCount =
+                      submissions.length - gradedSubmissions.length;
+                    const avgScore =
+                      gradedSubmissions.length > 0
+                        ? Math.round(
+                            gradedSubmissions.reduce(
+                              (sum, s) => sum + (s.score || 0),
+                              0,
+                            ) / gradedSubmissions.length,
+                          )
+                        : null;
+                    const minScore =
+                      gradedSubmissions.length > 0
+                        ? Math.min(
+                            ...gradedSubmissions.map((s) => s.score || 0),
+                          )
+                        : null;
+                    const maxScore =
+                      gradedSubmissions.length > 0
+                        ? Math.max(
+                            ...gradedSubmissions.map((s) => s.score || 0),
+                          )
+                        : null;
 
                     return (
                       <div className="stats stats-horizontal shadow-sm border border-base-200 w-full">
                         <div className="stat py-3 px-4">
                           <div className="stat-title text-xs">Pending</div>
-                          <div className={`stat-value text-lg ${pendingCount > 0 ? "text-warning" : "text-success"}`}>
+                          <div
+                            className={`stat-value text-lg ${pendingCount > 0 ? "text-warning" : "text-success"}`}
+                          >
                             {pendingCount}
                           </div>
                         </div>
                         <div className="stat py-3 px-4">
                           <div className="stat-title text-xs">Graded</div>
-                          <div className="stat-value text-lg">{gradedSubmissions.length}</div>
+                          <div className="stat-value text-lg">
+                            {gradedSubmissions.length}
+                          </div>
                         </div>
                         <div className="stat py-3 px-4">
                           <div className="stat-title text-xs">Avg Score</div>
-                          <div className="stat-value text-lg">{avgScore !== null ? avgScore : "—"}</div>
+                          <div className="stat-value text-lg">
+                            {avgScore !== null ? avgScore : "—"}
+                          </div>
                         </div>
                         <div className="stat py-3 px-4">
                           <div className="stat-title text-xs">Range</div>
                           <div className="stat-value text-lg">
-                            {minScore !== null ? `${minScore}–${maxScore}` : "—"}
+                            {minScore !== null
+                              ? `${minScore}–${maxScore}`
+                              : "—"}
                           </div>
                         </div>
                       </div>
@@ -518,7 +597,9 @@ export default function HomeworkDetail() {
                   <div ref={gradingPanelRef} className="lg:w-1/2 h-full">
                     <div className="border border-gray-200 rounded-lg p-4 h-full flex flex-col">
                       <div className="flex items-center justify-between mb-4 shrink-0">
-                        <h3 className="font-semibold text-gray-900">Grade Submission</h3>
+                        <h3 className="font-semibold text-gray-900">
+                          Grade Submission
+                        </h3>
                         <button
                           onClick={() => setSelectedSubmission(null)}
                           className="btn btn-ghost btn-sm btn-circle"
@@ -527,27 +608,28 @@ export default function HomeworkDetail() {
                         </button>
                       </div>
 
-                      {gradingError && (
-                        <div className="alert alert-error py-2 mb-4 shrink-0">
-                          <span className="text-sm">{gradingError}</span>
-                        </div>
-                      )}
-
                       <div className="mb-4 shrink-0 flex gap-4">
                         <div className="form-control flex-1">
                           <label className="label py-1">
-                            <span className="label-text font-medium">Student</span>
+                            <span className="label-text font-medium">
+                              Student
+                            </span>
                           </label>
                           <p className="bg-base-200 px-3 py-2 rounded-lg text-sm">
-                            {selectedSubmission.studentName || selectedSubmission.studentId}
+                            {selectedSubmission.studentName ||
+                              selectedSubmission.studentId}
                           </p>
                         </div>
                         <div className="form-control flex-1">
                           <label className="label py-1">
-                            <span className="label-text font-medium">Submitted At</span>
+                            <span className="label-text font-medium">
+                              Submitted At
+                            </span>
                           </label>
                           <p className="bg-base-200 px-3 py-2 rounded-lg text-sm">
-                            {new Date(selectedSubmission.submittedAt).toLocaleString()}
+                            {new Date(
+                              selectedSubmission.submittedAt,
+                            ).toLocaleString()}
                           </p>
                         </div>
                       </div>
@@ -555,17 +637,31 @@ export default function HomeworkDetail() {
                       <div className="form-control mb-4 flex-1 min-h-0 flex flex-col">
                         <div className="flex items-center justify-between shrink-0">
                           <label className="label py-1">
-                            <span className="label-text font-medium">Submission Content</span>
+                            <span className="label-text font-medium">
+                              Submission Content
+                            </span>
                           </label>
                           <button
                             onClick={() => {
-                              navigator.clipboard.writeText(selectedSubmission.text);
+                              navigator.clipboard.writeText(
+                                selectedSubmission.text,
+                              );
                             }}
                             className="btn btn-ghost btn-xs btn-square"
                             title="Copy to clipboard"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                              />
                             </svg>
                           </button>
                         </div>
@@ -588,7 +684,11 @@ export default function HomeworkDetail() {
                             max={100}
                             value={gradeScore ?? ""}
                             onChange={(e) =>
-                              setGradeScore(e.target.value === "" ? null : Number(e.target.value))
+                              setGradeScore(
+                                e.target.value === ""
+                                  ? null
+                                  : Number(e.target.value),
+                              )
                             }
                             placeholder="Enter score (0-100)"
                             className="input input-bordered input-sm w-full"
@@ -598,7 +698,9 @@ export default function HomeworkDetail() {
 
                         <div className="form-control">
                           <label htmlFor="feedback" className="label py-1">
-                            <span className="label-text font-medium">Feedback</span>
+                            <span className="label-text font-medium">
+                              Feedback
+                            </span>
                           </label>
                           <textarea
                             id="feedback"
