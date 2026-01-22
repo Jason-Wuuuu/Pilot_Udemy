@@ -10,7 +10,7 @@ import { ddb } from "../config/dynamodb.js";
 import { buildCoursePK } from "../models/course.model.js";
 import { buildLectureItem, buildLectureSK } from "../models/lecture.model.js";
 
-const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME;
+const TABLE_NAME = process.env.DYNANODB_COURSE_TABLE_NAME || "Courses";
 export const getNextLectureOrder = async (courseId) => {
   const result = await ddb.send(
     new UpdateItemCommand({
@@ -36,14 +36,21 @@ export const getLecturesByCourseId = async (courseId) => {
     new QueryCommand({
       TableName: TABLE_NAME,
       KeyConditionExpression: "PK = :pk AND begins_with(SK, :sk)",
+      FilterExpression: "#et = :lecture",
+      ExpressionAttributeNames: {
+        "#et": "entityType",
+      },
       ExpressionAttributeValues: marshall({
         ":pk": buildCoursePK(courseId),
         ":sk": "LECTURE#",
+        ":lecture": "LECTURE",
       }),
-    }),
+    })
   );
+
   return Items.map(unmarshall);
 };
+
 
 export const createLecture = async ({ courseId, title, description }) => {
   const lectureOrder = await getNextLectureOrder(courseId);

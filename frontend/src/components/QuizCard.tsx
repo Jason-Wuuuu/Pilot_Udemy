@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import type { QuizListItem } from "../types/quiz";
 
 const difficultyStyle: Record<string, string> = {
@@ -24,6 +24,11 @@ export default function QuizCard({ quiz }: { quiz: QuizListItem }) {
           Completed
         </div>
       )}
+
+      {/* Course label */}
+      <div className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-500">
+        {quiz.courseTitle}
+      </div>
 
       {/* Title */}
       <h2 className="text-lg font-semibold leading-snug line-clamp-2 mb-2">

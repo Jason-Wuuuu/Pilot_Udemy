@@ -1,19 +1,21 @@
 export const API_PATHS = {
   QUIZ: {
-    MY_QUIZZES: "/api/quizzes/me",
-    BY_ID: (quizId: string) => `/api/quizzes/${quizId}`,
-    SUBMIT: (quizId: string) => `/api/quizzes/${quizId}/submissions`,
-    SUBMISSIONS_BY_QUIZ: (quizId: string) =>
-      `/api/quizzes/${quizId}/submissions`,
+    CREATE: "/quizzes", //Post
+    MY_QUIZZES: "/quizzes/me", // GET
+    BY_ID: (quizId: string) => `/quizzes/${quizId}`, // GET / PUT / DELETE
+    AI_GENERATE: "/quizzes/aigenerate", // POST
+    SUBMIT: (quizId: string) => `/quizzes/${quizId}/submissions`, // POST
+    COURSE: (courseId: string) => `/quizzes/courses/${courseId}/quizzes`, //Get Quizzes by course
   },
 
   SUBMISSION: {
-    MY_HISTORY: "/api/submissions/me",
-    BY_ID: (submissionId: string) => `/api/submissions/${submissionId}`,
+    MY_HISTORY: "/submissions", // GET    //既能看到有分数 又能看到没分数
+    BY_ID: (submissionId: string) => `/submissions/${submissionId}`, // GET
+    ALL_STUDENT: (quizId: string) => `/submissions/by-quiz/${quizId}`, // GETs
   },
 
   AI: {
-    CHAT: "/api/ai/chat",
-    SUMMARY: "/api/ai/summary",
+    CHAT: "/ai/chat",
+    SUMMARY: "/ai/summary",
   },
 };

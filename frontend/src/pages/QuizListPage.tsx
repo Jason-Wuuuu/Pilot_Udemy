@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { getAllQuizzes, getMySubmissions } from "../services/quiz.service";
+import { Link } from "react-router";
+import { getMyQuizzes, getMySubmissions } from "../services/quiz.service";
 import type { Quiz, Submission, QuizListItem } from "../types/quiz";
 import QuizCard from "../components/QuizCard";
 
@@ -14,12 +14,12 @@ export default function QuizListPage() {
   useEffect(() => {
     async function load() {
       const [quizRes, submissionRes] = await Promise.all([
-        getAllQuizzes(),
+        getMyQuizzes(),
         getMySubmissions(),
       ]);
 
-      const quizzes: Quiz[] = quizRes;
-      const submissions: Submission[] = submissionRes;
+      const quizzes: Quiz[] = quizRes ?? [];
+      const submissions: Submission[] = submissionRes ?? [];
 
       const submissionMap = new Map<string, Submission>();
       submissions.forEach((s) => submissionMap.set(s.quizId, s));
@@ -33,8 +33,8 @@ export default function QuizListPage() {
       setItems(
         merged.sort(
           (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        )
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        ),
       );
       setLoading(false);
     }
@@ -101,10 +101,6 @@ export default function QuizListPage() {
           ))}
         </div>
       )}
-
-      <Link to="/quizzes/new" className="btn btn-primary btn-sm">
-        + Create Quiz
-      </Link>
     </div>
   );
 }

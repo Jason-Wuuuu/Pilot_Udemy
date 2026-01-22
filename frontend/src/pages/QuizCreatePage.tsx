@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { v4 as uuid } from "uuid";
+import { useParams, useNavigate } from "react-router";
+import { createQuiz } from "../services/quiz.service";
+import toast from "react-hot-toast";
 
 type Question = {
   questionId: string;
@@ -25,9 +28,11 @@ const mockAIGenerate = async (count: number): Promise<Question[]> => {
 };
 
 export default function QuizCreatePage() {
+  const { courseId } = useParams<{ courseId: string }>();
   const [activeTab, setActiveTab] = useState<"general" | "questions">(
     "general"
   );
+  const navigate = useNavigate();
 
   //AI generate
   const [aiQuestionCount, setAiQuestionCount] = useState("5");
@@ -71,14 +76,98 @@ export default function QuizCreatePage() {
     ]);
   };
 
+  const removeQuestion = (id: string) => {
+    setQuestions((qs) => qs.filter((q) => q.questionId !== id));
+  };
+
+  const handlePublish = async () => {
+    if (!title.trim()) {
+      alert("Quiz title is required");
+      return;
+    }
+
+    if (questions.length === 0) {
+      alert("At least one question is required");
+      return;
+    }
+
+    if (timeLimit !== "") {
+      if (!Number.isInteger(timeLimit)) {
+        alert("Time limit must be an integer (seconds)");
+        return;
+      }
+      if (timeLimit <= 0) {
+        alert("Time limit must be greater than 0");
+        return;
+      }
+      if (timeLimit > 36000) {
+        alert("Time limit cannot exceed 3600 seconds");
+        return;
+      }
+    }
+
+    //question validation
+    for (const q of questions) {
+      if (!q.prompt.trim()) {
+        alert("Question prompt cannot be empty");
+        return;
+      }
+      if (q.options.some((o) => !o.trim())) {
+        alert("All options must be filled");
+        return;
+      }
+      if (!q.answer) {
+        alert("Each question must have a correct answer");
+        return;
+      }
+    }
+
+    if (!courseId) {
+      alert("Missing course context");
+      return;
+    }
+
+    const payload = {
+      courseId,
+      title,
+      difficulty,
+      timeLimit,
+      questions,
+    };
+
+    try {
+      const res = await createQuiz(payload);
+
+      const quizId = res.quizId;
+
+      toast.success("Quiz created successfully");
+      setTimeout(() => {
+        navigate(`/admin/courses/${courseId}/quizzes`);
+      }, 600);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to create quiz");
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
       {/* Header */}
-      <div>
+      <div className="space-y-2">
+        <button
+          className="btn btn-ghost btn-sm -ml-5 px-2"
+          onClick={() => navigate(`/admin/courses/${courseId}/quizzes`)}
+        >
+          ← Back to Quizzes
+        </button>
         <h1 className="text-2xl font-bold">Create Quiz</h1>
         <p className="text-sm text-gray-500 mt-1">
           Configure quiz settings and manage questions
         </p>
+        <div className="text-sm text-gray-500">
+          Creating quiz for course:
+          <span className="ml-1 font-medium text-gray-800">{courseId}</span>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -214,7 +303,16 @@ export default function QuizCreatePage() {
               key={q.questionId}
               className="card bg-base-100 shadow p-6 space-y-4"
             >
-              <div className="font-semibold">Question {index + 1}</div>
+              <div className="flex justify-between items-center">
+                <div className="font-semibold">Question {index + 1}</div>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-ghost text-error"
+                  onClick={() => removeQuestion(q.questionId)}
+                >
+                  Remove
+                </button>
+              </div>
 
               {/* Prompt */}
               <textarea
@@ -285,8 +383,9 @@ export default function QuizCreatePage() {
 
       {/* Footer */}
       <div className="flex justify-end gap-3 pt-6 border-t">
-        <button className="btn btn-outline">Save Draft</button>
-        <button className="btn btn-primary">Publish Quiz</button>
+        <button className="btn btn-primary" onClick={handlePublish}>
+          Publish Quiz
+        </button>
       </div>
     </div>
   );

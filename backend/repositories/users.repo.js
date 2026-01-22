@@ -8,9 +8,10 @@ import {
   UpdateCommand,
   DeleteCommand,
   QueryCommand,
+  BatchGetCommand,
 } from "@aws-sdk/lib-dynamodb";
 
-const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || "Users";
+const TABLE_NAME = "Users";
 const EMAIL_INDEX = "email-index"; // Make sure your GSI exists in DynamoDB
 
 /**
@@ -27,7 +28,7 @@ export async function findUserByEmail(email) {
   };
 
   const result = await ddb.send(new QueryCommand(params));
-//   console.log("findUserByEmail result:", result);
+  //   console.log("findUserByEmail result:", result);
   return result.Items?.[0] || null;
 }
 
@@ -134,4 +135,29 @@ export async function deleteUser(userId) {
 
   await ddb.send(new DeleteCommand(params));
   return true;
+}
+
+//New Might be error here
+/**
+ * Batch get users by userIds
+ * @param {string[]} userIds
+ * @returns {Promise<Object[]>}
+ */
+export async function getUsersByIds(userIds) {
+  if (!userIds || userIds.length === 0) return [];
+
+  const params = {
+    RequestItems: {
+      [TABLE_NAME]: {
+        Keys: userIds.map((userId) => ({
+          PK: `USER#${userId}`,
+          SK: "PROFILE",
+        })),
+      },
+    },
+  };
+
+  const result = await ddb.send(new BatchGetCommand(params));
+
+  return result.Responses?.[TABLE_NAME] || [];
 }
