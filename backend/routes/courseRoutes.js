@@ -1,13 +1,7 @@
 import express from "express";
 import * as courseController from "../controllers/courseControllers.js";
-import { authenticate } from "../middleware/auth.middleware.js";
-import { roleVerification } from "../middleware/roleVerification.js";
-
 import uploadMaterial from "../middleware/materialUpload.js";
 import { attachMaterialMeta } from "../middleware/attachMaterialMeta.js";
-
-import { devBypassAuth } from "../middleware/devBypassAuth.js";
-
 const router = express.Router();
 
 /* =========================
@@ -15,108 +9,51 @@ const router = express.Router();
 ========================= */
 
 // GET ALL COURSES
-router.get(
-  "/",
-  devBypassAuth,
-  courseController.getAllCoursesHandler
-)
+router.get("/", courseController.getAllCoursesHandler);
 
 // GET COURSE BY CATEGORY
-router.get(
-  "/categories/:categoryId",
-  // authenticate,
-  devBypassAuth,
-  courseController.getCoursesByCategory
-);
+router.get("/categories/:categoryId", courseController.getCoursesByCategory);
 
 // GET COURSE BY ID
-router.get(
-  "/:courseId",
-  // authenticate,
-  devBypassAuth,
-  courseController.getCourse
-);
-
-
+router.get("/:courseId", courseController.getCourse);
 
 /* =========================
    COURSE (ADMIN only)
 ========================= */
 
 // CREATE A NEW COURSE
-router.post(
-  "/",
-  // authenticate,
-  // roleVerification("ADMIN"),
-  devBypassAuth,
-  courseController.createCourseHandler
-);
+router.post("/", courseController.createCourseHandler);
 
 // UPDATE A COURSE
-router.put(
-  "/:courseId",
-  // authenticate,
-  // roleVerification("ADMIN"),
-  devBypassAuth,
-  courseController.updateCourseHandler
-);
+router.put("/:courseId", courseController.updateCourseHandler);
 // DELETE A COURSE
-router.delete(
-  "/:courseId",
-  // authenticate,
-  // roleVerification("ADMIN"),
-  devBypassAuth,
-  courseController.deleteCourseHandler
-);
+router.delete("/:courseId", courseController.deleteCourseHandler);
 
 // REGISTER A STUDENT INTO A COURSE
-router.post(
-  "/:courseId/students",
-  devBypassAuth,
-  courseController.registerStudentHandler
-)
+router.post("/:courseId/students", courseController.registerStudentHandler);
 // DELETE A STUDENT FROM A COURSE
-router.delete(
-  "/:courseId/students",
-  devBypassAuth,
-  courseController.deleteStudentHandler
-)
+router.delete("/:courseId/students", courseController.deleteStudentHandler);
 
 /* =========================
    LECTURES
 ========================= */
 
 // STUDENT + ADMIN
-router.get(
-  "/:courseId/lectures",
-  // authenticate,
-  devBypassAuth,
-  courseController.getLectures
-);
+router.get("/:courseId/lectures", courseController.getLectures);
 
 // ADMIN
-router.post(
-  "/:courseId/lectures",
-  // authenticate,
-  // roleVerification("ADMIN"),
-  devBypassAuth,
-  courseController.createLectureHandler
-);
+router.post("/:courseId/lectures", courseController.createLectureHandler);
 
 router.put(
   "/:courseId/lectures/:lectureId",
-  // authenticate,
-  // roleVerification("ADMIN"),
-  devBypassAuth,
-  courseController.updateLectureHandler
+
+  courseController.updateLectureHandler,
 );
 
 router.delete(
   "/:courseId/lectures/:lectureId",
-  // authenticate,
-  // roleVerification("ADMIN"),
-  devBypassAuth,
-  courseController.deleteLectureHandler
+
+  courseController.deleteLectureHandler,
 );
 
 /* =========================
@@ -126,45 +63,30 @@ router.delete(
 // STUDENT + ADMIN
 router.get(
   "/:courseId/lectures/:lectureId/materials",
-  // authenticate,
-  devBypassAuth,
-  courseController.getMaterials
-);
 
-// ADMIN
-// router.post(
-//   "/:courseId/lectures/:lectureId/materials",
-//   authenticate,
-//   roleVerification("ADMIN"),
-//   uploadMaterial.single("file"),
-//   attachMaterialMeta,
-//   courseController.createMaterialHandler
-// );
+  courseController.getMaterials,
+);
 
 router.post(
   "/:courseId/lectures/:lectureId/materials",
-  devBypassAuth,
+
   uploadMaterial.single("file"),
   attachMaterialMeta,
-  courseController.createMaterialHandler
+  courseController.createMaterialHandler,
 );
 
 router.put(
   "/:courseId/lectures/:lectureId/materials/:materialId",
-  // authenticate,
-  // roleVerification("ADMIN"),
-  devBypassAuth,
+
   uploadMaterial.single("file"),
   attachMaterialMeta,
-  courseController.updateMaterialHandler
+  courseController.updateMaterialHandler,
 );
 
 router.delete(
   "/:courseId/lectures/:lectureId/materials/:materialId",
-  // authenticate,
-  // roleVerification("ADMIN"),
-  devBypassAuth,
-  courseController.deleteMaterialHandler
+
+  courseController.deleteMaterialHandler,
 );
 
 export default router;

@@ -90,7 +90,7 @@ export const registerStudents = async ({
     throw err;
   }
 
-  await registerStudentsRepo({ courseId, studentIds});
+  return await registerStudentsRepo({ courseId, studentIds});
 };
 
 export const deleteStudents = async({
@@ -108,7 +108,7 @@ export const deleteStudents = async({
     err.statusCode = 400;
     throw err;
   }
-  await deleteStudentsRepo({ courseId, studentIds});
+  return await deleteStudentsRepo({ courseId, studentIds});
 }
 
 /* =========================

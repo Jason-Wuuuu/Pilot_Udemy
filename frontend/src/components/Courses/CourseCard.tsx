@@ -1,5 +1,6 @@
 import type { Course } from "../../types/course";
-import { Link } from "react-router";
+import { useNavigate } from "react-router";
+import { useAppSelector } from "../../store/hooks";
 
 interface CourseCardProps {
   course: Course;
@@ -27,6 +28,20 @@ export default function CourseCard({
   onEdit,
   onDelete,
 }: CourseCardProps) {
+  const navigate = useNavigate();
+
+  const user = useAppSelector((state) => state.auth.user);
+  const isAuthenticated =
+    user && (user.role === "STUDENT" || user.role === "ADMIN");
+
+  const handleViewCourse = () => {
+    if (isAuthenticated) {
+      navigate(`/courses/${course.courseId}/dashboard`);
+    } else {
+      navigate(`/courses/${course.courseId}`);
+    }
+  };
+
   return (
     <div
       className="
@@ -58,9 +73,7 @@ export default function CourseCard({
               className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-32"
             >
               <li>
-                <button onClick={onEdit}>
-                  Edit
-                </button>
+                <button onClick={onEdit}>Edit</button>
               </li>
               <li>
                 <button className="text-error" onClick={onDelete}>
@@ -110,12 +123,12 @@ export default function CourseCard({
         </div>
 
         <div className="mt-5">
-          <Link
-            to={`/courses/${course.courseId}`}
+          <button
+            onClick={handleViewCourse}
             className="btn btn-primary btn-sm rounded-full px-5"
           >
             View course
-          </Link>
+          </button>
         </div>
       </div>
     </div>

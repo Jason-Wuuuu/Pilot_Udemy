@@ -100,7 +100,7 @@ export default function CourseDetailPage() {
           {/* Left */}
           <div className="lg:col-span-2">
             <button
-              onClick={() => navigate("/categories/frontend")}
+              onClick={() => navigate("/courses")}
               className="text-sm font-medium text-white/80 hover:text-white mb-8 transition"
             >
               ← Back to all courses

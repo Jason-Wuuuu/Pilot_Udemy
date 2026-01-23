@@ -78,7 +78,6 @@ export const createCourseHandler = async (req, res, next) => {
   try {
     const course = await createCourse({
       ...req.body,
-      createdBy: req.user.userId,
       status: "DRAFT",
     });
 
@@ -121,6 +120,7 @@ export const registerStudentHandler = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
+      message:"Successfully registered student(s).",
       data: result,
     });
   } catch (err) {
@@ -130,21 +130,22 @@ export const registerStudentHandler = async (req, res, next) => {
 
 
 // DELETE /courses/:courseId/students (ADMIN)
-export const deleteStudentHandler = async(req, res, next)=>{
-  try{
-    await deleteStudents({
+export const deleteStudentHandler = async (req, res, next) => {
+  try {
+    const result = await deleteStudents({
       courseId: req.params.courseId,
-      studentIds: req.params.studentIds,
+      studentIds: req.body.studentIds,
     });
+
     res.json({
       success: true,
-      message:"Student(s) deleted."
+      message:"Successfully deleted student(s).",
+      data: result,
     });
-  } catch(err){
-    next(err)
+  } catch (err) {
+    next(err);
   }
-}
-
+};
 
 /* =========================
    LECTURES

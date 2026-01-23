@@ -254,15 +254,39 @@ export const deleteStudents = async ({ courseId, studentIds }) => {
     })
   );
 
-  const current = Item ? unmarshall(Item).studentIds ?? [] : [];
+  const currentStudentIds = Item
+    ? unmarshall(Item).studentIds ?? []
+    : [];
 
-  // 2️⃣ Remove requested students
-  const toRemove = new Set(studentIds);
-  const nextStudentIds = current.filter(
-    (id) => !toRemove.has(id)
+  const currentSet = new Set(currentStudentIds);
+
+  const removedStudentIds = [];
+  const notFoundStudentIds = [];
+
+  for (const id of studentIds) {
+    if (currentSet.has(id)) {
+      removedStudentIds.push(id);
+    } else {
+      notFoundStudentIds.push(id);
+    }
+  }
+
+  // 2️⃣ Nothing to delete → no write
+  if (removedStudentIds.length === 0) {
+    return {
+      removedStudentIds: [],
+      notFoundStudentIds,
+      finalStudentIds: currentStudentIds,
+    };
+  }
+
+  // 3️⃣ Build final list
+  const removeSet = new Set(removedStudentIds);
+  const finalStudentIds = currentStudentIds.filter(
+    (id) => !removeSet.has(id)
   );
 
-  // 3️⃣ Update
+  // 4️⃣ Update DynamoDB
   await ddb.send(
     new UpdateItemCommand({
       TableName: TABLE_NAME,
@@ -272,10 +296,14 @@ export const deleteStudents = async ({ courseId, studentIds }) => {
       }),
       UpdateExpression: "SET studentIds = :ids",
       ExpressionAttributeValues: marshall({
-        ":ids": nextStudentIds,
+        ":ids": finalStudentIds,
       }),
     })
   );
 
-  return nextStudentIds;
+  return {
+    removedStudentIds,
+    notFoundStudentIds,
+    finalStudentIds,
+  };
 };
