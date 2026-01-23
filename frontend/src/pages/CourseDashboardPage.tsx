@@ -35,14 +35,11 @@ export default function CourseDashboardPage() {
     if (!courseId) return;
 
     setLoading(true);
-    Promise.all([
-      getCourseById(courseId),
-      getLecturesByCourseId(courseId),
-    ])
+    Promise.all([getCourseById(courseId), getLecturesByCourseId(courseId)])
       .then(([courseData, lectureData]) => {
         setCourse(courseData);
         setLectures(
-          lectureData.sort((a, b) => a.lectureOrder - b.lectureOrder)
+          lectureData.sort((a, b) => a.lectureOrder - b.lectureOrder),
         );
       })
       .finally(() => setLoading(false));
@@ -85,7 +82,6 @@ export default function CourseDashboardPage() {
           Instructor: {course.instructor}
         </p>
       </div>
-
 
       {/* =========================
          MAIN GRID
@@ -140,21 +136,23 @@ export default function CourseDashboardPage() {
                 <div className="flex items-center gap-3">
                   <button
                     className="btn btn-sm btn-outline btn-neutral"
-                    onClick={() =>
-                      navigate(`/learn/courses/${courseId}`)
-                    }
+                    onClick={() => navigate(`/learn/courses/${courseId}`)}
                   >
                     Start Learning
                   </button>
 
-                  <button
-                    className="btn btn-sm btn-primary"
-                    onClick={() =>
-                      navigate(`/homeworks/${lecture.lectureId}`)
-                    }
-                  >
-                    Homework
-                  </button>
+                  {(isAdmin ||
+                    (user?.role === "STUDENT" &&
+                      course.studentIds.includes(user.id))) && (
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={() =>
+                        navigate(`/homeworks/${lecture.lectureId}`)
+                      }
+                    >
+                      Homework
+                    </button>
+                  )}
 
                   {isAdmin && (
                     <>
@@ -185,9 +183,7 @@ export default function CourseDashboardPage() {
           {/* Overview */}
           <div className="card bg-base-100 border border-base-300">
             <div className="card-body">
-              <h3 className="font-semibold text-lg mb-2">
-                Course Overview
-              </h3>
+              <h3 className="font-semibold text-lg mb-2">Course Overview</h3>
               <p className="text-sm text-base-content/70">
                 {lectures.length} lectures
               </p>
@@ -206,9 +202,7 @@ export default function CourseDashboardPage() {
               </p>
               <button
                 className="btn btn-primary w-full"
-                onClick={() =>
-                  navigate(`/quizzes?courseId=${courseId}`)
-                }
+                onClick={() => navigate(`/quizzes?courseId=${courseId}`)}
               >
                 Go to Quizzes
               </button>
@@ -239,12 +233,12 @@ export default function CourseDashboardPage() {
             const updated = await updateLecture(
               courseId!,
               editingLecture.lectureId,
-              payload
+              payload,
             );
             setLectures((prev) =>
               prev.map((l) =>
-                l.lectureId === updated.lectureId ? updated : l
-              )
+                l.lectureId === updated.lectureId ? updated : l,
+              ),
             );
             setEditingLecture(null);
           }}
@@ -261,9 +255,7 @@ export default function CourseDashboardPage() {
           onConfirm={async () => {
             await deleteLecture(courseId!, deletingLecture.lectureId);
             setLectures((prev) =>
-              prev.filter(
-                (l) => l.lectureId !== deletingLecture.lectureId
-              )
+              prev.filter((l) => l.lectureId !== deletingLecture.lectureId),
             );
             setDeletingLecture(null);
           }}
