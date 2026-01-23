@@ -56,7 +56,7 @@ export default function QuizResultDetailPage() {
       )}
 
       {/* 单题结果（分页核心） */}
-      <QuestionResultCard q={question} />
+      <QuestionResultCard q={question} mode={isAdmin ? "ADMIN" : "STUDENT"} />
 
       {/* Prev / Next */}
       <div className="flex justify-between items-center">
