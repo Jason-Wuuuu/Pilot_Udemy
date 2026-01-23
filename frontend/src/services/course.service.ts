@@ -5,13 +5,17 @@ import type { Course, Lecture, Material } from "../types/course";
    COURSE
 ====================== */
 
+// GET /courses
+export const getAllCourses = async():Promise<Course[]>=>{
+  const res = await api.get(`/courses`);
+  return res.data.data;
+}
+
 // GET /courses/categories/:categoryId
 export const getCoursesByCategory = async (
   categoryId: string
 ): Promise<Course[]> => {
-    console.log("hello")
   const res = await api.get(`/courses/categories/${categoryId}`);
-  console.log(res.data.data)
   return res.data.data;
 };
 

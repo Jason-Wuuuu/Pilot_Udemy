@@ -1,24 +1,32 @@
 import {
-    getCoursesByCategory, createCourse, updateCourse,
+    getAllCourses, createCourse, updateCourse,
     deleteCourse,
 } from "../services/course.service";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
-import NavBar from "../components/NavBar";
 import CourseCard from "../components/Courses/CourseCard";
 import type { Course } from "../types/course";
 import { useAppSelector } from "../store/hooks";
 import CourseFormModal from "../components/Courses/CourseFormModal";
 import ConfirmDangerModal from "../components/Courses/ConfirmingDangerModal"
+import NavBar from "../components/NavBar";
 import toast from "react-hot-toast";
 
 
 export default function CourseListPage() {
-    const { categoryId } = useParams<{ categoryId: string }>();
     const user = useAppSelector((state) => state.auth.user);
     const isAdmin = user?.role === "ADMIN";
 
     const [courses, setCourses] = useState<Course[]>([]);
+    const categories = Array.from(
+        new Set(courses.map((c) => c.categoryName))
+    );
+
+    const [activeCategory, setActiveCategory] = useState<string>("ALL");
+    const filteredCourses =
+        activeCategory === "ALL"
+            ? courses
+            : courses.filter((c) => c.categoryName === activeCategory);
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [editingCourse, setEditingCourse] = useState<Course | null>(null);
@@ -27,12 +35,11 @@ export default function CourseListPage() {
 
 
     useEffect(() => {
-        if (!categoryId) return;
 
         const fetchCourses = async () => {
             try {
                 setLoading(true);
-                const data = await getCoursesByCategory(categoryId);
+                const data = await getAllCourses();
                 setCourses(data);
             } catch (err) {
                 console.error(err);
@@ -43,12 +50,11 @@ export default function CourseListPage() {
         };
 
         fetchCourses();
-    }, [categoryId]);
+    }, []);
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-base-100 to-base-200">
-            <NavBar />
-
+            <NavBar/>
             <main className="max-w-7xl mx-auto px-6 py-12">
 
                 {/* Hero / Header */}
@@ -59,7 +65,7 @@ export default function CourseListPage() {
                         </h1>
                         <p className="text-base-content/70 text-lg">
                             Structured courses designed to move you from fundamentals to
-                            real-world confidence — without the noise.
+                            real-world confidence.
                         </p>
                     </div>
 
@@ -86,7 +92,30 @@ export default function CourseListPage() {
                 {/* Content */}
                 {!loading && !error && (
                     <>
-                        {courses.length === 0 ? (
+                        {/* Category Tabs */}
+                        <div className="mb-10 overflow-x-auto">
+                            <div className="tabs tabs-bordered w-max">
+                                <button
+                                    className={`tab ${activeCategory === "ALL" ? "tab-active" : ""}`}
+                                    onClick={() => setActiveCategory("ALL")}
+                                >
+                                    All Courses
+                                </button>
+
+                                {categories.map((category) => (
+                                    <button
+                                        key={category}
+                                        className={`tab ${activeCategory === category ? "tab-active" : ""
+                                            }`}
+                                        onClick={() => setActiveCategory(category)}
+                                    >
+                                        {category}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {filteredCourses.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-32 text-center">
                                 <div className="text-6xl opacity-20 mb-6">📚</div>
                                 <h3 className="text-xl font-semibold mb-2">
@@ -107,7 +136,7 @@ export default function CourseListPage() {
                   xl:grid-cols-4
                 "
                             >
-                                {courses.map((course) => (
+                                {filteredCourses.map((course) => (
                                     <CourseCard
                                         key={course.courseId}
                                         course={course}
