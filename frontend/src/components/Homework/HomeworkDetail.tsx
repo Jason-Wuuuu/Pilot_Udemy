@@ -267,7 +267,6 @@ export default function HomeworkDetail() {
           <div className="flex gap-2">
             <button
               onClick={() => setIsEditingHomework(true)}
-              disabled={isOverdue}
               className="btn btn-primary btn-sm"
             >
               Edit

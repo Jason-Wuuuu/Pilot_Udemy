@@ -97,7 +97,6 @@ export default function HomeworkCard({
               </span>
               <button 
                 onClick={onUpdate}
-                disabled={isOverdue}
                 className="btn btn-primary btn-xs @sm:btn-sm"
               >
                 Edit
