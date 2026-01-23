@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router";
+import { Route, Routes, Navigate } from "react-router";
 import Login from "./pages/Login";
 import CreateAccount from "./pages/CreateAccount";
 import AdminPage from "./pages/AdminPage";
@@ -26,8 +26,10 @@ import AppLayout from "./layouts/AppLayout";
 import StudentGetQuizzessByCoursePage from "./pages/StudentGetQuizzesByCoursePage";
 import ChangeAccountInfo from "./pages/ChangeAccountInfo";
 import Help from "./pages/Help";
+import { useAppSelector } from "./store/hooks";
 
 function App() {
+  const user = useAppSelector((state) => state.auth.user);
   return (
     <>
       <Toaster
@@ -38,12 +40,16 @@ function App() {
       />
       <Routes>
         {/* ------------------ Public Pages ------------------ */}
-        <Route path="/" element={<CourseListPage />} />
+        <Route
+          path="/"
+          element={
+            user ? <Navigate to="/courses" replace /> : <CourseListPage />
+          }
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<CreateAccount />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        <Route path="/courses" element={<CourseListPage />} />
         <Route path="/courses/:courseId" element={<CourseDetailPage />} />
 
         {/* Auth-protected pages */}
@@ -55,6 +61,7 @@ function App() {
             <Route path="homework/:homeworkId" element={<HomeworkDetail />} />
             <Route path="setting" element={<ChangeAccountInfo />} />
             <Route path="help" element={<Help />} />
+            <Route path="/courses" element={<CourseListPage />} />
             <Route
               path="learn/courses/:courseId"
               element={<StartLearningPage />}
