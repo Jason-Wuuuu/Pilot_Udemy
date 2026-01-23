@@ -1,5 +1,4 @@
 import { Route, Routes } from "react-router";
-import HomePage from "./pages/HomePage";
 import Login from "./pages/Login";
 import CreateAccount from "./pages/CreateAccount";
 import AdminPage from "./pages/AdminPage";
@@ -26,6 +25,7 @@ import AdminSubmissionListPage from "./pages/AdminSubmissionListPage";
 import AppLayout from "./layouts/AppLayout";
 import StudentGetQuizzessByCoursePage from "./pages/StudentGetQuizzesByCoursePage";
 import ChangeAccountInfo from "./pages/ChangeAccountInfo";
+import Help from "./pages/Help";
 
 function App() {
   return (
@@ -54,6 +54,7 @@ function App() {
             <Route path="profile" element={<Profile />} />
             <Route path="homework/:homeworkId" element={<HomeworkDetail />} />
             <Route path="setting" element={<ChangeAccountInfo />} />
+            <Route path="help" element={<Help />} />
             <Route
               path="learn/courses/:courseId"
               element={<StartLearningPage />}

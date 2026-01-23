@@ -6,7 +6,7 @@ import { Moon, Sun } from "lucide-react";
 const NavBar = () => {
   const user = useAppSelector((state) => state.auth.user);
   const { theme, toggleTheme } = useTheme();
-  const isDark = theme === "dark";
+  const isDark = theme === "dim";
 
   return (
     <div className="navbar bg-base-100 border-b sticky top-0 z-50 px-6">

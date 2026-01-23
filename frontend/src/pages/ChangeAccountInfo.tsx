@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../store/hooks";
 import { loginSuccess } from "../store/slices/authSlice";
+import { useTheme } from "../utils/ThemeContext";
 
 // Example avatars
 const AVATARS = [
@@ -15,32 +16,26 @@ const Settings = () => {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
 
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  // 🌗 THEME FROM CONTEXT
+  const { theme, toggleTheme } = useTheme();
+
   const [notifications, setNotifications] = useState(true);
   const [selectedAvatar, setSelectedAvatar] = useState(
     user?.profileImage || AVATARS[0],
   );
 
-  // Load saved settings from localStorage
+  // Load notifications from localStorage
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") as "light" | "dark";
-    if (savedTheme) setTheme(savedTheme);
-
     const savedNotif = localStorage.getItem("notifications");
     if (savedNotif) setNotifications(savedNotif === "true");
   }, []);
 
-  // Apply theme
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  // Handle toggles
-  const toggleTheme = () => setTheme(theme === "light" ? "dark" : "light");
+  // Toggle notifications
   const toggleNotifications = () => {
-    setNotifications(!notifications);
-    localStorage.setItem("notifications", (!notifications).toString());
+    setNotifications((prev) => {
+      localStorage.setItem("notifications", (!prev).toString());
+      return !prev;
+    });
   };
 
   // Change avatar
@@ -60,13 +55,13 @@ const Settings = () => {
     <div className="max-w-md mx-auto mt-10 p-6 border rounded shadow-md space-y-6">
       <h2 className="text-xl font-bold">Settings</h2>
 
-      {/* Theme toggle */}
+      {/* 🌗 Theme toggle */}
       <div className="flex justify-between items-center">
         <span>Dark Mode</span>
         <input
           type="checkbox"
           className="toggle"
-          checked={theme === "dark"}
+          checked={theme === "dim"} // dim = dark mode
           onChange={toggleTheme}
         />
       </div>

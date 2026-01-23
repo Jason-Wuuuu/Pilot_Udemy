@@ -114,10 +114,10 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
       {/* BOTTOM MENU */}
       <ul className="menu p-4 border-t border-base-300 space-y-2">
         <li>
-          <a className="flex items-center gap-2 rounded-lg cursor-pointer">
+          <Link to="/help" className="flex items-center gap-2 rounded-lg cursor-pointer">
             <HelpCircle size={18} />
             {!collapsed && <span>Help</span>}
-          </a>
+          </Link>
         </li>
         <li>
           <Link
