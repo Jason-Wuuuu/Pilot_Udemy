@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 import fs from "fs/promises";
-import { PDFParse } from "pdf-parse";
+import pdfParse from "pdf-parse";
 import mammoth from "mammoth";
 
 dotenv.config();
@@ -150,9 +150,7 @@ ${text.slice(0, MAX_CHARS)}
 export const extractTextFromPDF = async (filePath) => {
   try {
     const dataBuffer = await fs.readFile(filePath);
-    // pdf-parse expects a Uint8Array, not a Buffer
-    const parser = new PDFParse(new Uint8Array(dataBuffer));
-    const data = await parser.getText();
+    const data = await pdfParse(dataBuffer);
 
     return {
       text: data.text,
@@ -183,10 +181,7 @@ export const extractTextFromDocx = async (filePath) => {
  */
 export const extractTextFromPDFBuffer = async (buffer) => {
   try {
-    const uint8Array = new Uint8Array(buffer);
-
-    const parser = new PDFParse(uint8Array);
-    const data = await parser.getText();
+    const data = await pdfParse(buffer);
 
     return {
       text: data.text,
