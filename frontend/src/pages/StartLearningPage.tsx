@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, useLocation } from "react-router";
 import { useAppSelector } from "../store/hooks";
 
 import MaterialFormModal from "../components/Courses/MaterialFormModal";
@@ -13,9 +13,15 @@ import {
   deleteMaterial,
 } from "../services/course.service";
 
+
 import type { Lecture, Material } from "../types/course";
 
 export default function StartLearningPage() {
+  const location = useLocation();
+  const initialLectureId =
+    (location.state as { lectureId?: string })?.lectureId;
+  console.log("incoming lectureId:", initialLectureId);
+
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
 
@@ -46,13 +52,43 @@ export default function StartLearningPage() {
     setDeletingMaterial(null);
   };
 
-  /* =========================
-     Load lectures
-     ========================= */
+
   useEffect(() => {
     if (!courseId) return;
     getLecturesByCourseId(courseId).then(setLectures);
   }, [courseId]);
+
+  useEffect(() => {
+    if (!initialLectureId) return;
+    if (lectures.length === 0) return;
+
+    const lecture = lectures.find(
+      (l) => l.lectureId === initialLectureId
+    );
+
+    if (!lecture) return;
+
+    // 1️⃣ Expand the lecture
+    setExpandedLectureId(lecture.lectureId);
+
+    // 2️⃣ Load materials if not already loaded
+    if (!materialsMap[lecture.lectureId]) {
+      getMaterialsByLectureId(courseId!, lecture.lectureId).then(
+        (materials) => {
+          setMaterialsMap((prev) => ({
+            ...prev,
+            [lecture.lectureId]: materials,
+          }));
+
+          // 3️⃣ Auto-select first material
+          if (materials.length > 0) {
+            setActiveMaterial(materials[0]);
+          }
+        }
+      );
+    }
+  }, [initialLectureId, lectures]);
+
 
   /* =========================
      Toggle lecture accordion
@@ -105,11 +141,10 @@ export default function StartLearningPage() {
               return (
                 <div
                   key={lecture.lectureId}
-                  className={`rounded-xl transition ${
-                    isOpen
-                      ? "bg-white shadow-sm border border-indigo-100"
-                      : "hover:bg-indigo-50/80"
-                  }`}
+                  className={`rounded-xl transition ${isOpen
+                    ? "bg-white shadow-sm border border-indigo-100"
+                    : "hover:bg-indigo-50/80"
+                    }`}
                 >
                   <button
                     onClick={() => toggleLecture(lecture)}
@@ -125,9 +160,8 @@ export default function StartLearningPage() {
                     </div>
 
                     <span
-                      className={`text-lg font-bold ${
-                        isOpen ? "text-indigo-600" : "text-slate-400"
-                      }`}
+                      className={`text-lg font-bold ${isOpen ? "text-indigo-600" : "text-slate-400"
+                        }`}
                     >
                       {isOpen ? "−" : "+"}
                     </span>
@@ -142,16 +176,14 @@ export default function StartLearningPage() {
                         return (
                           <div
                             key={material.materialId}
-                            className={`group flex items-center gap-3 px-4 py-2 ml-2 mr-2 rounded-lg text-sm transition ${
-                              isActive
-                                ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow"
-                                : "text-slate-600 hover:bg-indigo-100/60"
-                            }`}
+                            className={`group flex items-center gap-3 px-4 py-2 ml-2 mr-2 rounded-lg text-sm transition ${isActive
+                              ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow"
+                              : "text-slate-600 hover:bg-indigo-100/60"
+                              }`}
                           >
                             <span
-                              className={`w-1 h-6 rounded-full ${
-                                isActive ? "bg-white" : "bg-indigo-300/40"
-                              }`}
+                              className={`w-1 h-6 rounded-full ${isActive ? "bg-white" : "bg-indigo-300/40"
+                                }`}
                             />
 
                             <button

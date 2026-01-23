@@ -1,6 +1,27 @@
 import type { Course } from "../../types/course";
 import { useNavigate } from "react-router";
 import { useAppSelector } from "../../store/hooks";
+import cover1 from "../../assets/course-covers/cover-1.jpg";
+import cover2 from "../../assets/course-covers/cover-2.jpg";
+import cover3 from "../../assets/course-covers/cover-3.jpg";
+import cover4 from "../../assets/course-covers/cover-4.jpg";
+import cover6 from "../../assets/course-covers/cover-6.jpg";
+import cover7 from "../../assets/course-covers/cover-7.jpg";
+import cover8 from "../../assets/course-covers/cover-8.jpg";
+import cover9 from "../../assets/course-covers/cover-9.jpg";
+import cover10 from "../../assets/course-covers/cover-10.jpg";
+
+const COURSE_COVERS = [
+  cover1,
+  cover2,
+  cover3,
+  cover4,
+  cover6,
+  cover7,
+  cover8,
+  cover9,
+  cover10,
+];
 
 interface CourseCardProps {
   course: Course;
@@ -21,7 +42,13 @@ function getLevelBadgeStyle(level: string) {
       return "bg-white/90 text-base-content border border-white/60";
   }
 }
-
+function getCoverForCourse(courseId: string) {
+  let hash = 0;
+  for (let i = 0; i < courseId.length; i++) {
+    hash = (hash + courseId.charCodeAt(i)) % COURSE_COVERS.length;
+  }
+  return COURSE_COVERS[hash];
+}
 export default function CourseCard({
   course,
   isAdmin,
@@ -41,7 +68,7 @@ export default function CourseCard({
       navigate(`/courses/${course.courseId}`);
     }
   };
-
+  const coverImage = getCoverForCourse(course.courseId);
   return (
     <div
       className="
@@ -87,14 +114,12 @@ export default function CourseCard({
 
       {/* Color Header */}
       <figure
-        className="
-          relative h-32
-          bg-gradient-to-br
-          from-purple-500
-          via-indigo-500
-          to-blue-500
-        "
-      >
+        className="relative h-32 overflow-hidden">
+        <img
+          src={coverImage}
+          alt={course.courseName}
+          className="w-full h-full object-cover"
+        />
         <div className="absolute top-3 left-3">
           <span
             className={`

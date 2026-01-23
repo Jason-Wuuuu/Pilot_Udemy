@@ -55,14 +55,6 @@ export default function CourseDashboardPage() {
 
   if (!course) return null;
 
-  /* =========================
-     Progress (demo-safe)
-     ========================= */
-  const completedLectures = 0; // intentionally fake for demo
-  const progress =
-    lectures.length === 0
-      ? 0
-      : Math.round((completedLectures / lectures.length) * 100);
 
   return (
     <div className="px-8 py-10">
@@ -136,24 +128,23 @@ export default function CourseDashboardPage() {
                 <div className="flex items-center gap-3">
                   <button
                     className="btn btn-sm btn-outline btn-neutral"
-                    onClick={() => navigate(`/learn/courses/${courseId}`)}
+                    onClick={() =>
+                      navigate(`/learn/courses/${courseId}`, {
+                        state: { lectureId: lecture.lectureId },
+                      })
+                    }
                   >
                     Start Learning
                   </button>
 
-                  {(isAdmin ||
-                    (user?.role === "STUDENT" &&
-                      course.studentIds.includes(user.id))) && (
-                    <button
-                      className="btn btn-sm btn-primary"
-                      onClick={() =>
-                        navigate(`/homeworks/${lecture.lectureId}`)
-                      }
-                    >
-                      Homework
-                    </button>
-                  )}
-
+                  <button
+                    className="btn btn-sm btn-primary"
+                    onClick={() =>
+                      navigate(`/homeworks/${lecture.lectureId}`)
+                    }
+                  >
+                    Homework
+                  </button>
                   {isAdmin && (
                     <>
                       <button
@@ -202,7 +193,9 @@ export default function CourseDashboardPage() {
               </p>
               <button
                 className="btn btn-primary w-full"
-                onClick={() => navigate(`/quizzes?courseId=${courseId}`)}
+                onClick={() => navigate(isAdmin
+                  ? `/admin/courses/${courseId}/quizzes`
+                  : `/courses/${courseId}/quizzes`)}
               >
                 Go to Quizzes
               </button>
