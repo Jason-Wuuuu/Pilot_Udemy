@@ -31,7 +31,7 @@ export default function HomeworkDetail() {
   const [isEditingHomework, setIsEditingHomework] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const { homework, loading, error, refetch } = useHomework(homeworkId);
+  const { homework, loading, refetch } = useHomework(homeworkId);
 
   const submissionIds =
     userRole === "ADMIN" ? homework?.submissions : undefined;
@@ -227,21 +227,15 @@ export default function HomeworkDetail() {
   if (loading) {
     return (
       <div className="w-full h-full flex items-center justify-center p-8">
-        <div className="text-gray-500">Loading...</div>
+        <div className="text-base-content/60">Loading...</div>
       </div>
     );
   }
 
-  if (error || !homework) {
+  if (!homework) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center p-8 gap-4">
-        <div className="text-red-500">{error || "Homework not found"}</div>
-        <button
-          onClick={() => navigate("/")}
-          className="btn btn-neutral btn-sm"
-        >
-          Back to Homework List
-        </button>
+        <div className="text-base-content/60">No homeworks yet</div>
       </div>
     );
   }
@@ -250,7 +244,7 @@ export default function HomeworkDetail() {
 
   return (
     <div
-      className={`w-full p-4 sm:p-6 md:p-8 ${userRole === "STUDENT" ? "min-h-full lg:h-dvh lg:flex lg:flex-col" : "min-h-full"}`}
+      className={`w-full p-2 @sm:p-3 @md:p-4 ${userRole === "STUDENT" ? "min-h-full lg:h-dvh lg:flex lg:flex-col" : "min-h-full"}`}
     >
       <div className="flex items-center justify-between mb-6 shrink-0">
         <button onClick={() => navigate(-1)} className="btn btn-ghost btn-sm">
@@ -290,13 +284,13 @@ export default function HomeworkDetail() {
       </div>
 
       <div
-        className={`bg-white border border-gray-200 rounded-lg overflow-hidden ${userRole === "STUDENT" ? "lg:flex-1 lg:flex lg:flex-col lg:min-h-0" : ""}`}
+        className={`bg-base-100 border border-base-300 rounded-lg overflow-hidden ${userRole === "STUDENT" ? "lg:flex-1 lg:flex lg:flex-col lg:min-h-0" : ""}`}
       >
         <div
-          className={`p-4 sm:p-6 border-b border-gray-200 ${userRole === "STUDENT" ? "lg:shrink-0" : ""}`}
+          className={`p-4 sm:p-6 border-b border-base-300 ${userRole === "STUDENT" ? "lg:shrink-0" : ""}`}
         >
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-base-content">
               {homework.title}
             </h1>
             <div className="flex items-center gap-3">
@@ -307,13 +301,13 @@ export default function HomeworkDetail() {
               </span>
             </div>
           </div>
-          <div className="mt-2 text-sm text-gray-500">
+          <div className="mt-2 text-sm text-base-content/60">
             Due: {new Date(homework.dueDate).toLocaleString()}
           </div>
         </div>
 
         {userRole === "ADMIN" && isEditingHomework && (
-          <div className="p-4 sm:p-6 border-b border-gray-200">
+          <div className="p-4 sm:p-6 border-b border-base-300">
             <HomeworkForm
               mode="update"
               courseId={homework.courseId}
@@ -333,35 +327,35 @@ export default function HomeworkDetail() {
         )}
 
         {userRole === "ADMIN" && !isEditingHomework && (
-          <div className="p-4 sm:p-6 border-b border-gray-200">
-            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+          <div className="p-4 sm:p-6 border-b border-base-300">
+            <h2 className="text-sm font-semibold text-base-content/70 uppercase tracking-wide mb-3">
               Description
             </h2>
-            <div className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+            <div className="text-base-content whitespace-pre-wrap leading-relaxed">
               {homework.description}
             </div>
           </div>
         )}
 
         {userRole === "STUDENT" && (
-          <div className="p-4 sm:p-6 border-b border-gray-200 lg:flex-1 lg:flex lg:flex-col lg:min-h-0">
+          <div className="p-4 sm:p-6 border-b border-base-300 lg:flex-1 lg:flex lg:flex-col lg:min-h-0">
             <div className="flex flex-col lg:flex-row gap-6 lg:flex-1 lg:min-h-0">
               <div className="lg:w-1/2 lg:h-full flex flex-col">
-                <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3 shrink-0">
+                <h2 className="text-sm font-semibold text-base-content/70 uppercase tracking-wide mb-3 shrink-0">
                   Description
                 </h2>
-                <div className="text-gray-700 whitespace-pre-wrap leading-relaxed min-h-[150px] max-h-[300px] lg:min-h-0 lg:max-h-none lg:flex-1 overflow-y-auto bg-gray-50 rounded-lg p-4">
+                <div className="text-base-content whitespace-pre-wrap leading-relaxed min-h-[150px] max-h-[300px] lg:min-h-0 lg:max-h-none lg:flex-1 overflow-y-auto bg-base-200 rounded-lg p-4">
                   {homework.description}
                 </div>
               </div>
 
               <div className="lg:w-1/2 lg:h-full flex flex-col">
-                <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3 shrink-0">
+                <h2 className="text-sm font-semibold text-base-content/70 uppercase tracking-wide mb-3 shrink-0">
                   Your Submission
                 </h2>
 
                 {loadingMySubmission ? (
-                  <div className="text-gray-500">Loading...</div>
+                  <div className="text-base-content/60">Loading...</div>
                 ) : (
                   (() => {
                     const isGraded =
@@ -423,18 +417,18 @@ export default function HomeworkDetail() {
                           )}
 
                           {!mySubmission && isOverdue && (
-                            <p className="text-gray-500 italic">
+                            <p className="text-base-content/60 italic">
                               Deadline has passed. No submission was made.
                             </p>
                           )}
 
                           {mySubmission && !isEditing && (
                             <div className="lg:flex-1 flex flex-col lg:min-h-0">
-                              <div className="bg-gray-50 rounded-lg p-4 text-gray-700 whitespace-pre-wrap min-h-[150px] max-h-[300px] lg:min-h-0 lg:max-h-none lg:flex-1 overflow-y-auto">
+                              <div className="bg-base-200 rounded-lg p-4 text-base-content whitespace-pre-wrap min-h-[150px] max-h-[300px] lg:min-h-0 lg:max-h-none lg:flex-1 overflow-y-auto">
                                 {mySubmission.text}
                               </div>
                               <div className="flex items-end justify-between mt-3 shrink-0">
-                                <div className="text-base text-gray-500">
+                                <div className="text-base text-base-content/60">
                                   Submitted:{" "}
                                   {new Date(
                                     mySubmission.submittedAt,
@@ -453,7 +447,7 @@ export default function HomeworkDetail() {
                                 )}
                               </div>
                               {!canEdit && (
-                                <p className="text-sm text-gray-500 italic mt-2 shrink-0">
+                                <p className="text-sm text-base-content/60 italic mt-2 shrink-0">
                                   {isGraded
                                     ? "This submission has been graded and can no longer be edited."
                                     : "The deadline has passed. You can no longer edit your submission."}
@@ -511,11 +505,11 @@ export default function HomeworkDetail() {
 
         {userRole === "ADMIN" && !isEditingHomework && (
           <div className="p-4 sm:p-6">
-            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            <h2 className="text-sm font-semibold text-base-content/70 uppercase tracking-wide mb-3">
               Submissions ({homework.submissions?.length || 0})
             </h2>
             {loadingSubmissions ? (
-              <div className="text-gray-500">Loading submissions...</div>
+              <div className="text-base-content/60">Loading submissions...</div>
             ) : submissions.length > 0 ? (
               <div
                 className={`flex flex-col lg:flex-row gap-4 ${selectedSubmission ? "lg:h-[80vh]" : ""}`}
@@ -584,7 +578,7 @@ export default function HomeworkDetail() {
                       </div>
                     );
                   })()}
-                  <div className="border border-gray-200 rounded-lg flex-1 overflow-y-auto">
+                  <div className="border border-base-300 rounded-lg flex-1 overflow-y-auto">
                     <SubmissionsTable
                       submissions={submissions}
                       selectedId={selectedSubmission?.id}
@@ -595,9 +589,9 @@ export default function HomeworkDetail() {
 
                 {selectedSubmission && (
                   <div ref={gradingPanelRef} className="lg:w-1/2 h-full">
-                    <div className="border border-gray-200 rounded-lg p-4 h-full flex flex-col">
+                    <div className="border border-base-300 rounded-lg p-4 h-full flex flex-col">
                       <div className="flex items-center justify-between mb-4 shrink-0">
-                        <h3 className="font-semibold text-gray-900">
+                        <h3 className="font-semibold text-base-content">
                           Grade Submission
                         </h3>
                         <button
@@ -737,7 +731,7 @@ export default function HomeworkDetail() {
                 )}
               </div>
             ) : (
-              <p className="text-gray-500">No submissions yet.</p>
+              <p className="text-base-content/60">No submissions yet.</p>
             )}
           </div>
         )}

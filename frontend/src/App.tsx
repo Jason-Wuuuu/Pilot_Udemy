@@ -13,6 +13,7 @@ import CourseDashboardPage from "./pages/CourseDashboardPage";
 import HomeworkDetail from "./components/Homework/HomeworkDetail";
 import StartLearningPage from "./pages/StartLearningPage";
 import { Toaster } from "react-hot-toast";
+import Homework from "./components/Homework";
 
 import QuizListPage from "./pages/QuizListPage";
 import QuizTakePage from "./pages/QuizTakePage";
@@ -49,13 +50,18 @@ function App() {
             {/* <Route path="/quiz" element={<QuizPage />} />
           <Route path="/homework" element={<HomeworkPage />} /> */}
             <Route path="profile" element={<Profile />} />
-            <Route path="homework/:homeworkId" element={<HomeworkDetail />} />
             {/* Course */}
             <Route
               path="learn/courses/:courseId"
               element={<StartLearningPage />}
             />
-            <Route path="courses/:courseId/dashboard" element={<CourseDashboardPage/>}/>
+            <Route
+              path="courses/:courseId/dashboard"
+              element={<CourseDashboardPage />}
+            />
+            <Route path="homeworks/:lectureId" element={<Homework />} />
+            <Route path="homeworks" element={<Homework />} />
+            <Route path="homework/:homeworkId" element={<HomeworkDetail />} />
 
             {/* Quiz */}
             <Route path="quizzes" element={<QuizListPage />} />

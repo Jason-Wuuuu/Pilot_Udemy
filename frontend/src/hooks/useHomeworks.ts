@@ -1,31 +1,87 @@
 import { useEffect, useState, useCallback } from "react";
 import type { Homework } from "../types/homework";
 
-export function useHomeworks(courseId: string) {
+interface CourseWithHomeworks {
+  course: {
+    courseId: string;
+    courseName: string;
+    description: string;
+    categoryName: string;
+    level: string;
+    instructor: string;
+  };
+  homeworks: Homework[];
+}
+
+export function useHomeworks(
+  lectureId: string | null,
+  studentId?: string,
+  notOverdue?: boolean,
+) {
   const [homeworks, setHomeworks] = useState<Homework[]>([]);
+  const [coursesWithHomeworks, setCoursesWithHomeworks] = useState<
+    CourseWithHomeworks[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchHomeworks = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     try {
-      const res = await fetch(`http://localhost:3000/api/homeworks?courseId=${courseId}`);
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
+      let res: Response;
+      if (lectureId) {
+        // homeworks for a specific lecture
+        res = await fetch(
+          `http://localhost:3000/api/homeworks?courseId=${lectureId}`,
+        );
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const { data } = await res.json();
+        setHomeworks(data);
+        setCoursesWithHomeworks([]);
+      } else if (studentId) {
+        // all homeworks for a student
+        const url = new URL(
+          `http://localhost:3000/api/homeworks/student/${studentId}`,
+        );
+        if (notOverdue) {
+          url.searchParams.set("notOverdue", "true");
+        }
+        res = await fetch(url.toString());
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const { data } = await res.json();
+        setCoursesWithHomeworks(data);
+        const allHomeworks = data.flatMap(
+          (item: CourseWithHomeworks) => item.homeworks,
+        );
+        setHomeworks(allHomeworks);
+      } else {
+        setHomeworks([]);
+        setCoursesWithHomeworks([]);
+        setLoading(false);
+        return;
       }
-      const { data } = await res.json();
-      setHomeworks(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load homeworks");
     } finally {
       setLoading(false);
     }
-  }, [courseId]);
+  }, [lectureId, studentId, notOverdue]);
 
   useEffect(() => {
     fetchHomeworks();
   }, [fetchHomeworks]);
 
-  return { homeworks, loading, error, refetch: fetchHomeworks };
+  return {
+    homeworks,
+    coursesWithHomeworks,
+    loading,
+    error,
+    refetch: fetchHomeworks,
+  };
 }
