@@ -79,3 +79,24 @@ export const deleteHomework = async (req, res) => {
     res.status(500).json({ error: "Failed to delete homework" });
   }
 };
+
+// GET /api/homeworks/student/:studentId
+export const getHomeworksByStudentId = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const { notOverdue } = req.query;
+    const result = await homeworkService.getHomeworksByStudentId(
+      studentId,
+      notOverdue === "true",
+    );
+
+    if (result.error) {
+      return res.status(result.status).json({ error: result.error });
+    }
+
+    res.json(result);
+  } catch (error) {
+    console.error("Error fetching homeworks by studentId:", error);
+    res.status(500).json({ error: "Failed to fetch homeworks" });
+  }
+};

@@ -5,6 +5,7 @@ import {
   createHomework,
   updateHomework,
   deleteHomework,
+  getHomeworksByStudentId,
 } from "../controllers/homeworkController.js";
 import {
   getSubmissionsByHomework,
@@ -16,13 +17,14 @@ const router = Router();
 
 // /api/homeworks
 router.get("/", getAllHomeworks);
+router.get("/student/:studentId", getHomeworksByStudentId);
 router.get("/:id", getHomeworkById);
 router.post("/", createHomework);
 router.put("/:id", updateHomework);
 router.delete("/:id", deleteHomework);
 
 // /api/homeworks/:homeworkId/submissions
-router.get("/:homeworkId/submissions/my", getMySubmission); 
+router.get("/:homeworkId/submissions/my", getMySubmission);
 router.get("/:homeworkId/submissions", getSubmissionsByHomework);
 router.post("/:homeworkId/submissions", createSubmission);
 
