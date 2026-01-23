@@ -52,7 +52,8 @@ export default function CourseListPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-base-100 to-base-200">
-      <NavBar />
+      {user ? <></> : <><NavBar />
+        <HeroCarousel /></>}
       <main className="max-w-7xl mx-auto px-6 py-12">
         {/* Hero / Header */}
         <section className="mb-12">
@@ -69,7 +70,7 @@ export default function CourseListPage() {
           <div className="divider mt-8" />
         </section>
 
-        <HeroCarousel />
+
         {/* Loading State */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
@@ -94,9 +95,8 @@ export default function CourseListPage() {
             <div className="mb-10 overflow-x-auto">
               <div className="tabs tabs-bordered w-max">
                 <button
-                  className={`tab ${
-                    activeCategory === "ALL" ? "tab-active" : ""
-                  }`}
+                  className={`tab ${activeCategory === "ALL" ? "tab-active" : ""
+                    }`}
                   onClick={() => setActiveCategory("ALL")}
                 >
                   All Courses
@@ -105,9 +105,8 @@ export default function CourseListPage() {
                 {categories.map((category) => (
                   <button
                     key={category}
-                    className={`tab ${
-                      activeCategory === category ? "tab-active" : ""
-                    }`}
+                    className={`tab ${activeCategory === category ? "tab-active" : ""
+                      }`}
                     onClick={() => setActiveCategory(category)}
                   >
                     {category}
@@ -210,6 +209,7 @@ This action cannot be undone.`}
                         throw err; // IMPORTANT: keeps modal open
                       } finally {
                         setDeletingCourse(null);
+                        window.location.reload();
                       }
                     }}
                   />

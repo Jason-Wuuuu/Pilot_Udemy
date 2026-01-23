@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import toast from "react-hot-toast";
 import { getQuizzesByCourse } from "../services/quiz.service";
 import QuizCard from "../components/QuizCard";
@@ -25,7 +25,7 @@ type CourseQuizResponse = {
 
 export default function StudentCourseQuizListPage() {
   const { courseId } = useParams<{ courseId: string }>();
-
+  const navigate = useNavigate();
   const [data, setData] = useState<CourseQuizResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -64,11 +64,11 @@ export default function StudentCourseQuizListPage() {
       hasSubmitted: q.completed,
       submission: q.completed
         ? {
-            submissionId: q.submissionId!,
-            quizId: q.quizId,
-            score: q.score!,
-            createdAt: q.createdAt,
-          }
+          submissionId: q.submissionId!,
+          quizId: q.quizId,
+          score: q.score!,
+          createdAt: q.createdAt,
+        }
         : undefined,
     }));
 
@@ -97,6 +97,15 @@ export default function StudentCourseQuizListPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10 space-y-6">
+      <button
+        className="btn btn-ghost btn-sm mb-6"
+        onClick={() => navigate(`/courses/${courseId}/dashboard`
+
+          
+        )}
+      >
+        ← Back to Courses
+      </button>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>

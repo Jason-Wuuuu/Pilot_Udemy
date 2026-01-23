@@ -5,6 +5,8 @@ import {
   Settings,
   Menu,
   HelpCircle,
+  User2,
+  PencilIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getAllCourses } from "../services/course.service";
@@ -120,9 +122,19 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
             to="/homeworks"
             className="flex items-center gap-2 cursor-pointer"
           >
-            <FileText size={18} />
+            <PencilIcon size={18} />
             {!collapsed && <span>Homework</span>}
           </Link>
+        </li>
+
+        <li>
+          {/* Admin: Register Students */}
+          {user?.role === "ADMIN" && (
+            <Link to="/admin/register" className="flex items-center gap-2 cursor-pointer">
+              <User2 size={18} />
+              Register Students
+            </Link>
+          )}
         </li>
       </ul>
 
