@@ -26,6 +26,7 @@ import AdminSubmissionListPage from "./pages/AdminSubmissionListPage";
 import AppLayout from "./layouts/AppLayout";
 import StudentGetQuizzessByCoursePage from "./pages/StudentGetQuizzesByCoursePage";
 import ChangeAccountInfo from "./pages/ChangeAccountInfo";
+import AdminCoursesPage from "./pages/AdminCoursePage";
 
 function App() {
   return (
@@ -107,6 +108,7 @@ function App() {
               path="/admin/courses/:courseId/quizzes/:quizId/submissions"
               element={<AdminSubmissionListPage />}
             />
+            <Route path="/admin/courses" element={<AdminCoursesPage />} />
           </Route>
         </Route>
       </Routes>

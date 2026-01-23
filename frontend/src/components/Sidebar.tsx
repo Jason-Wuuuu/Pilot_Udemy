@@ -7,7 +7,9 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { useSelector } from "react-redux";
+import type { RootState } from "../store";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -19,6 +21,16 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
 
   const toggleMenu = (menu: string) => {
     setOpenMenu(openMenu === menu ? null : menu);
+  };
+
+  const user = useSelector((state: RootState) => state.auth.user);
+  const navigate = useNavigate();
+  const handleQuizClick = () => {
+    if (user?.role === "ADMIN") {
+      navigate("/admin/courses");
+    } else {
+      navigate("/quizzes");
+    }
   };
 
   return (
@@ -61,13 +73,13 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
 
         {/* Quiz */}
         <li>
-          <Link
-            to="/quizzes"
-            className="flex items-center gap-2 cursor-pointer"
+          <button
+            onClick={handleQuizClick}
+            className="flex items-center gap-2 cursor-pointer w-full text-left"
           >
             <ClipboardList size={18} />
             {!collapsed && <span>Quiz</span>}
-          </Link>
+          </button>
           {/* {openMenu === "quiz" && !collapsed && (
             <ul className="pl-6 mt-2 menu-compact">
             </ul>
@@ -76,7 +88,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
 
         {/* Homework */}
         <li>
-          <Link 
+          <Link
             to="/homeworks"
             className="flex items-center gap-2 cursor-pointer"
           >
