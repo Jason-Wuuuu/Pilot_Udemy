@@ -13,7 +13,7 @@ export default function Homework() {
   const notOverdue = searchParams.get("notOverdue") === "true";
   const user = useAppSelector((state) => state.auth.user);
   const { homeworks, coursesWithHomeworks, loading, error, refetch } =
-    useHomeworks(lectureId || null, user?.id, notOverdue);
+    useHomeworks(lectureId || null, user?.id, notOverdue, user?.role);
   const [showForm, setShowForm] = useState<{
     mode: "create" | "update";
     homework?: Homework;
@@ -145,13 +145,15 @@ export default function Homework() {
           <h1 className="text-lg @sm:text-2xl @md:text-3xl font-bold">
             {lectureId
               ? `Homeworks (${homeworks.length})`
-              : `My Homeworks (${homeworks.length})`}
+              : user.role === "ADMIN"
+                ? `All Homeworks (${homeworks.length})`
+                : `My Homeworks (${homeworks.length})`}
           </h1>
           <div className="flex items-center gap-2 @sm:gap-3">
             {loading && !isInitialLoad.current && (
               <span className="loading loading-spinner loading-sm"></span>
             )}
-            {!lectureId && (
+            {!lectureId && user.role !== "ADMIN" && (
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -174,7 +176,7 @@ export default function Homework() {
           </div>
         </div>
 
-        {lectureId ? (
+        {lectureId || (user.role === "ADMIN" && homeworks.length > 0) ? (
           <div className="grid grid-cols-1 @2xl:grid-cols-2 items-start gap-2 @sm:gap-3 @md:gap-4">
             {[...homeworks]
               .sort(
@@ -193,7 +195,7 @@ export default function Homework() {
           </div>
         ) : (
           <div className="space-y-6">
-            {coursesWithHomeworks.length === 0 ? (
+            {coursesWithHomeworks.length === 0 && homeworks.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
                 No homeworks found. You are not enrolled in any courses with
                 homeworks.

@@ -17,6 +17,7 @@ export function useHomeworks(
   lectureId: string | null,
   studentId?: string,
   notOverdue?: boolean,
+  userRole?: string,
 ) {
   const [homeworks, setHomeworks] = useState<Homework[]>([]);
   const [coursesWithHomeworks, setCoursesWithHomeworks] = useState<
@@ -36,6 +37,15 @@ export function useHomeworks(
         res = await fetch(
           `http://localhost:3000/api/homeworks?courseId=${lectureId}`,
         );
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const { data } = await res.json();
+        setHomeworks(data);
+        setCoursesWithHomeworks([]);
+      } else if (userRole === "ADMIN") {
+        // all homeworks
+        res = await fetch(`http://localhost:3000/api/homeworks`);
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
@@ -71,7 +81,7 @@ export function useHomeworks(
     } finally {
       setLoading(false);
     }
-  }, [lectureId, studentId, notOverdue]);
+  }, [lectureId, studentId, notOverdue, userRole]);
 
   useEffect(() => {
     fetchHomeworks();
