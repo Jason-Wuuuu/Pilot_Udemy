@@ -1,9 +1,12 @@
 import {
+  getAllCourses as getAllCoursesRepo,
   getCourseById as getCourseByIdRepo,
   getCoursesByCategoryId as getCoursesByCategoryIdRepo,
   createCourse as createCourseRepo,
   updateCourse as updateCourseRepo,
   deleteCourse as deleteCourseRepo,
+  registerStudents as registerStudentsRepo,
+  deleteStudents as deleteStudentsRepo
 } from "../repositories/course.repo.js";
 
 import {
@@ -26,6 +29,10 @@ import path from "path";
 /* =========================
    COURSE
 ========================= */
+
+export const getAllCourses = async() =>{
+  return getAllCoursesRepo();
+}
 
 export const getCourseById = async (courseId) => {
   return getCourseByIdRepo(courseId);
@@ -72,6 +79,37 @@ export const deleteCourseCascade = async (courseId) => {
 
   await deleteCourseRepo(courseId);
 };
+
+export const registerStudents = async ({
+  courseId,
+  studentIds,
+}) => {
+  if (!courseId || !Array.isArray(studentIds) || studentIds.length === 0) {
+    const err = new Error("courseId and non-empty studentIds are required");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  return await registerStudentsRepo({ courseId, studentIds});
+};
+
+export const deleteStudents = async({
+  courseId,
+  studentIds,
+})=>{
+    if (!courseId) {
+    const err = new Error("Course ID is required");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  if (!Array.isArray(studentIds) || studentIds.length === 0) {
+    const err = new Error("studentIds must be a non-empty array");
+    err.statusCode = 400;
+    throw err;
+  }
+  return await deleteStudentsRepo({ courseId, studentIds});
+}
 
 /* =========================
    LECTURES

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useAppSelector } from "../store/hooks";
 
-import NavBar from "../components/NavBar";
 import MaterialFormModal from "../components/Courses/MaterialFormModal";
 import ConfirmDangerModal from "../components/Courses/ConfirmingDangerModal";
 
@@ -36,7 +35,9 @@ export default function StartLearningPage() {
   const [editingLectureId, setEditingLectureId] = useState<string | null>(null);
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
   const [deletingMaterial, setDeletingMaterial] = useState<Material | null>(null);
-  const [openMenuMaterialId, setOpenMenuMaterialId] = useState<string | null>(null);
+  const [openMenuMaterialId, setOpenMenuMaterialId] = useState<string | null>(
+    null
+  );
 
   const resetMaterialModalState = () => {
     setCreatingLectureId(null);
@@ -85,8 +86,6 @@ export default function StartLearningPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <NavBar />
-
       <div className="flex h-[calc(100vh-64px)]">
         {/* =========================
             SIDEBAR
@@ -112,7 +111,6 @@ export default function StartLearningPage() {
                       : "hover:bg-indigo-50/80"
                   }`}
                 >
-                  {/* Lecture header */}
                   <button
                     onClick={() => toggleLecture(lecture)}
                     className="w-full px-4 pt-4 pb-2 flex items-center justify-between text-left"
@@ -135,7 +133,6 @@ export default function StartLearningPage() {
                     </span>
                   </button>
 
-                  {/* Materials */}
                   {isOpen && (
                     <div className="pb-3 mt-2 space-y-1">
                       {materialsMap[lecture.lectureId]?.map((material) => {
@@ -145,7 +142,7 @@ export default function StartLearningPage() {
                         return (
                           <div
                             key={material.materialId}
-                            className={`group relative flex items-center gap-3 px-4 py-2 ml-2 mr-2 rounded-lg text-sm transition ${
+                            className={`group flex items-center gap-3 px-4 py-2 ml-2 mr-2 rounded-lg text-sm transition ${
                               isActive
                                 ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow"
                                 : "text-slate-600 hover:bg-indigo-100/60"
@@ -163,63 +160,15 @@ export default function StartLearningPage() {
                             >
                               {material.title}
                             </button>
-
-                            {/* Admin menu */}
-                            {isAdmin && (
-                              <div className="relative">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenMenuMaterialId(
-                                      openMenuMaterialId === material.materialId
-                                        ? null
-                                        : material.materialId
-                                    );
-                                  }}
-                                  className={`btn btn-xs btn-ghost ${
-                                    isActive ? "text-white" : "text-slate-500"
-                                  }`}
-                                >
-                                  ⋯
-                                </button>
-
-                                {openMenuMaterialId === material.materialId && (
-                                  <div
-                                    className="absolute right-0 top-7 z-50 w-32 bg-white rounded-xl shadow-lg border"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <button
-                                      className="w-full px-3 py-2 text-left text-sm text-indigo-600 hover:bg-slate-100"
-                                      onClick={() => {
-                                        setEditingMaterial(material);
-                                        setEditingLectureId(lecture.lectureId);
-                                        setOpenMenuMaterialId(null);
-                                      }}
-                                    >
-                                      ✏️ Edit
-                                    </button>
-
-                                    <button
-                                      className="w-full px-3 py-2 text-left text-sm text-error hover:bg-red-50"
-                                      onClick={() => {
-                                        setDeletingMaterial(material);
-                                        setEditingLectureId(lecture.lectureId);
-                                        setOpenMenuMaterialId(null);
-                                      }}
-                                    >
-                                      🗑 Delete
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            )}
                           </div>
                         );
                       })}
 
                       {isAdmin && (
                         <button
-                          onClick={() => setCreatingLectureId(lecture.lectureId)}
+                          onClick={() =>
+                            setCreatingLectureId(lecture.lectureId)
+                          }
                           className="ml-6 mt-1 text-xs text-indigo-600 hover:underline"
                         >
                           + Add material
@@ -236,22 +185,33 @@ export default function StartLearningPage() {
         {/* =========================
             VIEWER
            ========================= */}
-        <main className="flex-1 bg-white">
-          {!activeMaterial ? (
-            <div className="h-full flex items-center justify-center">
-              <span className="text-xl font-bold text-indigo-600">
-                Select a material to start learning
-              </span>
-            </div>
-          ) : (
-            <div className="h-full flex flex-col">
-              <div className="h-12 px-6 flex items-center justify-between bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm">
-                <button onClick={() => navigate(`/courses/${courseId}`)}>
-                  ← Back to course
-                </button>
-              </div>
+        <main className="flex-1 bg-white flex flex-col">
+          {/* ===== ALWAYS VISIBLE TOP BAR ===== */}
+          <div className="h-12 px-6 flex items-center justify-between bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm">
+            <button
+              onClick={() => navigate(`/courses/${courseId}/dashboard`)}
+              className="hover:underline"
+            >
+              ← Back to course
+            </button>
 
-              <div className="flex-1 bg-black overflow-hidden">
+            <button
+              className="btn btn-xs bg-black/20 text-white border border-white/30 rounded-full px-4"
+            >
+              🤖 AI Summary
+            </button>
+          </div>
+
+          {/* ===== CONTENT AREA ===== */}
+          <div className="flex-1 overflow-hidden">
+            {!activeMaterial ? (
+              <div className="h-full flex items-center justify-center">
+                <span className="text-xl font-bold text-indigo-600">
+                  Select a material to start learning
+                </span>
+              </div>
+            ) : (
+              <>
                 {activeMaterial.mimeType?.includes("pdf") && (
                   <iframe
                     src={activeMaterial.downloadUrl}
@@ -266,14 +226,14 @@ export default function StartLearningPage() {
                     className="w-full h-full object-contain"
                   />
                 )}
-              </div>
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </main>
       </div>
 
       {/* =========================
-          MODALS
+          MODALS (unchanged)
          ========================= */}
       {(creatingLectureId || editingMaterial) && (
         <MaterialFormModal
