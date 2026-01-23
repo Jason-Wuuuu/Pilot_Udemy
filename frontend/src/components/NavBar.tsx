@@ -1,21 +1,37 @@
 import { Link } from "react-router";
 import { useAppSelector } from "../store/hooks";
+import { useTheme } from "../utils/ThemeContext";
+import { Moon, Sun } from "lucide-react";
 
 const NavBar = () => {
   const user = useAppSelector((state) => state.auth.user);
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
 
   return (
-    <div>
-      {/* Top Navbar */}
-      <header className="flex items-center justify-between px-6 py-4 border-b">
-        {/* when you click the website name Udemy-copy, it will refresh the website */}
+    <div className="navbar bg-base-100 border-b sticky top-0 z-50 px-6">
+      {/* Left: website name */}
+      <div className="navbar-start">
         <span
           onClick={() => (window.location.href = "/")}
           className="text-xl font-bold cursor-pointer"
         >
           Udemy-copy
         </span>
+      </div>
 
+      {/* Right: theme + user */}
+      <div className="navbar-end space-x-2">
+        {/* Theme toggle */}
+        <button
+          className="btn btn-ghost btn-sm p-1"
+          onClick={toggleTheme}
+          title="Toggle light/dark mode"
+        >
+          {isDark ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
+
+        {/* User login */}
         {user ? (
           <Link to="/profile" className="btn btn-primary btn-sm">
             welcome {user.username}!
@@ -25,20 +41,7 @@ const NavBar = () => {
             Login
           </Link>
         )}
-      </header>
-
-      {/* Sub Navigation Bar */}
-      {/* <nav className="px-6 py-3 border-b flex gap-6">
-        <Link to="/course" className="font-medium">
-          Course
-        </Link>
-        <Link to="/homework" className="font-medium">
-          Homework
-        </Link>
-        <Link to="/quiz" className="font-medium">
-          Quiz
-        </Link>
-      </nav> */}
+      </div>
     </div>
   );
 };

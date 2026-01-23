@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import type { RootState, AppDispatch } from "../store";
 import { logout } from "../store/slices/authSlice";
 import DeleteAccountButton from "../components/DeleteAccountButton";
-import BackToHomepage from "../components/BackToHomepage";
+
 
 const Profile = () => {
   const dispatch = useDispatch<AppDispatch>();

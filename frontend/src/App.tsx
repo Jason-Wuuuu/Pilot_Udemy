@@ -22,7 +22,8 @@ import AdminQuizPreviewPage from "./pages/AdminQuizPreviewPage";
 import QuizEditPage from "./pages/QuizEditPage";
 import AdminSubmissionListPage from "./pages/AdminSubmissionListPage";
 import AppLayout from "./layouts/AppLayout";
-import Testing from "./pages/Testing";
+import ChangeAccountInfo from "./pages/ChangeAccountInfo";
+
 
 function App() {
   return (
@@ -50,6 +51,7 @@ function App() {
           <Route path="/homework" element={<HomeworkPage />} /> */}
             <Route path="profile" element={<Profile />} />
             <Route path="homework/:homeworkId" element={<HomeworkDetail />} />
+            <Route path="setting" element={<ChangeAccountInfo />} />
             <Route
               path="learn/courses/:courseId"
               element={<StartLearningPage />}
