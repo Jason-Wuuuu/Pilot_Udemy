@@ -26,6 +26,8 @@ import AppLayout from "./layouts/AppLayout";
 import StudentGetQuizzessByCoursePage from "./pages/StudentGetQuizzesByCoursePage";
 import ChangeAccountInfo from "./pages/ChangeAccountInfo";
 import Help from "./pages/Help";
+import AdminCoursesPage from "./pages/AdminCoursePage";
+import AdminRegisterStudentsPage from "./pages/AdminRegisterStudentsPage";
 
 function App() {
   return (
@@ -107,6 +109,11 @@ function App() {
             <Route
               path="/admin/courses/:courseId/quizzes/:quizId/submissions"
               element={<AdminSubmissionListPage />}
+            />
+            <Route path="/admin/courses" element={<AdminCoursesPage />} />
+            <Route
+              path="/admin/register"
+              element={<AdminRegisterStudentsPage />}
             />
           </Route>
         </Route>

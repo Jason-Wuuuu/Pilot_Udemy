@@ -13,11 +13,17 @@ import {
   submitQuizController,
 } from "../controllers/quizSubmission.controller.js";
 import { authenticate } from "../middleware/auth.middleware.js";
+import multer from "multer";
 
 const router = Router();
-
+const upload = multer({ dest: "tmp/" });
 //Ai
-router.post("/aigenerate", authenticate, aiGenerateQuizController);
+router.post(
+  "/aigenerate",
+  authenticate,
+  upload.single("file"),
+  aiGenerateQuizController
+);
 
 //Todo: 加middleware auth
 router.get("/me", authenticate, getMyQuizzesController);

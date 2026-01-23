@@ -99,3 +99,10 @@ export async function studentGetQuizzesByCourse(courseId: string) {
   const res = await api.get(API_PATHS.QUIZ.COURSE(courseId));
   return res.data;
 }
+
+//AI Generate
+
+export async function aiGenerateQuizPreview(payload: FormData) {
+  const res = await api.post(API_PATHS.QUIZ.AI_GENERATE, payload);
+  return res.data;
+}

@@ -45,3 +45,15 @@ export interface Material {
   materialOrder: number;
   isPreview: boolean;
 }
+
+export type EnrollmentResult = {
+  addedStudentIds: string[];
+  alreadyRegisteredStudentIds: string[];
+  finalStudentIds: string[];
+};
+
+export type EnrolledStudent = {
+  userId: string;
+  username: string;
+  email: string;
+};

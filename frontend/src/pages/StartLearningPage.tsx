@@ -4,6 +4,7 @@ import { useAppSelector } from "../store/hooks";
 
 import MaterialFormModal from "../components/Courses/MaterialFormModal";
 import ConfirmDangerModal from "../components/Courses/ConfirmingDangerModal";
+import AISummaryModal from "./AISummary";
 
 import {
   getLecturesByCourseId,
@@ -33,14 +34,20 @@ export default function StartLearningPage() {
     {}
   );
 
-  const [expandedLectureId, setExpandedLectureId] = useState<string | null>(null);
+  const [expandedLectureId, setExpandedLectureId] = useState<string | null>(
+    null
+  );
   const [activeMaterial, setActiveMaterial] = useState<Material | null>(null);
 
   // Admin state
-  const [creatingLectureId, setCreatingLectureId] = useState<string | null>(null);
+  const [creatingLectureId, setCreatingLectureId] = useState<string | null>(
+    null
+  );
   const [editingLectureId, setEditingLectureId] = useState<string | null>(null);
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
-  const [deletingMaterial, setDeletingMaterial] = useState<Material | null>(null);
+  const [deletingMaterial, setDeletingMaterial] = useState<Material | null>(
+    null
+  );
   const [openMenuMaterialId, setOpenMenuMaterialId] = useState<string | null>(
     null
   );
@@ -52,7 +59,12 @@ export default function StartLearningPage() {
     setDeletingMaterial(null);
   };
 
+  //AI modal open
+  const [summaryModalOpen, setSummaryModalOpen] = useState(false);
 
+  /* =========================
+     Load lectures
+     ========================= */
   useEffect(() => {
     if (!courseId) return;
     getLecturesByCourseId(courseId).then(setLectures);
@@ -229,6 +241,7 @@ export default function StartLearningPage() {
 
             <button
               className="btn btn-xs bg-black/20 text-white border border-white/30 rounded-full px-4"
+              onClick={() => setSummaryModalOpen(true)}
             >
               🤖 AI Summary
             </button>
@@ -327,6 +340,16 @@ export default function StartLearningPage() {
             setActiveMaterial(fresh[0] ?? null);
             resetMaterialModalState();
           }}
+        />
+      )}
+
+      {summaryModalOpen && (
+        <AISummaryModal
+          open
+          onClose={() => setSummaryModalOpen(false)}
+          downloadUrl={activeMaterial?.downloadUrl}
+          mimeType={activeMaterial?.mimeType}
+          materialTitle={activeMaterial?.title}
         />
       )}
     </div>

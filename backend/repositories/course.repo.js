@@ -4,7 +4,7 @@ import {
   PutItemCommand,
   UpdateItemCommand,
   DeleteItemCommand,
-  ScanCommand
+  ScanCommand,
 } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { ddb } from "../config/dynamodb.js";
@@ -17,24 +17,21 @@ if (!TABLE_NAME) {
   throw new Error("DYNAMODB_TABLE_NAME is not configured");
 }
 
-
-export const getAllCourses = async()=>{
-  const {Items=[]} = await ddb.send(
+export const getAllCourses = async () => {
+  const { Items = [] } = await ddb.send(
     new ScanCommand({
       TableName: TABLE_NAME,
       FilterExpression: "#et = :course",
-      ExpressionAttributeNames:{
-        "#et":"entityType",
+      ExpressionAttributeNames: {
+        "#et": "entityType",
       },
       ExpressionAttributeValues: marshall({
-        ":course":"COURSE",
-      })
-
+        ":course": "COURSE",
+      }),
     })
   );
   return Items.map(unmarshall);
-}
-
+};
 
 export const getCourseById = async (courseId) => {
   const { Item } = await ddb.send(
@@ -44,7 +41,7 @@ export const getCourseById = async (courseId) => {
         PK: buildCoursePK(courseId),
         SK: COURSE_METADATA_SK,
       }),
-    }),
+    })
   );
   return Item ? unmarshall(Item) : null;
 };
@@ -58,7 +55,7 @@ export const getCoursesByCategoryId = async (categoryId) => {
       ExpressionAttributeValues: marshall({
         ":pk": buildCategoryPK(categoryId),
       }),
-    }),
+    })
   );
 
   return Items.map(unmarshall);
@@ -110,7 +107,7 @@ export const createCourse = async (payload) => {
       TableName: TABLE_NAME,
       Item: marshall(item, { removeUndefinedValues: true }),
       ConditionExpression: "attribute_not_exists(PK)",
-    }),
+    })
   );
 
   return item;
@@ -160,7 +157,7 @@ export const updateCourse = async (courseId, updates) => {
       ExpressionAttributeValues: marshall(values),
       ReturnValues: "ALL_NEW",
       ConditionExpression: "attribute_exists(PK)",
-    }),
+    })
   );
 
   return unmarshall(Attributes);
@@ -175,11 +172,35 @@ export const deleteCourse = async (courseId) => {
         SK: COURSE_METADATA_SK,
       }),
       ConditionExpression: "attribute_exists(PK)",
-    }),
+    })
   );
 };
+
+export const getCourseStudentsRepo = async (courseId) => {
+  const { Item } = await ddb.send(
+    new GetItemCommand({
+      TableName: TABLE_NAME,
+      Key: {
+        PK: { S: `COURSE#${courseId}` },
+        SK: { S: "METADATA" },
+      },
+      ProjectionExpression: "studentIds",
+    })
+  );
+
+  if (!Item) {
+    const err = new Error("Course not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const data = unmarshall(Item);
+
+  return data.studentIds ?? [];
+};
+
 export const registerStudents = async ({ courseId, studentIds }) => {
-   // 1️⃣ Get current studentIds
+  // 1️⃣ Get current studentIds
   const { Item } = await ddb.send(
     new GetItemCommand({
       TableName: TABLE_NAME,
@@ -191,14 +212,13 @@ export const registerStudents = async ({ courseId, studentIds }) => {
     })
   );
 
-  const currentStudentIds=
-    Item ? unmarshall(Item).studentIds ?? [] : [];
+  const currentStudentIds = Item ? unmarshall(Item).studentIds ?? [] : [];
 
   // 2️⃣ Diff
   const currentSet = new Set(currentStudentIds);
 
   const addedStudentIds = [];
-  const alreadyRegisteredStudentIds= [];
+  const alreadyRegisteredStudentIds = [];
 
   for (const id of studentIds) {
     if (currentSet.has(id)) {
@@ -254,9 +274,7 @@ export const deleteStudents = async ({ courseId, studentIds }) => {
     })
   );
 
-  const currentStudentIds = Item
-    ? unmarshall(Item).studentIds ?? []
-    : [];
+  const currentStudentIds = Item ? unmarshall(Item).studentIds ?? [] : [];
 
   const currentSet = new Set(currentStudentIds);
 
@@ -282,9 +300,7 @@ export const deleteStudents = async ({ courseId, studentIds }) => {
 
   // 3️⃣ Build final list
   const removeSet = new Set(removedStudentIds);
-  const finalStudentIds = currentStudentIds.filter(
-    (id) => !removeSet.has(id)
-  );
+  const finalStudentIds = currentStudentIds.filter((id) => !removeSet.has(id));
 
   // 4️⃣ Update DynamoDB
   await ddb.send(
