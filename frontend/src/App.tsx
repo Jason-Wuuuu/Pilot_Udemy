@@ -22,7 +22,6 @@ import AdminQuizPreviewPage from "./pages/AdminQuizPreviewPage";
 import QuizEditPage from "./pages/QuizEditPage";
 import AdminSubmissionListPage from "./pages/AdminSubmissionListPage";
 import AppLayout from "./layouts/AppLayout";
-import Testing from "./pages/Testing";
 
 function App() {
   return (
