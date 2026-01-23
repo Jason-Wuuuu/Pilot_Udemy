@@ -16,9 +16,11 @@ const NavBar = () => {
           onClick={() => (window.location.href = "/")}
           className="text-xl font-bold cursor-pointer"
         >
-          Udemy-copy
+          EduPilot
         </span>
       </div>
+
+
 
       {/* Right: theme + user */}
       <div className="navbar-end space-x-2">

@@ -147,6 +147,8 @@ export default function CourseFormModal({
                 await onSubmit(form);
               } finally {
                 setIsSubmitting(false);
+                // hard code了
+                window.location.reload();
               }
             }}
           >

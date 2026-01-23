@@ -39,7 +39,7 @@ export default function CourseDashboardPage() {
       .then(([courseData, lectureData]) => {
         setCourse(courseData);
         setLectures(
-          lectureData.sort((a, b) => a.lectureOrder - b.lectureOrder),
+          lectureData.sort((a, b) => a.lectureOrder - b.lectureOrder)
         );
       })
       .finally(() => setLoading(false));
@@ -226,12 +226,10 @@ export default function CourseDashboardPage() {
             const updated = await updateLecture(
               courseId!,
               editingLecture.lectureId,
-              payload,
+              payload
             );
             setLectures((prev) =>
-              prev.map((l) =>
-                l.lectureId === updated.lectureId ? updated : l,
-              ),
+              prev.map((l) => (l.lectureId === updated.lectureId ? updated : l))
             );
             setEditingLecture(null);
           }}
@@ -248,7 +246,7 @@ export default function CourseDashboardPage() {
           onConfirm={async () => {
             await deleteLecture(courseId!, deletingLecture.lectureId);
             setLectures((prev) =>
-              prev.filter((l) => l.lectureId !== deletingLecture.lectureId),
+              prev.filter((l) => l.lectureId !== deletingLecture.lectureId)
             );
             setDeletingLecture(null);
           }}

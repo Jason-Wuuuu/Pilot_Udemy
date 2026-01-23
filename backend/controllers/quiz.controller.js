@@ -8,6 +8,9 @@ import {
   getQuizzesByCourseService,
 } from "../services/quiz.service.js";
 import { CreateQuizSchema, UpdateQuizSchema } from "../models/quiz.model.js";
+import { extractTextFromPDF, extractTextFromDocx } from "../ai/genminiUtils.js";
+import fs from "fs/promises";
+import path from "path";
 
 // GET /api/quizzes/:quizId
 export const getQuizByIdController = async (req, res) => {
@@ -84,16 +87,45 @@ export const getMyQuizzesController = async (req, res) => {
 };
 
 // POST /api/quizzes/ai/preview
+
 export const aiGenerateQuizController = async (req, res) => {
   try {
+    let materialText = req.body.materialText;
+    const numQuestions = Number(req.body.numQuestions) || 5;
+
+    if (req.file) {
+      const ext = path.extname(req.file.originalname).toLowerCase();
+
+      if (ext === ".pdf") {
+        const { text } = await extractTextFromPDF(req.file.path);
+        materialText = text;
+      }
+
+      if (ext === ".docx") {
+        const { text } = await extractTextFromDocx(req.file.path);
+        materialText = text;
+      }
+
+      await fs.unlink(req.file.path);
+    }
+
+    if (!materialText || !materialText.trim()) {
+      return res.status(400).json({
+        error: "No material text provided",
+      });
+    }
+
     const preview = await aiGenerateQuizService({
-      user: req.user,
-      payload: req.body,
+      materialText,
+      numQuestions,
     });
 
     res.json(preview);
   } catch (e) {
-    res.status(e.statusCode || 500).json({ error: e.message });
+    console.error("AI GENERATE ERROR:", e);
+    res.status(e.statusCode || 500).json({
+      error: e.message || "AI generate failed",
+    });
   }
 };
 

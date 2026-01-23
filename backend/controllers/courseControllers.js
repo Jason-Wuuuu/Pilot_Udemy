@@ -15,6 +15,8 @@ import {
   createMaterialService,
   updateMaterial as updateMaterialService,
   deleteMaterial as deleteMaterialService,
+  getCourseStudents,
+  registerStudentsByEmail,
 } from "../services/course.service.js";
 
 import fs from "fs/promises";
@@ -25,23 +27,24 @@ import { uploadToS3, getSignedUrlFromKey } from "../utils/s3Service.js";
 ========================= */
 
 // GET /courses
-export const getAllCoursesHandler = async(req, res,next) =>{
-  try{
+export const getAllCoursesHandler = async (req, res, next) => {
+  try {
     const courses = await getAllCourses();
 
-    if(!courses){
+    if (!courses) {
       return res.status(404).json({
-        message:"Courses not available"
+        message: "Courses not available",
       });
     }
 
     res.json({
-      success: true, data: courses
+      success: true,
+      data: courses,
     });
-  }catch(err){
-    next(err)
+  } catch (err) {
+    next(err);
   }
-}
+};
 
 // GET /courses/:courseId
 export const getCourse = async (req, res, next) => {
@@ -62,7 +65,7 @@ export const getCourse = async (req, res, next) => {
 export const getCoursesByCategory = async (req, res, next) => {
   try {
     const courses = await getCoursesByCategoryId(req.params.categoryId);
-    
+
     res.json({
       success: true,
       count: courses.length,
@@ -120,14 +123,13 @@ export const registerStudentHandler = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message:"Successfully registered student(s).",
+      message: "Successfully registered student(s).",
       data: result,
     });
   } catch (err) {
     next(err);
   }
 };
-
 
 // DELETE /courses/:courseId/students (ADMIN)
 export const deleteStudentHandler = async (req, res, next) => {
@@ -139,7 +141,47 @@ export const deleteStudentHandler = async (req, res, next) => {
 
     res.json({
       success: true,
-      message:"Successfully deleted student(s).",
+      message: "Successfully deleted student(s).",
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Get /courses/:courseId/students (ADMIN)
+// controllers/course.controller.js
+export const getCourseStudentsHandler = async (req, res, next) => {
+  try {
+    const { courseId } = req.params;
+
+    const students = await getCourseStudents(courseId);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        courseId,
+        students,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// controllers/course.controller.js
+export const registerStudentsByEmailHandler = async (req, res, next) => {
+  try {
+    const { courseId } = req.params;
+    const { emails } = req.body;
+
+    const result = await registerStudentsByEmail({
+      courseId,
+      emails,
+    });
+
+    res.status(200).json({
+      success: true,
       data: result,
     });
   } catch (err) {
@@ -211,7 +253,7 @@ export const getMaterials = async (req, res, next) => {
       courseId: req.params.courseId,
       lectureId: req.params.lectureId,
     });
-    
+
     const materialsWithUrls = await Promise.all(
       materials.map(async (material) => {
         const downloadUrl = await getSignedUrlFromKey(
@@ -235,7 +277,6 @@ export const getMaterials = async (req, res, next) => {
   }
 };
 
-
 // POST /courses/:courseId/lectures/:lectureId/materials (ADMIN)
 export const createMaterialHandler = async (req, res, next) => {
   try {
@@ -257,7 +298,7 @@ export const createMaterialHandler = async (req, res, next) => {
     // });
 
     // 1 Upload to S3 (Option 1: stable, machine-only key)
-    const { s3Key, size, mimeType  } = await uploadToS3({
+    const { s3Key, size, mimeType } = await uploadToS3({
       file: req.file,
       courseId,
       lectureId,
@@ -275,14 +316,14 @@ export const createMaterialHandler = async (req, res, next) => {
         title,
       },
       file: {
-        displayName:req.body.displayName??req.file.originalname,
-        mimetype: req.file.mimetype
+        displayName: req.body.displayName ?? req.file.originalname,
+        mimetype: req.file.mimetype,
       },
       meta: {
         materialId,
         s3Key,
         size,
-        mimeType
+        mimeType,
       },
     });
 
@@ -298,7 +339,6 @@ export const createMaterialHandler = async (req, res, next) => {
     next(err);
   }
 };
-
 
 // PUT /courses/:courseId/lectures/:lectureId/materials/:materialId (ADMIN)
 export const updateMaterialHandler = async (req, res, next) => {

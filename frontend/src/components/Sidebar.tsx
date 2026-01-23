@@ -5,11 +5,15 @@ import {
   Settings,
   Menu,
   HelpCircle,
+  User2,
+  PencilIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
 import { getAllCourses } from "../services/course.service";
 import type { Course } from "../types/course";
+import { Link, useNavigate } from "react-router";
+import { useSelector } from "react-redux";
+import type { RootState } from "../store";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -31,6 +35,15 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
       .then(setCourses)
       .finally(() => setLoadingCourses(false));
   }, []);
+  const user = useSelector((state: RootState) => state.auth.user);
+  const navigate = useNavigate();
+  const handleQuizClick = () => {
+    if (user?.role === "ADMIN") {
+      navigate("/admin/courses");
+    } else {
+      navigate("/quizzes");
+    }
+  };
 
   return (
     <div className="bg-base-100 flex flex-col h-full border-r border-base-300">
@@ -90,13 +103,17 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
 
 
         <li>
-          <Link
-            to="/quizzes"
-            className="flex items-center gap-2 cursor-pointer"
+          <button
+            onClick={handleQuizClick}
+            className="flex items-center gap-2 cursor-pointer w-full text-left"
           >
             <ClipboardList size={18} />
             {!collapsed && <span>Quiz</span>}
-          </Link>
+          </button>
+          {/* {openMenu === "quiz" && !collapsed && (
+            <ul className="pl-6 mt-2 menu-compact">
+            </ul>
+          )} */}
         </li>
 
 
@@ -105,9 +122,19 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
             to="/homeworks"
             className="flex items-center gap-2 cursor-pointer"
           >
-            <FileText size={18} />
+            <PencilIcon size={18} />
             {!collapsed && <span>Homework</span>}
           </Link>
+        </li>
+
+        <li>
+          {/* Admin: Register Students */}
+          {user?.role === "ADMIN" && (
+            <Link to="/admin/register" className="flex items-center gap-2 cursor-pointer">
+              <User2 size={18} />
+              Register Students
+            </Link>
+          )}
         </li>
       </ul>
 

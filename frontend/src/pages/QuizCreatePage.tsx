@@ -3,6 +3,7 @@ import { v4 as uuid } from "uuid";
 import { useParams, useNavigate } from "react-router";
 import { createQuiz } from "../services/quiz.service";
 import toast from "react-hot-toast";
+import { aiGenerateQuizPreview } from "../services/quiz.service";
 
 type Question = {
   questionId: string;
@@ -12,26 +13,36 @@ type Question = {
   explains?: string;
 };
 
-const mockAIGenerate = async (count: number): Promise<Question[]> => {
-  return Array.from({ length: count }).map((_, idx) => ({
-    questionId: uuid(),
-    prompt: `Sample AI Question ${idx + 1}: What does JVM stand for?`,
-    options: [
-      "Java Virtual Machine",
-      "Java Variable Method",
-      "Joint Virtual Model",
-      "Java Verified Module",
-    ],
-    answer: "Java Virtual Machine",
-    explains: "JVM stands for Java Virtual Machine.",
-  }));
-};
+// const mockAIGenerate = async (count: number): Promise<Question[]> => {
+//   return Array.from({ length: count }).map((_, idx) => ({
+//     questionId: uuid(),
+//     prompt: `Sample AI Question ${idx + 1}: What does JVM stand for?`,
+//     options: [
+//       "Java Virtual Machine",
+//       "Java Variable Method",
+//       "Joint Virtual Model",
+//       "Java Verified Module",
+//     ],
+//     answer: "Java Virtual Machine",
+//     explains: "JVM stands for Java Virtual Machine.",
+//   }));
+// };
 
 export default function QuizCreatePage() {
   const { courseId } = useParams<{ courseId: string }>();
   const [activeTab, setActiveTab] = useState<"general" | "questions">(
     "general"
   );
+
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+
+  const [aiCount, setAiCount] = useState(5);
+  const [aiSourceType, setAiSourceType] = useState<"text" | "pdf" | "doc">(
+    "text"
+  );
+
+  const [aiText, setAiText] = useState("");
+  const [aiFile, setAiFile] = useState<File | null>(null);
   const navigate = useNavigate();
 
   //AI generate
@@ -47,14 +58,37 @@ export default function QuizCreatePage() {
   const [aiLoading, setAiLoading] = useState(false);
 
   const handleAIGenerate = async () => {
-    const nRaw = parseInt(aiQuestionCount || "0", 10);
-    const n = Number.isFinite(nRaw) ? Math.min(Math.max(nRaw, 1), 50) : 5;
-
     setAiLoading(true);
-    const aiQuestions = await mockAIGenerate(n);
-    setQuestions(aiQuestions);
-    setAiLoading(false);
-    setActiveTab("questions");
+
+    try {
+      const formData = new FormData();
+
+      formData.append("numQuestions", String(aiCount));
+
+      if (aiSourceType === "text") {
+        if (!aiText.trim()) {
+          toast.error("Please enter text content");
+          return;
+        }
+        formData.append("materialText", aiText);
+      }
+
+      if ((aiSourceType === "pdf" || aiSourceType === "doc") && aiFile) {
+        formData.append("file", aiFile);
+      }
+
+      const preview = await aiGenerateQuizPreview(formData);
+
+      setQuestions(preview.questions);
+      setActiveTab("questions");
+      setAiModalOpen(false);
+      toast.success("AI questions generated");
+    } catch (e) {
+      console.error(e);
+      toast.error("AI generation failed");
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const updateQuestion = (id: string, patch: Partial<Question>) => {
@@ -93,7 +127,7 @@ export default function QuizCreatePage() {
 
     if (timeLimit !== "") {
       if (!Number.isInteger(timeLimit)) {
-        alert("Time limit must be an integer (seconds)");
+        alert("Time limit must be an integer (minutes)");
         return;
       }
       if (timeLimit <= 0) {
@@ -101,7 +135,7 @@ export default function QuizCreatePage() {
         return;
       }
       if (timeLimit > 36000) {
-        alert("Time limit cannot exceed 3600 seconds");
+        alert("Time limit cannot exceed 60 minutes");
         return;
       }
     }
@@ -131,7 +165,7 @@ export default function QuizCreatePage() {
       courseId,
       title,
       difficulty,
-      timeLimit,
+      timeLimit: timeLimit === "" ? undefined : timeLimit * 60,
       questions,
     };
 
@@ -244,7 +278,7 @@ export default function QuizCreatePage() {
                 value={timeLimit}
                 onChange={(e) => setTimeLimit(Number(e.target.value))}
               />
-              <span className="text-sm text-gray-500">seconds</span>
+              <span className="text-sm text-gray-500">minutes</span>
             </div>
           </div>
         </form>
@@ -285,10 +319,9 @@ export default function QuizCreatePage() {
 
               <button
                 className="btn btn-outline btn-accent"
-                onClick={handleAIGenerate}
-                disabled={aiLoading}
+                onClick={() => setAiModalOpen(true)}
               >
-                {aiLoading ? "Generating..." : "AI Generate"}
+                AI Generate
               </button>
 
               <button className="btn btn-primary" onClick={addEmptyQuestion}>
@@ -387,6 +420,75 @@ export default function QuizCreatePage() {
           Publish Quiz
         </button>
       </div>
+
+      {aiModalOpen && (
+        <dialog className="modal modal-open">
+          <div className="modal-box max-w-2xl space-y-6">
+            <h3 className="font-bold text-lg">AI Generate Questions</h3>
+
+            {/* Question Count */}
+            <div className="grid grid-cols-[140px_1fr] items-center gap-4">
+              <label className="text-sm font-medium">Question Count</label>
+              <input
+                type="number"
+                min={1}
+                max={50}
+                className="input input-bordered w-40"
+                value={aiCount}
+                onChange={(e) => setAiCount(Number(e.target.value))}
+              />
+            </div>
+
+            {/* Source Type */}
+            <div className="grid grid-cols-[140px_1fr] items-center gap-4">
+              <label className="text-sm font-medium">Content Source</label>
+              <select
+                className="select select-bordered w-60"
+                value={aiSourceType}
+                onChange={(e) => setAiSourceType(e.target.value as any)}
+              >
+                <option value="text">Text</option>
+                <option value="pdf">PDF File</option>
+                <option value="doc">Docs File</option>
+              </select>
+            </div>
+
+            {/* Dynamic Content Input */}
+            {aiSourceType === "text" && (
+              <textarea
+                className="textarea textarea-bordered w-full min-h-[160px]"
+                placeholder="Paste course material or notes here..."
+                value={aiText}
+                onChange={(e) => setAiText(e.target.value)}
+              />
+            )}
+
+            {(aiSourceType === "pdf" || aiSourceType === "doc") && (
+              <input
+                type="file"
+                className="file-input file-input-bordered w-full"
+                accept={
+                  aiSourceType === "pdf" ? "application/pdf" : ".doc,.docx"
+                }
+                onChange={(e) => setAiFile(e.target.files?.[0] || null)}
+              />
+            )}
+
+            {/* Actions */}
+            <div className="modal-action">
+              <button className="btn" onClick={() => setAiModalOpen(false)}>
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => handleAIGenerate()}
+              >
+                Generate
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
     </div>
   );
 }
