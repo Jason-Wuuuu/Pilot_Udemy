@@ -1,4 +1,4 @@
-import { Route, Routes, Navigate, Navigate } from "react-router";
+import { Route, Routes, Navigate } from "react-router";
 import Login from "./pages/Login";
 import CreateAccount from "./pages/CreateAccount";
 import AdminPage from "./pages/AdminPage";

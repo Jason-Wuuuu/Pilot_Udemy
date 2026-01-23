@@ -132,7 +132,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
           {user?.role === "ADMIN" && (
             <Link to="/admin/register" className="flex items-center gap-2 cursor-pointer">
               <User2 size={18} />
-              Register Students
+              {!collapsed && <span>Register Students</span>}
             </Link>
           )}
         </li>
