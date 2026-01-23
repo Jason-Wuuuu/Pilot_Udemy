@@ -22,6 +22,7 @@ import AdminQuizPreviewPage from "./pages/AdminQuizPreviewPage";
 import QuizEditPage from "./pages/QuizEditPage";
 import AdminSubmissionListPage from "./pages/AdminSubmissionListPage";
 import AppLayout from "./layouts/AppLayout";
+import StudentGetQuizzessByCoursePage from "./pages/StudentGetQuizzesByCoursePage";
 
 function App() {
   return (
@@ -58,8 +59,12 @@ function App() {
             <Route path="quizzes" element={<QuizListPage />} />
 
             <Route path="quizzes/:quizId" element={<QuizTakePage />} />
+            <Route
+              path="courses/:courseId/quizzes"
+              element={<StudentGetQuizzessByCoursePage />}
+            />
 
-            {/* Submission / Result */}
+            {/* Quiz Submission / Result */}
             <Route
               path="submissions/:submissionId"
               element={<QuizResultPage />}

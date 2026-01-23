@@ -76,7 +76,6 @@ export const getSubmissionByUserAndQuizRepo = async (userId, quizId) => {
         ":uid": userId,
         ":qid": quizId,
       },
-      Limit: 1,
     })
   );
 

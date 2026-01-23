@@ -171,6 +171,7 @@ export const getMyQuizzesService = async ({ user }) => {
         user.userId,
         quiz.quizId
       );
+
       quizzes.push({
         courseId: course.courseId,
         courseTitle: course.title ? course.title : "Unknown",
