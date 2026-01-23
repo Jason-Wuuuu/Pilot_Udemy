@@ -38,7 +38,7 @@ function App() {
       />
       <Routes>
         {/* ------------------ Public Pages ------------------ */}
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<CourseListPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<CreateAccount />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
