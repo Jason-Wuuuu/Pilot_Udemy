@@ -1,6 +1,7 @@
 import type { Course } from "../../types/course";
 import { useNavigate } from "react-router";
 import { useAppSelector } from "../../store/hooks";
+import { toast } from "react-hot-toast";
 
 interface CourseCardProps {
   course: Course;
@@ -34,11 +35,34 @@ export default function CourseCard({
   const isAuthenticated =
     user && (user.role === "STUDENT" || user.role === "ADMIN");
 
+  const isEnrolled =
+    !!user && user.role === "STUDENT" && course.studentIds?.includes(user.id);
+
+  // const handleViewCourse = () => {
+  //   if (isAuthenticated) {
+  //     navigate(`/courses/${course.courseId}/dashboard`);
+  //   } else {
+  //     navigate(`/courses/${course.courseId}`);
+  //   }
+  // };
+
+  //If admin then go to course edit page, if student check enrolled or not if not enrolled then prevent redirecting detail, if enrolled then go to the detail page
   const handleViewCourse = () => {
-    if (isAuthenticated) {
+    if (!user) {
+      navigate(`/courses/${course.courseId}`);
+      return;
+    }
+
+    if (user.role === "ADMIN") {
+      navigate(`/courses/${course.courseId}/dashboard`);
+      return;
+    }
+
+    if (isEnrolled) {
       navigate(`/courses/${course.courseId}/dashboard`);
     } else {
-      navigate(`/courses/${course.courseId}`);
+      toast.error("You are not enrolled in this course");
+      return;
     }
   };
 
@@ -118,8 +142,7 @@ export default function CourseCard({
         </p>
 
         <div className="mt-3 text-sm text-base-content/60">
-          Instructor:{" "}
-          <span className="font-medium">{course.instructor}</span>
+          Instructor: <span className="font-medium">{course.instructor}</span>
         </div>
 
         <div className="mt-5">
