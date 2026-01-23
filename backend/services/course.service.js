@@ -6,8 +6,11 @@ import {
   updateCourse as updateCourseRepo,
   deleteCourse as deleteCourseRepo,
   registerStudents as registerStudentsRepo,
-  deleteStudents as deleteStudentsRepo
+  deleteStudents as deleteStudentsRepo,
+  getCourseStudentsRepo,
 } from "../repositories/course.repo.js";
+
+import { getUsersByIds, findUserByEmail } from "../repositories/users.repo.js";
 
 import {
   getLecturesByCourseId as getLecturesByCourseIdRepo,
@@ -30,9 +33,9 @@ import path from "path";
    COURSE
 ========================= */
 
-export const getAllCourses = async() =>{
+export const getAllCourses = async () => {
   return getAllCoursesRepo();
-}
+};
 
 export const getCourseById = async (courseId) => {
   return getCourseByIdRepo(courseId);
@@ -80,24 +83,107 @@ export const deleteCourseCascade = async (courseId) => {
   await deleteCourseRepo(courseId);
 };
 
-export const registerStudents = async ({
-  courseId,
-  studentIds,
-}) => {
+// services/course.service.js
+export const getCourseStudents = async (courseId) => {
+  const studentIds = await getCourseStudentsRepo(courseId);
+  const users = await getUsersByIds(studentIds);
+
+  console.log(users);
+
+  return users.map((u) => ({
+    userId: u.userId,
+    username: u.username,
+    email: u.email,
+  }));
+};
+
+//register Students new Logic
+export const registerStudents = async ({ courseId, studentIds }) => {
   if (!courseId || !Array.isArray(studentIds) || studentIds.length === 0) {
     const err = new Error("courseId and non-empty studentIds are required");
     err.statusCode = 400;
     throw err;
   }
 
-  return await registerStudentsRepo({ courseId, studentIds});
+  // 批量查 Users 表
+  const users = await getUsersByIds(studentIds);
+
+  // 建立 userId → user 映射
+  const userMap = new Map(users.map((u) => [u.userId, u]));
+
+  const validStudentIds = [];
+  const invalidStudentIds = [];
+
+  for (const id of studentIds) {
+    const user = userMap.get(id);
+    //  不存在 or 不是 student
+    if (!user || user.role !== "STUDENT") {
+      invalidStudentIds.push(id);
+    } else {
+      validStudentIds.push(id);
+    }
+  }
+
+  if (validStudentIds.length === 0) {
+    const err = new Error("No valid student IDs provided");
+    err.statusCode = 400;
+    err.details = { invalidStudentIds };
+    throw err;
+  }
+
+  // 只把合法 studentIds 交给 repo
+  const result = await registerStudentsRepo({
+    courseId,
+    studentIds: validStudentIds,
+  });
+
+  return {
+    ...result,
+    invalidStudentIds,
+  };
 };
 
-export const deleteStudents = async({
-  courseId,
-  studentIds,
-})=>{
-    if (!courseId) {
+//Register Students
+export const registerStudentsByEmail = async ({ courseId, emails }) => {
+  if (!courseId || !Array.isArray(emails) || emails.length === 0) {
+    const err = new Error("courseId and non-empty emails are required");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const validStudentIds = [];
+  const invalidEmails = [];
+
+  for (const email of emails) {
+    const user = await findUserByEmail(email);
+
+    if (!user || user.role !== "STUDENT") {
+      invalidEmails.push(email);
+    } else {
+      validStudentIds.push(user.userId);
+    }
+  }
+
+  if (validStudentIds.length === 0) {
+    const err = new Error("No valid student emails provided");
+    err.statusCode = 400;
+    err.details = { invalidEmails };
+    throw err;
+  }
+
+  const result = await registerStudentsRepo({
+    courseId,
+    studentIds: validStudentIds,
+  });
+
+  return {
+    ...result,
+    invalidEmails,
+  };
+};
+
+export const deleteStudents = async ({ courseId, studentIds }) => {
+  if (!courseId) {
     const err = new Error("Course ID is required");
     err.statusCode = 400;
     throw err;
@@ -108,8 +194,8 @@ export const deleteStudents = async({
     err.statusCode = 400;
     throw err;
   }
-  return await deleteStudentsRepo({ courseId, studentIds});
-}
+  return await deleteStudentsRepo({ courseId, studentIds });
+};
 
 /* =========================
    LECTURES
@@ -185,8 +271,6 @@ export const getMaterialsByLectureId = async ({ courseId, lectureId }) => {
   return getMaterialsByLectureOrder(courseId, lecture.lectureOrder);
 };
 
-
-
 export const createMaterialService = async ({
   courseId,
   lectureId,
@@ -204,7 +288,6 @@ export const createMaterialService = async ({
   }
 
   const materialType = getMaterialTypeFromMime(file.mimetype);
-
 
   return createMaterialRepo({
     courseId,
@@ -248,7 +331,6 @@ export const updateMaterial = async ({
     courseId,
     lecture.lectureOrder
   );
-
 
   const material = materials.find(
     (m) => String(m.materialId).trim() === String(materialId).trim()

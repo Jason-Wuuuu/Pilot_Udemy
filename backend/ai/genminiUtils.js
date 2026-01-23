@@ -1,5 +1,8 @@
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
+import fs from "fs/promises";
+import { PDFParse } from "pdf-parse";
+import mammoth from "mammoth";
 
 dotenv.config();
 
@@ -58,7 +61,7 @@ export const aiGenerateQuiz = async (text, numQuestions = 5) => {
         prompt: promptText,
         options,
         answer,
-        Explains: explains,
+        explains: explains,
       });
     }
   }
@@ -136,5 +139,62 @@ ${text.slice(0, MAX_CHARS)}
   } catch (error) {
     console.error("Gemini API error:", error);
     throw new Error("Failed to generate summary");
+  }
+};
+
+/**
+ * Extract text from PDF file
+ * @param {string} filePath - Path to PDF file
+ * @returns {Promise<{text: string, numPages: number}>}
+ */
+export const extractTextFromPDF = async (filePath) => {
+  try {
+    const dataBuffer = await fs.readFile(filePath);
+    // pdf-parse expects a Uint8Array, not a Buffer
+    const parser = new PDFParse(new Uint8Array(dataBuffer));
+    const data = await parser.getText();
+
+    return {
+      text: data.text,
+      numPages: data.numpages,
+      info: data.info,
+    };
+  } catch (error) {
+    console.error("PDF parsing error:", error);
+    throw new Error("Failed to extract text from PDF");
+  }
+};
+
+export const extractTextFromDocx = async (filePath) => {
+  try {
+    const result = await mammoth.extractRawText({ path: filePath });
+    return {
+      text: result.value,
+    };
+  } catch (e) {
+    console.error("DOCX parsing error:", e);
+    throw new Error("Failed to extract text from docx");
+  }
+};
+
+/**
+ * Extract text from PDF buffer
+ * @param {Buffer} buffer
+ */
+export const extractTextFromPDFBuffer = async (buffer) => {
+  try {
+    const uint8Array = new Uint8Array(buffer);
+
+    const parser = new PDFParse(uint8Array);
+    const data = await parser.getText();
+
+    return {
+      text: data.text,
+      numPages: data.numpages,
+      info: data.info,
+    };
+  } catch (error) {
+    console.error("PDF parsing error:", error);
+    throw new Error("Failed to extract text from PDF");
   }
 };

@@ -33,6 +33,13 @@ router.delete("/:courseId", courseController.deleteCourseHandler);
 router.post("/:courseId/students", courseController.registerStudentHandler);
 // DELETE A STUDENT FROM A COURSE
 router.delete("/:courseId/students", courseController.deleteStudentHandler);
+// Get all students from a course
+router.get("/:courseId/students", courseController.getCourseStudentsHandler);
+// routes/course.routes.js
+router.post(
+  "/:courseId/students/by-email",
+  courseController.registerStudentsByEmailHandler
+);
 
 /* =========================
    LECTURES
@@ -47,13 +54,13 @@ router.post("/:courseId/lectures", courseController.createLectureHandler);
 router.put(
   "/:courseId/lectures/:lectureId",
 
-  courseController.updateLectureHandler,
+  courseController.updateLectureHandler
 );
 
 router.delete(
   "/:courseId/lectures/:lectureId",
 
-  courseController.deleteLectureHandler,
+  courseController.deleteLectureHandler
 );
 
 /* =========================
@@ -64,7 +71,7 @@ router.delete(
 router.get(
   "/:courseId/lectures/:lectureId/materials",
 
-  courseController.getMaterials,
+  courseController.getMaterials
 );
 
 router.post(
@@ -72,7 +79,7 @@ router.post(
 
   uploadMaterial.single("file"),
   attachMaterialMeta,
-  courseController.createMaterialHandler,
+  courseController.createMaterialHandler
 );
 
 router.put(
@@ -80,13 +87,13 @@ router.put(
 
   uploadMaterial.single("file"),
   attachMaterialMeta,
-  courseController.updateMaterialHandler,
+  courseController.updateMaterialHandler
 );
 
 router.delete(
   "/:courseId/lectures/:lectureId/materials/:materialId",
 
-  courseController.deleteMaterialHandler,
+  courseController.deleteMaterialHandler
 );
 
 export default router;

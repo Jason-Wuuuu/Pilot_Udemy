@@ -297,12 +297,7 @@ export const getQuizzesByCourseService = async ({ user, courseId }) => {
 
 //--------------------------------------------AI--------------------------------------//
 export const aiGenerateQuizService = async (payload) => {
-  const {
-    materialText,
-    numQuestions = 5,
-    difficulty = "Easy",
-    timeLimit,
-  } = payload;
+  const { materialText, numQuestions = 5 } = payload;
 
   console.log("materialText type:", typeof materialText, materialText);
 
@@ -314,14 +309,14 @@ export const aiGenerateQuizService = async (payload) => {
 
   const questions = await aiGenerateQuiz(materialText, numQuestions);
 
-  if (!questions.length) {
-    throw new Error("AI failed to generate questions");
+  if (!Array.isArray(questions) || questions.length === 0) {
+    const err = new Error("AI failed to generate questions");
+    err.statusCode = 500;
+    throw err;
   }
 
+  // preview 只返回 questions
   return {
-    title: "AI Generated Quiz",
-    difficulty,
-    timeLimit,
     questions,
   };
 };
