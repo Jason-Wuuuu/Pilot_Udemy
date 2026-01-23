@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   BookOpen,
   ClipboardList,
@@ -6,46 +5,36 @@ import {
   Settings,
   Menu,
   HelpCircle,
-  Sun,
-  Moon,
 } from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router";
 
-const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(false); // global collapse state
-  const [openMenu, setOpenMenu] = useState<string | null>("course"); // track accordion menus
-  const [darkMode, setDarkMode] = useState(false); // theme state
+interface SidebarProps {
+  collapsed: boolean;
+  setCollapsed: (val: boolean) => void;
+}
+
+const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
+  const [openMenu, setOpenMenu] = useState<string | null>("course");
 
   const toggleMenu = (menu: string) => {
     setOpenMenu(openMenu === menu ? null : menu);
   };
 
-  const toggleTheme = () => {
-    setDarkMode(!darkMode);
-    if (!darkMode) {
-      document.documentElement.setAttribute("data-theme", "dark");
-    } else {
-      document.documentElement.setAttribute("data-theme", "light");
-    }
-  };
-
   return (
-    <aside
-      className={`h-screen bg-base-200 flex flex-col transition-all duration-300 ${
-        collapsed ? "w-20" : "w-56"
-      }`}
-    >
-      {/* Collapse Toggle Button */}
+    <div className="bg-base-100 flex flex-col h-full border-r border-base-300">
+      {/* Collapse toggle */}
       <div className="p-2 flex justify-end border-b border-base-300">
         <button
-          className="btn btn-ghost btn-sm"
+          className="btn btn-ghost btn-sm flex items-center gap-2"
           onClick={() => setCollapsed(!collapsed)}
         >
           <Menu size={20} />
         </button>
       </div>
 
-      {/* Top menu */}
-      <ul className="menu p-4 flex-1">
+      {/* Menu */}
+      <ul className="menu flex-1 p-4 gap-2">
         {/* Course */}
         <li>
           <div
@@ -56,15 +45,15 @@ const Sidebar = () => {
             {!collapsed && <span>Course</span>}
           </div>
           {openMenu === "course" && !collapsed && (
-            <ul className="pl-6 mt-2">
+            <ul className="pl-6 mt-2 menu-compact">
               <li>
-                <a>Course 1</a>
+                <a className="rounded-lg">Course 1</a>
               </li>
               <li>
-                <a>Course 2</a>
+                <a className="rounded-lg">Course 2</a>
               </li>
               <li>
-                <a>Course 3</a>
+                <a className="rounded-lg">Course 3</a>
               </li>
             </ul>
           )}
@@ -72,80 +61,58 @@ const Sidebar = () => {
 
         {/* Quiz */}
         <li>
-          <div
+          <Link
+            to="/quizzes"
             className="flex items-center gap-2 cursor-pointer"
-            onClick={() => toggleMenu("quiz")}
           >
             <ClipboardList size={18} />
             {!collapsed && <span>Quiz</span>}
-          </div>
-          {openMenu === "quiz" && !collapsed && (
-            <ul className="pl-6 mt-2">
-              <li>
-                <a>Quiz 1</a>
-              </li>
-              <li>
-                <a>Quiz 2</a>
-              </li>
-              <li>
-                <a>Quiz 3</a>
-              </li>
+          </Link>
+          {/* {openMenu === "quiz" && !collapsed && (
+            <ul className="pl-6 mt-2 menu-compact">
             </ul>
-          )}
+          )} */}
         </li>
 
         {/* Homework */}
         <li>
-          <div
+          <Link 
+            to="/homeworks"
             className="flex items-center gap-2 cursor-pointer"
-            onClick={() => toggleMenu("homework")}
           >
             <FileText size={18} />
             {!collapsed && <span>Homework</span>}
-          </div>
-          {openMenu === "homework" && !collapsed && (
-            <ul className="pl-6 mt-2">
+          </Link>
+          {/* {openMenu === "homework" && !collapsed && (
+            <ul className="pl-6 mt-2 menu-compact">
               <li>
-                <a>HW 1</a>
+                <a className="rounded-lg">HW 1</a>
               </li>
               <li>
-                <a>HW 2</a>
+                <a className="rounded-lg">HW 2</a>
               </li>
               <li>
-                <a>HW 3</a>
+                <a className="rounded-lg">HW 3</a>
               </li>
             </ul>
-          )}
+          )} */}
         </li>
       </ul>
 
-      {/* Bottom fixed menu */}
+      {/* Bottom menu */}
       <ul className="menu p-4 border-t border-base-300 space-y-2">
         <li>
-          <a className="flex items-center gap-2">
-            <HelpCircle size={18} />
-            {!collapsed && <span>Help</span>}
+          <a className="flex items-center gap-2 rounded-lg">
+            <HelpCircle size={18} /> {!collapsed && <span>Help</span>}
           </a>
         </li>
         <li>
-          <a className="flex items-center gap-2">
-            <Settings size={18} />
-            {!collapsed && <span>Settings</span>}
-          </a>
-        </li>
-
-        {/* Dark / Light Mode Toggle */}
-        <li>
-          <button
-            className="flex items-center gap-2 btn btn-ghost w-full"
-            onClick={toggleTheme}
-          >
-            {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-            {!collapsed && <span>{darkMode ? "Light Mode" : "Dark Mode"}</span>}
-          </button>
+          <Link to="/setting" className="flex items-center gap-2 rounded-lg">
+            <Settings size={18} /> {!collapsed && <span>Settings</span>}
+          </Link>
         </li>
       </ul>
-    </aside>
+    </div>
   );
 };
 

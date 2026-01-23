@@ -24,6 +24,7 @@ import AdminQuizPreviewPage from "./pages/AdminQuizPreviewPage";
 import QuizEditPage from "./pages/QuizEditPage";
 import AdminSubmissionListPage from "./pages/AdminSubmissionListPage";
 import AppLayout from "./layouts/AppLayout";
+import ChangeAccountInfo from "./pages/ChangeAccountInfo";
 
 function App() {
   return (
@@ -50,7 +51,8 @@ function App() {
             {/* <Route path="/quiz" element={<QuizPage />} />
           <Route path="/homework" element={<HomeworkPage />} /> */}
             <Route path="profile" element={<Profile />} />
-            {/* Course */}
+            <Route path="homework/:homeworkId" element={<HomeworkDetail />} />
+            <Route path="setting" element={<ChangeAccountInfo />} />
             <Route
               path="learn/courses/:courseId"
               element={<StartLearningPage />}

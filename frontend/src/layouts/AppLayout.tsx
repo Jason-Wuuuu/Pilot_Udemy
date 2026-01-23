@@ -1,17 +1,29 @@
 import { Outlet } from "react-router";
 import NavBar from "../components/NavBar";
 import Sidebar from "../components/Sidebar";
-import { useAppSelector } from "../store/hooks";
+import { useState } from "react";
 
 const AppLayout = () => {
-    const user = useAppSelector((state) => state.auth.user);
-    console.log("applayer",user);
+  const [collapsed, setCollapsed] = useState(false); // collapse state
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <NavBar />
-      <div className="flex flex-1">
-        <Sidebar />
-        <main className="flex-1 px-6 py-8 overflow-y-auto h-full">
+    <div className="drawer drawer-mobile drawer-open">
+      <input id="app-drawer" type="checkbox" className="drawer-toggle" />
+
+      {/* Sidebar wrapper */}
+      <div
+        className={`drawer-side h-screen transition-all duration-300 ${
+          collapsed ? "25%" : "8%"
+        }`}
+      >
+        <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+      </div>
+
+      {/* Main content */}
+      <div className="drawer-content flex flex-col h-screen">
+        <NavBar />
+
+        <main className="flex-1 overflow-y-auto p-6 bg-base-200">
           <Outlet />
         </main>
       </div>
