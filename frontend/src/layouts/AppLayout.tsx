@@ -23,7 +23,7 @@ const AppLayout = () => {
       <div className="drawer-content flex flex-col h-screen">
         <NavBar />
 
-        <main className="flex-1 overflow-y-auto p-6 bg-base-200">
+        <main className="flex-1 overflow-y-auto bg-base-200">
           <Outlet />
         </main>
       </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { aiGenerateSummaryPreview } from "../services/course.service";
+import MarkdownRenderer from "../components/MarkdownRenderer";
 
 type Props = {
   open: boolean;
@@ -37,6 +38,7 @@ export default function AISummaryModal({
       setLoading(true);
       setSummary("");
       const res = await aiGenerateSummaryPreview({ downloadUrl, mimeType });
+      
       setSummary(res.summary);
     } catch {
       toast.error("AI summary failed");
@@ -88,7 +90,7 @@ export default function AISummaryModal({
           )}
 
           {/* AI Output Card */}
-          <div className="rounded-2xl bg-base-100/70 backdrop-blur p-6 min-h-[280px] shadow-lg">
+          <div className="rounded-2xl bg-base-100/70 backdrop-blur p-6 min-h-[280px] max-h-[60vh] shadow-lg overflow-y-auto">
             {loading && (
               <div className="space-y-4 animate-pulse">
                 <div className="h-4 w-1/3 rounded bg-gradient-to-r from-base-300 via-base-200 to-base-300" />
@@ -106,7 +108,7 @@ export default function AISummaryModal({
 
             {!loading && summary && (
               <div className="prose prose-sm max-w-none whitespace-pre-wrap">
-                {summary}
+                <MarkdownRenderer content={summary}/>
               </div>
             )}
           </div>

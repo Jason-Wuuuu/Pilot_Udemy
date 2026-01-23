@@ -80,7 +80,7 @@ export default function AdminEnrollmentPage() {
      Render
   ========================= */
   return (
-    <div className="max-w-5xl mx-auto space-y-10">
+    <div className="max-w-5xl mx-auto space-y-10 py-6">
       {/* ================= Course Selector ================= */}
       <div className="card bg-base-100 border shadow-md">
         <div className="card-body">

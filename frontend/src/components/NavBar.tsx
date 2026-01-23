@@ -16,16 +16,11 @@ const NavBar = () => {
           onClick={() => (window.location.href = "/")}
           className="text-xl font-bold cursor-pointer"
         >
-          Udemy-copy
+          EduPilot
         </span>
       </div>
 
-      {/* Admin: Register Students */}
-      {user?.role === "ADMIN" && (
-        <Link to="/admin/register" className="btn btn-outline btn-sm">
-          Register Students
-        </Link>
-      )}
+
 
       {/* Right: theme + user */}
       <div className="navbar-end space-x-2">
