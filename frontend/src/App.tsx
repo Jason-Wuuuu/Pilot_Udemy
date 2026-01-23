@@ -25,6 +25,7 @@ import QuizEditPage from "./pages/QuizEditPage";
 import AdminSubmissionListPage from "./pages/AdminSubmissionListPage";
 import AppLayout from "./layouts/AppLayout";
 import StudentGetQuizzessByCoursePage from "./pages/StudentGetQuizzesByCoursePage";
+import ChangeAccountInfo from "./pages/ChangeAccountInfo";
 
 function App() {
   return (
